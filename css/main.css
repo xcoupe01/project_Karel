@@ -1,10 +1,18 @@
 html, body {
-    margin: 0;
-    height: 100%;
-  }
-  #c {
-    width: 75%;
-    height: 100%;
-    display: block;
-  }
-  
+  margin: 0;
+  height: 100%;
+}
+#main {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  grid-template-rows: 1fr;
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+} 
+#c { 
+  grid-area: 1 / 1 / 2 / 2;
+  width: 100%;
+}
+#text_editor { 
+  grid-area: 1 / 2 / 2 / 3;
+}
