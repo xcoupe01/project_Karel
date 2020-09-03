@@ -89,4 +89,4 @@ var editor = ace.edit("text_editor");
 //editor.getSession().setMode("ace/mode/karel");
 //document.getElementById('deska').onkeydown = function(e) { 
 document.querySelector('#run').onclick = function() {mainKarel.interpretTextCode(editor)};
-document.querySelector('#test').onclick = function() {console.log(mainKarel.isBrick())};
+document.querySelector('#test').onclick = function() {console.log(mainKarel.checkCondition("neni", "zed"))};

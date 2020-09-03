@@ -56,7 +56,7 @@ class karel{
                 this.langPack.left = "vlevo";
                 this.langPack.place = "poloz";
                 this.langPack.pick = "zvedni";
-                this.langPack.mark = "oznac";
+                this.langPack.placeMark = "oznac";
                 this.langPack.unmark = "odznac";
                 this.langPack.do = "udelej";
                 this.langPack.times = "krat";
@@ -66,9 +66,12 @@ class karel{
                 this.langPack.wall = "zed";
                 this.langPack.brick = "cihla";
                 this.langPack.mark = "znacka";
+                this.langPack.if = "kdyz";
+                this.langPack.then = "tak";
+                this.langPack.else = "jinak";
                 this.langPack.reservedWords = ["prikaz", "podminka", "konec", "krok", "vpravo",
                     "vlevo", "poloz", "zvedni", "oznac", "odznac", "udelej", "krat", "dokud", "je",
-                    "neni", "zed", "cihla", "znacka"];
+                    "neni", "zed", "cihla", "znacka", "kdyz", "tak", "jinak"];
                 break;
             case "english":
                 this.langPack.function = "function";
@@ -89,9 +92,12 @@ class karel{
                 this.langPack.wall = "wall";
                 this.langPack.brick = "brick";
                 this.langPack.mark = "mark";
+                this.langPack.if = "if";
+                this.langPack.then = "then";
+                this.langPack.else = "else";
                 this.langPack.reservedWords = ["function", "condition", "end", "step", "right", 
                     "left", "place", "pick", "mark", "unmark", "do", "times", "while", "is", "isnt",
-                    "wall", "brick", "mark"];
+                    "wall", "brick", "mark", "if", "then", "else"];
                 break;
         }
     }
@@ -298,7 +304,7 @@ class karel{
     async interpretTextCode(editor){
         var n = editor.selection.getCursor().row;
         var code = editor.getValue();
-        code = code.match(/[^\r\n]+/g); //cuts the whole string in the editor to words
+        code = code.match(/[^\n]+/g); //cuts the whole string in the editor to words
         if(this.textSyntaxChecker(code)){
             // rolls the code pointer to the begining of function which was selected to be executed
             for(var i = 0 ; i < code.lenght; i ++){
@@ -315,7 +321,7 @@ class karel{
             }
             // primitive function to execute the code
             var activeCounters = []; //used for DO loops
-            while(code[n] != this.langPack.end){
+            while(true){
                 editor.gotoLine(n + 1);
                 words = code[n].match(/[^\ ]+/g);
                 for(var i = 0; i < words.length; i++){ //weird stuff happening with this approach. Need to be redesigned
@@ -324,7 +330,7 @@ class karel{
                             i++; //skip the name of the function
                             break;
                         case this.langPack.end: //never happen
-                            break;
+                            return;
                         case this.langPack.forward:
                             this.goForward();
                             break;
@@ -340,29 +346,15 @@ class karel{
                         case this.langPack.pick:
                             this.pickUpBlock();
                             break;
-                        case this.langPack.mark:
+                        case this.langPack.placeMark:
                             this.markOn();
                             break;
                         case this.langPack.unmark:
                             this.markOff();
+                            break;
                         case this.langPack.do:
-                            //TODO - udelej 0 krat
                             if(parseInt(words[1] == 0)){
-                                var canContinue = true
-                                var numDo = 0;
-                                while(canContinue){
-                                    words = code[n].match(/[^\ ]+/g);
-                                    if(words[0] == this.langPack.do){
-                                        numDo++;
-                                    } else if(code[n] != "*"+this.langPack.do){
-                                        if(numDo > 0){
-                                            numDo--;
-                                        }else{
-                                            canContinue = false;
-                                        }
-                                    }
-                                    n++;
-                                }
+                                n = this.codeJumper(this.langPack.do, false, code, n);
                             } else {
                                 activeCounters.push(words[1]);
                                 i += 2;  
@@ -371,113 +363,31 @@ class karel{
                         case "*" + this.langPack.do:
                             activeCounters[activeCounters.length - 1]--;
                             if(activeCounters[activeCounters.length - 1] > 0){
-                                var canContinue = true;
-                                var numDo = 0;
-                                while(canContinue){
-                                    n--;
-                                    words = code[n].match(/[^\ ]+/g);
-                                    if(words[0] == "*"+this.langPack.do){
-                                        numDo++;
-                                    } else if(words[0] == this.langPack.do){
-                                        if(numDo > 0){
-                                            numDo--;
-                                        } else {
-                                            canContinue = false;
-                                            i += 2
-                                        }
-                                    }
-                                }
+                                n = this.codeJumper(this.langPack.do, true, code, n);
                             } else {
                                 activeCounters.pop();
                             }
                             break;
                         case this.langPack.while:
-                            // karel is while true
-                            var skip = true;
-                            console.log("is wall - " + this.isWall());
-                            console.log("is brick - " + this.isBrick());
-                            console.log("is mark - " + this.isMark());
-                            if(words[1] == this.langPack.is){
-                                // true line
-                                switch(words[2]){
-                                    case this.langPack.wall:
-                                        if(this.isWall()){
-                                            skip = false;
-                                        }
-                                        break;
-                                    case this.langPack.brick:
-                                        if(this.isBrick()){
-                                            skip = false;
-                                        }
-                                        break;
-                                    case this.langPack.mark:
-                                        if(this.isMark()){
-                                            skip = false;
-                                        }
-                                        break;
-                                    default:
-                                        // TODO - user defined conditions from conditionList
-                                }
-                            } else {
-                                // not line
-                                switch(words[2]){
-                                    case this.langPack.wall:
-                                        if(!this.isWall()){
-                                            skip = false;
-                                        }
-                                        break;
-                                        roomDataArray   case this.langPack.brick:
-                                        if(!this.isBrick()){
-                                            skip = false;
-                                        }
-                                        break;
-                                    case this.langPack.mark:
-                                        if(!this.isMark()){
-                                            skip = false;
-                                        }
-                                        break;
-                                    default:
-                                        // TODO - user defined conditions from conditionList
-                                }
+                            if(!this.checkCondition(words[1], words[2])){
+                                n = this.codeJumper(this.langPack.while, false, code, n);
                             }
-                            if(skip){
-                                var canContinue = true;
-                                var numWhile = 0;
-                                while(canContinue){
-                                    words = code[n].match(/[^\ ]+/g);
-                                    if(words[0] == this.langPack.while){
-                                        numWhile++;
-                                    } else if(code[n] != "*"+this.langPack.while){
-                                        if(numWhile > 0){
-                                            numWhile--;
-                                        }else{
-                                            canContinue = false;
-                                        }
-                                    }
-                                    n++;
-                                }
-                                n--;
-                            } else {
-                               i += 2;
-                            }
+                            i += 2;
                             break;
                         case "*" + this.langPack.while:
-                            i --;
-                            var canContinue = true;
-                                var numWhile = 0;
-                                while(canContinue){
-                                    words = code[n].match(/[^\ ]+/g);
-                                    if(words[0] == "*" + this.langPack.while){
-                                        numWhile++;
-                                    } else if(code[n] != this.langPack.while){
-                                        if(numWhile > 0){
-                                            numWhile--;
-                                        }else{
-                                            canContinue = false;
-                                        }
-                                    }
-                                    n--;
-                                }
+                            n = this.codeJumper(this.langPack.while, true, code, n) - 1;
+                            break;
+                        case this.langPack.if:
+                            if(!this.checkCondition(words[1], words[2])){
+                                n = this.codeJumper(this.langPack.if, false, code, n);
+                            }
+                            i += 2;
+                            break;
+                        case this.langPack.else:
+                            n = this.codeJumper(this.langPack.if, false, code, n);
+                            break;
+                        case this.langPack.then:
+                        case "*" + this.langPack.if:
                             break;
                         default:
                             console.log("ITC error - weird word - " + words[i]);
@@ -585,7 +495,35 @@ class karel{
                         }
                         activeStructures.push(this.langPack.while);
                         break;
+                    case this.langPack.if:
+                        if(words.length != 3 || ![this.langPack.is, this.langPack.isNot].includes(words[1])){
+                            console.log("TSC error - wrong IF definition at line " + i);
+                            return false;
+                        }
+                        if(![this.langPack.wall, this.langPack.brick, this.langPack.mark].includes(words[2])){
+                            var found = false;
+                            for(var j = 0; j < this.conditionList.lenght; j++){
+                                if(words[2] == this.conditionList[j]){
+                                    found = true;
+                                }
+                            }
+                            if(!found){
+                                //TODO - rework for it to be able to call conditions written later in the text
+                                console.log("TSC error - contition not found at line " + i);
+                                return false;
+                            }
+                        }
+                        activeStructures.push(this.langPack.if);
+                        break;
+                    case this.langPack.else:
+                    case this.langPack.then:
+                        if(activeStructures[activeStructures.length - 1] != this.langPack.if){
+                            console.log("TSC error - IF fail, wrong structure at line " + i);
+                            return false;
+                        }
+                        break;
                     default:
+                        console.log("TSC warning - uncomplete state entered at line " + i);
                         // words that cannot be here - konec, podminka, prikaz, udelej (all)
                         // search if Karel knows these commands
                 }
@@ -616,6 +554,19 @@ class karel{
                         }
                         activeStructures.pop();
                         break;
+                    case this.langPack.else:
+                    case this.langPack.then:
+                        if(activeStructures[activeStructures.length - 1] != this.langPack.if){
+                            console.log("TSC error - IF fail, wrong structure at line " + i);
+                            return false;
+                        }
+                        break;
+                    case "*" + this.langPack.if:
+                        if(activeStructures[activeStructures.length - 1] != this.langPack.if){
+                            console.log("TSC error - missing end of structure at line " + i  + " - structure " + activeStructures[activeStructures.length - 1])
+                        }
+                        activeStructures.pop();
+                        break;
                     default:
                         var found = false;
                         for(var j = 0; j < this.langPack.reservedWords.length; j++){
@@ -633,6 +584,7 @@ class karel{
                             }
                         }
                         if(!found){
+                            //TODO rework so it would also scan codes lower in the text file
                             console.log("TSC error - unknown word at line " + i);
                             return false;
                         }
@@ -645,6 +597,100 @@ class karel{
             return false;
         }
         return true;
+    }
+
+    checkCondition(prefix, condition){
+        // karel is while true
+        if(prefix == this.langPack.is){
+            // true line
+            switch(condition){
+                case this.langPack.wall:
+                    if(this.isWall()){
+                        return true;
+                    }
+                    break;
+                case this.langPack.brick:
+                    if(this.isBrick()){
+                        return true;
+                    }
+                    break;
+                case this.langPack.mark:
+                    if(this.isMark()){
+                        return true;
+                    }
+                    break;
+                default:
+                    // TODO - user defined conditions from conditionList
+            }
+        } else {
+            // not line
+            switch(condition){
+                case this.langPack.wall:
+                    if(!this.isWall()){
+                        return true;
+                    }
+                    break;
+                case this.langPack.brick:
+                    if(!this.isBrick()){
+                        return true;
+                    }
+                    break;
+                case this.langPack.mark:
+                    if(!this.isMark()){
+                        return true;
+                    }
+                    break;
+                default:
+                    // TODO - user defined conditions from conditionList
+            }
+        }
+        return false;
+    }
+
+    codeJumper(command, up, code, pos){
+        var numSkip = 0;
+        if(command == this.langPack.if){
+            while(true){
+                pos++;
+                var words = code[pos].match(/[^\ ]+/g);
+                if(words[0] == command){
+                    numSkip++;
+                } else if(words[0] == "*" + command && numSkip > 0){
+                    numSkip--;
+                } else if((words[0] == this.langPack.else && numSkip == 0) || (words[0] == "*" + command && numSkip == 0)){
+                    return pos - 1;
+                }
+            }
+        }
+        if(up){
+            while(true){
+                pos--;
+                var words = code[pos].match(/[^\ ]+/g);
+                if(words[0] == "*" + command){
+                    numSkip++;
+                } else if(words[0] == command){
+                    if(numSkip > 0){
+                        numSkip--;
+                    }else{
+                        return pos;
+                    }
+                }
+            }
+        } else {
+            while(true){
+                pos++;
+                var words = code[pos].match(/[^\ ]+/g);
+                if(words[0] == command){
+                    numSkip++;
+                } else if(words[0] == "*" + command){
+                    if(numSkip > 0){
+                        numSkip--;
+                    }else{
+                        return pos;
+                    }
+                }
+            }
+        }
     }
 }
 
