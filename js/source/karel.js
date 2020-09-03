@@ -4,16 +4,18 @@ import * as THREE from '../three/three.module.js';
  * Class of Karel
  * - graphical and logical representation of robot Karel.
  */
-export {karel};
+export {karel}; 
 class karel{
     /**
      * Connects the object of the robot to the given scene where it should be drawn and to given room where it should operate
-     * @param {*} scene is the scene to be draw to
+     * @param {*} scene is th   console.log("bing");e scene to be draw to
      * @param {*} room is the room in which tre robot will operate
      */
     constructor(scene, room){
         this.scene = scene;
         this.room = room;
+        this.commandList = []; // user defined commands list
+        this.conditionList = []; // user defined condition list
     }
     /**
      * Draws, creates and sets all object and variables needed for robot
@@ -24,7 +26,7 @@ class karel{
         this.positionX = 0;
         this.positionY = 0;
         // graphical object of Karel
-        const geometry = new THREE.BoxGeometry(0.9, 0.9, 0.9); 
+        const geometry = new THREE.BoxGeometry(this.room.blockSize, this.room.blockSize, this.room.blockSize); 
         const material = [
             new THREE.MeshBasicMaterial({color : 0x94a8ff}),
             new THREE.MeshBasicMaterial({color : 0x94a8ff}),
@@ -39,6 +41,61 @@ class karel{
         this.graphicalObject.position.y = 0.55;
     }
     /**
+     * Sets Karel to specified language (just the keywords)
+     * @param {*} language is the language name (now "czech" and "english")
+     */
+    languageSetter(language){
+        this.langPack = [];
+        switch(language){
+            case "czech":
+                this.langPack.function = "prikaz";
+                this.langPack.condition = "podminka";
+                this.langPack.end = "konec";
+                this.langPack.forward = "krok";
+                this.langPack.right = "vpravo";
+                this.langPack.left = "vlevo";
+                this.langPack.place = "poloz";
+                this.langPack.pick = "zvedni";
+                this.langPack.mark = "oznac";
+                this.langPack.unmark = "odznac";
+                this.langPack.do = "udelej";
+                this.langPack.times = "krat";
+                this.langPack.while = "dokud";
+                this.langPack.is = "je";
+                this.langPack.isNot = "neni";
+                this.langPack.wall = "zed";
+                this.langPack.brick = "cihla";
+                this.langPack.mark = "znacka";
+                this.langPack.reservedWords = ["prikaz", "podminka", "konec", "krok", "vpravo",
+                    "vlevo", "poloz", "zvedni", "oznac", "odznac", "udelej", "krat", "dokud", "je",
+                    "neni", "zed", "cihla", "znacka"];
+                break;
+            case "english":
+                this.langPack.function = "function";
+                this.langPack.condition = "condition";
+                this.langPack.end = "end";
+                this.langPack.forward = "step";
+                this.langPack.right = "right";
+                this.langPack.left = "left";
+                this.langPack.place = "place";
+                this.langPack.pick = "pick";
+                this.langPack.mark = "mark";
+                this.langPack.unmark = "unmark";
+                this.langPack.do = "fo";
+                this.langPack.times = "times";
+                this.langPack.while = "while";
+                this.langPack.is = "is";
+                this.langPack.isNot = "isnt";
+                this.langPack.wall = "wall";
+                this.langPack.brick = "brick";
+                this.langPack.mark = "mark";
+                this.langPack.reservedWords = ["function", "condition", "end", "step", "right", 
+                    "left", "place", "pick", "mark", "unmark", "do", "times", "while", "is", "isnt",
+                    "wall", "brick", "mark"];
+                break;
+        }
+    }
+    /**
      * Turns robot to the right
      */
     turnRight(){
@@ -46,7 +103,6 @@ class karel{
         if(this.orientation > 3){
             this.orientation = 0;
         }
-        console.log(this.orientation);
         this.graphicalObject.rotateY(-Math.PI/2);
     }
     /**
@@ -57,7 +113,6 @@ class karel{
         if(this.orientation < 0){
             this.orientation = 3;
         }
-        console.log(this.orientation);
         this.graphicalObject.rotateY(Math.PI/2);
     }
     /**
@@ -168,6 +223,7 @@ class karel{
     }
     /**
      * Toggles mark on the position of the robot
+     * Used in manual controls
      */
     markSwitch(){
         if(this.room.roomDataArray[this.positionX][this.positionY].mark){
@@ -176,4 +232,422 @@ class karel{
             this.room.markPosition(this.positionX, this.positionY);
         }
     }
+    /**
+     * Marks current roboths location
+     * Used in code
+     */
+    markOn(){
+        this.room.markPosition(this.positionX, this.positionY);
+    }
+    /**
+     * Unmarks current robot location
+     * Used in code
+     */
+    markOff(){
+        this.room.unmarkPosition(this.positionX, this.positionY);
+    }
+
+    /**
+     * Tells if the robot looks directly to the wall
+     * TODO add placable walls
+     */
+    isWall(){
+        switch(this.orientation){
+            case 0:
+                return this.positionY == 0;
+            case 1:
+                return this.positionX == this.room.roomDataArray.length - 1;
+            case 2:
+                return this.positionY == this.room.roomDataArray[this.positionX].length - 1;
+            case 3:
+                return this.positionX == 0;
+        }
+    }
+
+    /**
+     * Tells if there is at least one brick in front of robot
+     */
+    isBrick(){
+        if(this.isWall()){
+            return false;
+        }
+        switch(this.orientation){
+            case 0:
+                return this.room.roomDataArray[this.positionX][this.positionY - 1].blocks > 0;
+            case 1:
+                return this.room.roomDataArray[this.positionX + 1][this.positionY].blocks > 0;
+            case 2:
+                return this.room.roomDataArray[this.positionX][this.positionY + 1].blocks > 0;
+            case 3:
+                return this.room.roomDataArray[this.positionX - 1][this.positionY].blocks > 0;
+        }
+    }
+
+    /**
+     * Tells if robot stays on mark or not
+     */
+    isMark(){
+        return this.room.roomDataArray[this.positionX][this.positionY].mark;
+    }
+
+    /**
+     * Executes the code written in editor
+     * @param {*} editor is the editor which contains the code to be executed
+     * TODO - make it work - redo udelej
+     */
+    async interpretTextCode(editor){
+        var n = editor.selection.getCursor().row;
+        var code = editor.getValue();
+        code = code.match(/[^\r\n]+/g); //cuts the whole string in the editor to words
+        if(this.textSyntaxChecker(code)){
+            // rolls the code pointer to the begining of function which was selected to be executed
+            for(var i = 0 ; i < code.lenght; i ++){
+                code[i] = code[i].trim();
+            }
+            var words = code[n].match(/[^\ ]+/g);
+            while(words[0] != this.langPack.function){
+                n --;
+                if(n < 0 || code[n] == this.langPack.end){
+                    console.log("ITC error - function to be executed not found");
+                    return;
+                }
+                words = code[n].match(/[^\ ]+/g);
+            }
+            // primitive function to execute the code
+            var activeCounters = []; //used for DO loops
+            while(code[n] != this.langPack.end){
+                editor.gotoLine(n + 1);
+                words = code[n].match(/[^\ ]+/g);
+                for(var i = 0; i < words.length; i++){ //weird stuff happening with this approach. Need to be redesigned
+                    switch(words[i]){
+                        case this.langPack.function:
+                            i++; //skip the name of the function
+                            break;
+                        case this.langPack.end: //never happen
+                            break;
+                        case this.langPack.forward:
+                            this.goForward();
+                            break;
+                        case this.langPack.right:
+                            this.turnRight();
+                            break;
+                        case this.langPack.left:
+                            this.turnLeft();
+                            break;
+                        case this.langPack.place:
+                            this.placeBlock();
+                            break;
+                        case this.langPack.pick:
+                            this.pickUpBlock();
+                            break;
+                        case this.langPack.mark:
+                            this.markOn();
+                            break;
+                        case this.langPack.unmark:
+                            this.markOff();
+                        case this.langPack.do:
+                            //TODO - udelej 0 krat
+                            if(parseInt(words[1] == 0)){
+                                var canContinue = true
+                                var numDo = 0;
+                                while(canContinue){
+                                    words = code[n].match(/[^\ ]+/g);
+                                    if(words[0] == this.langPack.do){
+                                        numDo++;
+                                    } else if(code[n] != "*"+this.langPack.do){
+                                        if(numDo > 0){
+                                            numDo--;
+                                        }else{
+                                            canContinue = false;
+                                        }
+                                    }
+                                    n++;
+                                }
+                            } else {
+                                activeCounters.push(words[1]);
+                                i += 2;  
+                            }
+                            break;
+                        case "*" + this.langPack.do:
+                            activeCounters[activeCounters.length - 1]--;
+                            if(activeCounters[activeCounters.length - 1] > 0){
+                                var canContinue = true;
+                                var numDo = 0;
+                                while(canContinue){
+                                    n--;
+                                    words = code[n].match(/[^\ ]+/g);
+                                    if(words[0] == "*"+this.langPack.do){
+                                        numDo++;
+                                    } else if(words[0] == this.langPack.do){
+                                        if(numDo > 0){
+                                            numDo--;
+                                        } else {
+                                            canContinue = false;
+                                            i += 2
+                                        }
+                                    }
+                                }
+                            } else {
+                                activeCounters.pop();
+                            }
+                            break;
+                        case this.langPack.while:
+                            // karel is while true
+                            var skip = true;
+                            console.log("is wall - " + this.isWall());
+                            console.log("is brick - " + this.isBrick());
+                            console.log("is mark - " + this.isMark());
+                            if(words[1] == this.langPack.is){
+                                // true line
+                                switch(words[2]){
+                                    case this.langPack.wall:
+                                        if(this.isWall()){
+                                            skip = false;
+                                        }
+                                        break;
+                                    case this.langPack.brick:
+                                        if(this.isBrick()){
+                                            skip = false;
+                                        }
+                                        break;
+                                    case this.langPack.mark:
+                                        if(this.isMark()){
+                                            skip = false;
+                                        }
+                                        break;
+                                    default:
+                                        // TODO - user defined conditions from conditionList
+                                }
+                            } else {
+                                // not line
+                                switch(words[2]){
+                                    case this.langPack.wall:
+                                        if(!this.isWall()){
+                                            skip = false;
+                                        }
+                                        break;
+                                        roomDataArray   case this.langPack.brick:
+                                        if(!this.isBrick()){
+                                            skip = false;
+                                        }
+                                        break;
+                                    case this.langPack.mark:
+                                        if(!this.isMark()){
+                                            skip = false;
+                                        }
+                                        break;
+                                    default:
+                                        // TODO - user defined conditions from conditionList
+                                }
+                            }
+                            if(skip){
+                                var canContinue = true;
+                                var numWhile = 0;
+                                while(canContinue){
+                                    words = code[n].match(/[^\ ]+/g);
+                                    if(words[0] == this.langPack.while){
+                                        numWhile++;
+                                    } else if(code[n] != "*"+this.langPack.while){
+                                        if(numWhile > 0){
+                                            numWhile--;
+                                        }else{
+                                            canContinue = false;
+                                        }
+                                    }
+                                    n++;
+                                }
+                                n--;
+                            } else {
+                               i += 2;
+                            }
+                            break;
+                        case "*" + this.langPack.while:
+                            i --;
+                            var canContinue = true;
+                                var numWhile = 0;
+                                while(canContinue){
+                                    words = code[n].match(/[^\ ]+/g);
+                                    if(words[0] == "*" + this.langPack.while){
+                                        numWhile++;
+                                    } else if(code[n] != this.langPack.while){
+                                        if(numWhile > 0){
+                                            numWhile--;
+                                        }else{
+                                            canContinue = false;
+                                        }
+                                    }
+                                    n--;
+                                }
+                            break;
+                        default:
+                            console.log("ITC error - weird word - " + words[i]);
+                    }
+                }
+                n++;
+                await sleep(125);
+            }
+        }
+        //console.log(this.commandList);
+        //console.log(activeCounters);
+    }
+
+    /**
+     * Checks syntax of given code
+     * @param {*} code code to be checked
+     * TODO - add while anf if structures
+     */
+    textSyntaxChecker(code){
+        var inDefinition = false; // looking for end of definition
+        var activeStructures = [];
+        this.commandList = [];
+        this.conditionList = [];
+        for(var i = 0; i < code.length; i++){
+            var line = code[i].trim();
+            if(line.indexOf(' ') > 0){
+                // mutiple commansd on one line, function, condition, loops (for, while), if
+                var words = line.match(/[^\ ]+/g);
+                for(var j = 0; j < words.lenght; j++){
+                    words[j] = words[j].trim();
+                }
+                switch(words[0]){
+                    case this.langPack.function:
+                        // begin of command definition
+                        if(words.length != 2 || inDefinition){
+                            // correct number of arguments
+                            console.log("TSC error - wrong funcion definition at line " + i);
+                            return false;
+                        }
+                        for(var j = 0; j < this.commandList.length; j++){
+                            // redefinition of user defined command
+                            if(this.commandList[j][0] == words[1]){
+                                console.log("TSC error - redefiniton of command at line " + i);
+                                return false;
+                            }
+                        }
+                        for(var j = 0; j < this.langPack.reservedWords.length; j++){
+                            // definition of command name from reserved list
+                            if(this.langPack.reservedWords[j] == words[1]){
+                                console.log("TSC error - redefinition of reserved command at line " + i);
+                                return false;
+                            }
+                        }
+                        this.commandList.push([words[1], i]);
+                        inDefinition = true;
+                        break;
+                    case this.langPack.condition:
+                        // begin of condition definition
+                        if(words.length != 2 || inDefinition){
+                            // correct number of arguments
+                            console.log("TSC error - wrong funcion definition at line " + i);
+                            return false;
+                        }
+                        for(var j = 0; j < this.commandList.length; j++){
+                            // redefinition of user defined condition
+                            if(this.commandList[j][0] == words[1]){
+                                console.log("TSC error - redefiniton of command at line " + i);
+                                return false;
+                            }
+                        }
+                        for(var j = 0; j < this.langPack.reservedWords.length; j++){
+                            // definition of condition name from reserved list
+                            if(this.langPack.reservedWords[j] == words[1]){
+                                console.log("TSC error - redefinition of reserved command at line " + i);
+                                return false;
+                            }
+                        }
+                        this.conditionList.push([words[1], i]);
+                        inDefinition = true;
+                        break;
+                    case this.langPack.do:
+                        if(words.length != 3 || words[2] != this.langPack.times || isNaN(parseInt(words[1]))){
+                            console.log("TSC error - wrong DO definition at line " + i);
+                            return false;
+                        }
+                        activeStructures.push(this.langPack.do);
+                        break;
+                    case this.langPack.while:
+                        if(words.length != 3 || ![this.langPack.is, this.langPack.isNot].includes(words[1])){
+                            console.log("TSC error - wrong WHILE definiton at line " + i);
+                            return false;
+                        }
+                        if(![this.langPack.wall, this.langPack.brick, this.langPack.mark].includes(words[2])){
+                            var found = false;
+                            for(var j = 0; j < this.conditionList.lenght; j++){
+                                if(words[2] == this.conditionList[j]){
+                                    found = true;
+                                }
+                            }
+                            if(!found){
+                                //TODO - rework for it to be able to call conditions written later in the text
+                                console.log("TSC error - contition not found at line " + i);
+                                return false;
+                            }
+                        }
+                        activeStructures.push(this.langPack.while);
+                        break;
+                    default:
+                        // words that cannot be here - konec, podminka, prikaz, udelej (all)
+                        // search if Karel knows these commands
+                }
+            } else {
+                switch(line){
+                    case this.langPack.end:
+                        if(!inDefinition){
+                            console.log("TSC error - wrong end of definiton at line " + i);
+                            return false;
+                        }
+                        if(activeStructures.length > 0){
+                            console.log("TSC error - missing end of syntax structure at line " + i);
+                            return false;
+                        }
+                        inDefinition = false;
+                        break;
+                    case "*" + this.langPack.do:
+                        if(activeStructures[activeStructures.length - 1] != this.langPack.do){
+                            console.log("TSC error - missing end of structure at line " + i  + " - structure " + activeStructures[activeStructures.length - 1]);
+                            return false;
+                        }
+                        activeStructures.pop();
+                        break;
+                    case "*" + this.langPack.while:
+                        if(activeStructures[activeStructures.length - 1] != this.langPack.while){
+                            console.log("TSC error - missing end of structure at line " + i  + " - structure " + activeStructures[activeStructures.length - 1]);
+                            return false;
+                        }
+                        activeStructures.pop();
+                        break;
+                    default:
+                        var found = false;
+                        for(var j = 0; j < this.langPack.reservedWords.length; j++){
+                            if(line == this.langPack.reservedWords[j]){
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(!found){
+                            for(var j = 0; j < this.commandList.length; j++){
+                                if(line == this.commandList[j][0]){
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!found){
+                            console.log("TSC error - unknown word at line " + i);
+                            return false;
+                        }
+                }
+                // do karel know this word ?
+            }
+        }
+        if(inDefinition){
+            console.log("TSC error - missing end of definition at line " + i);
+            return false;
+        }
+        return true;
+    }
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

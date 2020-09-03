@@ -53,6 +53,7 @@ function start() {
     });
 
     mainKarel.draw();
+    mainKarel.languageSetter("czech");
 
     function resizeRendererToDisplaySize(renderer) {
         const canvas = renderer.domElement;
@@ -79,31 +80,6 @@ function start() {
   return mainKarel;
 }
 
-function run_code(editor, karel) {
-    var code = editor.getValue();   
-    code = code.trim()
-    code = code.match(/[^\r\n]+/g);
-    for(let i = 0; i < code.length; i++){
-        switch(code[i]){
-            case "krok":
-                karel.goForward();
-                break;
-            case "poloz":
-                karel.placeBlock();
-                break;
-            case "vpravo":
-                karel.turnRight();
-                break;
-            case "vlevo":
-                karel.turnLeft();
-                break;
-            case "oznac":
-                karel.markSwitch();
-                break;
-        }
-    }
-}
-
 var mainKarel = start();
 var editor = ace.edit("text_editor");
 //editor.setTheme("ace/theme/github");
@@ -112,4 +88,5 @@ var editor = ace.edit("text_editor");
 //editor.setTheme("ace/theme/tommorrow");
 //editor.getSession().setMode("ace/mode/karel");
 //document.getElementById('deska').onkeydown = function(e) { 
-document.querySelector('#run').onclick = function() {run_code(editor, mainKarel)};   
+document.querySelector('#run').onclick = function() {mainKarel.interpretTextCode(editor)};
+document.querySelector('#test').onclick = function() {console.log(mainKarel.isBrick())};
