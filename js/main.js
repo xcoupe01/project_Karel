@@ -42,10 +42,10 @@ function start() {
             mainKarel.turnLeft();
         }
         else if(event.keyCode == 80){
-            mainKarel.placeBlock();
+            mainKarel.placeBrick();
         }
         else if(event.keyCode == 90){
-            mainKarel.pickUpBlock();
+            mainKarel.pickUpBrick();
         }
         else if(event.keyCode == 79){
             mainKarel.markSwitch();

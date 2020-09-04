@@ -8,22 +8,22 @@ export{room};
 class room{
     /**
      * Connects the room object to the scene where it should be drawn
-     * @param {*} scene is the scene where we want the room to be drawn
+     * @param {scene} scene is the scene where we want the room to be drawn
      */
     constructor(scene){
         this.scene = scene;
     }
     /**
      * Draws the room and sets all its variables and arrays.
-     * @param {*} controls is the controls of the scene which will be altered here to point at the centre of the room
-     * @param {*} countX is the count of blocks in the room in X axis
-     * @param {*} countY is the count of blocks in the room in Y axis
+     * @param {controls} controls is the controls of the scene which will be altered here to point at the centre of the room
+     * @param {number} countX is the count of blocks in the room in X axis
+     * @param {number} countY is the count of blocks in the room in Y axis
      */
     draw(controls, countX, countY){
         this.blockSize = 0.9;
         this.blockGap = 0.05;
         this.blockThickness = 0.1;
-        this.placeBlockThickness = 0.25;
+        this.brickThickness = 0.25;
         controls.target.set(countX/2 - this.blockSize/2, 0, countY/2 - this.blockSize/2);
         controls.update();
         this.roomDataArray = [];
@@ -40,56 +40,66 @@ class room{
                 cube.position.x = line.position.x = currX * (this.blockSize+this.blockGap);
                 cube.position.z = line.position.z = currY * (this.blockSize+this.blockGap);
                 this.roomDataArray[currX][currY] = {};
-                this.roomDataArray[currX][currY].blocks = 0;
+                this.roomDataArray[currX][currY].bricks = 0;
                 this.roomDataArray[currX][currY].mark = false;
-                this.roomDataArray[currX][currY].blockObjects = [];
-                this.roomDataArray[currX][currY].blockObjectsLines = [];
+                this.roomDataArray[currX][currY].brickObjects = [];
+                this.roomDataArray[currX][currY].brickObjectsLines = [];
                 this.roomDataArray[currX][currY].markObject;
             }
         }
     }
     /**
-     * Adds block to a specified position in the room
+     * Adds brick to a specified position in the room
      * Also handles all graphical objects and saves them into the roomDataArray
-     * @param {*} posX is the X axis coordinate
-     * @param {*} posY is the Y axis coordinate
+     * Controls if the brick is in the room
+     * @param {number} posX is the X axis coordinate
+     * @param {number} posY is the Y axis coordinate
      */
-    addBlockToPos(posX, posY){
-        const geometry = new THREE.BoxGeometry(this.blockSize, this.placeBlockThickness, this.blockSize);
+    addBrickToPos(posX, posY){
+        if(posX >= this.roomDataArray.length || posY >= this.roomDataArray[posX].length){
+            console.log("ROOM ABTP error - cannot add brick out of room");
+            return;
+        }
+        const geometry = new THREE.BoxGeometry(this.blockSize, this.brickThickness, this.blockSize);
         const material = new THREE.MeshBasicMaterial({color : 0xff0000});
-        const block = new THREE.Mesh(geometry, material);
-        const blockEdges = new THREE.EdgesGeometry(geometry);
-        const line = new THREE.LineSegments(blockEdges, new THREE.LineBasicMaterial({color : 0xffffff}));
-        block.position.x = line.position.x = posX * (this.blockSize+this.blockGap);
-        block.position.z = line.position.z = posY * (this.blockSize+this.blockGap);
-        block.position.y = line.position.y = this.placeBlockThickness/2 + 0.05 + this.placeBlockThickness * this.roomDataArray[posX][posY].blocks;
-        this.roomDataArray[posX][posY].blocks++;
-        this.scene.add(block);
+        const brick = new THREE.Mesh(geometry, material);
+        const brickEdges = new THREE.EdgesGeometry(geometry);
+        const line = new THREE.LineSegments(brickEdges, new THREE.LineBasicMaterial({color : 0xffffff}));
+        brick.position.x = line.position.x = posX * (this.blockSize+this.blockGap);
+        brick.position.z = line.position.z = posY * (this.blockSize+this.blockGap);
+        brick.position.y = line.position.y = this.brickThickness/2 + 0.05 + this.brickThickness * this.roomDataArray[posX][posY].bricks;
+        this.roomDataArray[posX][posY].bricks++;
+        this.scene.add(brick);
         this.scene.add(line);
-        this.roomDataArray[posX][posY].blockObjects.push(block);
-        this.roomDataArray[posX][posY].blockObjectsLines.push(line);
+        this.roomDataArray[posX][posY].brickObjects.push(brick);
+        this.roomDataArray[posX][posY].brickObjectsLines.push(line);
         if(this.roomDataArray[posX][posY].mark){
             this.updateMark(posX, posY);
         }
     }
     /**
-     * Removes block from a specified position in the room
+     * Removes brick from a specified position in the room
      * Also handles all graphical objects and saves changes into the roomDataArray
-     * @param {*} posX is the X axis coordinate
-     * @param {*} posY is the Y axis coordinate
+     * Controls if the coordinates are in the room
+     * @param {number} posX is the X axis coordinate
+     * @param {number} posY is the Y axis coordinate
      */
-    removeBlockFromPos(posX, posY){
-        if(this.roomDataArray[posX][posY].blocks > 0){
-            this.scene.remove(this.roomDataArray[posX][posY].blockObjects[this.roomDataArray[posX][posY].blockObjects.length - 1]);
-            this.scene.remove(this.roomDataArray[posX][posY].blockObjectsLines[this.roomDataArray[posX][posY].blockObjectsLines.length - 1]);
-            this.roomDataArray[posX][posY].blockObjects.pop();
-            this.roomDataArray[posX][posY].blockObjectsLines.pop();
-            this.roomDataArray[posX][posY].blocks--;
+    removeBrickFromPos(posX, posY){
+        if(posX >= this.roomDataArray.length || posY >= this.roomDataArray[posX].length){
+            console.log("ROOM RBFP error - cannot remove brick out of room");
+            return;
+        }
+        if(this.roomDataArray[posX][posY].bricks > 0){
+            this.scene.remove(this.roomDataArray[posX][posY].brickObjects[this.roomDataArray[posX][posY].brickObjects.length - 1]);
+            this.scene.remove(this.roomDataArray[posX][posY].brickObjectsLines[this.roomDataArray[posX][posY].brickObjectsLines.length - 1]);
+            this.roomDataArray[posX][posY].brickObjects.pop();
+            this.roomDataArray[posX][posY].brickObjectsLines.pop();
+            this.roomDataArray[posX][posY].bricks--;
             if(this.roomDataArray[posX][posY].mark){
                 this.updateMark(posX, posY);
             }
         } else {
-            console.log("Failed removeBlockFromPos at [" + posX + "][" + posY + "] - nothing to pick up");
+            console.log("ROOM RBFP error - nothing to pick up at [" + posX + "][" + posY + "]");
         }
     }
     /**
@@ -106,7 +116,7 @@ class room{
             const mark = new THREE.Mesh(geometry, material);
             mark.position.x = posX * (this.blockSize+this.blockGap);
             mark.position.z = posY * (this.blockSize+this.blockGap);
-            mark.position.y = 0.06 + this.placeBlockThickness * (this.roomDataArray[posX][posY].blocks);
+            mark.position.y = 0.06 + this.brickThickness * (this.roomDataArray[posX][posY].bricks);
             this.scene.add(mark);
             this.roomDataArray[posX][posY].markObject = mark;
         } else {
@@ -116,8 +126,8 @@ class room{
     /**
      * Removes mark from the room on the specified position
      * Also handles all graphical objects and saves them into the roomDataArray
-     * @param {*} posX is the X axis coordinate
-     * @param {*} posY is the Y axis coordinate
+     * @param {number} posX is the X axis coordinate
+     * @param {number} posY is the Y axis coordinate
      */
     unmarkPosition(posX, posY){
         if(this.roomDataArray[posX][posY].mark){
@@ -129,11 +139,11 @@ class room{
         }
     }
     /**
-     * Updates a mark height based on number of blocks on a specified position
-     * @param {*} posX is the X axis coordinate
-     * @param {*} posY is the Y axis coordinate
+     * Updates a mark height based on number of bricks on a specified position
+     * @param {number} posX is the X axis coordinate
+     * @param {number} posY is the Y axis coordinate
      */
     updateMark(posX, posY){
-        this.roomDataArray[posX][posY].markObject.position.y = 0.06 + this.placeBlockThickness * (this.roomDataArray[posX][posY].blocks);
+        this.roomDataArray[posX][posY].markObject.position.y = 0.06 + this.brickThickness * (this.roomDataArray[posX][posY].bricks);
     }
 }

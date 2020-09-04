@@ -8,8 +8,8 @@ export {karel};
 class karel{
     /**
      * Connects the object of the robot to the given scene where it should be drawn and to given room where it should operate
-     * @param {*} scene is th   console.log("bing");e scene to be draw to
-     * @param {*} room is the room in which tre robot will operate
+     * @param {scene} scene is th   console.log("bing");e scene to be draw to
+     * @param {room} room is the room in which tre robot will operate
      */
     constructor(scene, room){
         this.scene = scene;
@@ -42,7 +42,7 @@ class karel{
     }
     /**
      * Sets Karel to specified language (just the keywords)
-     * @param {*} language is the language name (now "czech" and "english")
+     * @param {string} language is the language name (now "czech" and "english")
      */
     languageSetter(language){
         this.langPack = [];
@@ -125,106 +125,97 @@ class karel{
      * Makes step in a given direction, also controls to not get out of the room and for step height limitation
      */
     goForward(){
-        const maxStepUp = 1;
-        switch(this.orientation){
-            case 0:
-                if(this.positionY > 0 && 
-                    this.room.roomDataArray[this.positionX][this.positionY].blocks + maxStepUp >= 
-                    this.room.roomDataArray[this.positionX][this.positionY - 1].blocks){
-                   this.positionY--;
-                   this.graphicalObject.position.z -= (this.room.blockSize + this.room.blockGap); 
-                   this.correctHeight();
-               }
-               break;
-            case 1:
-                if(this.positionX < this.room.roomDataArray.length - 1 && 
-                    this.room.roomDataArray[this.positionX][this.positionY].blocks + maxStepUp >= 
-                    this.room.roomDataArray[this.positionX + 1][this.positionY].blocks){
-                    this.positionX++;
-                    this.graphicalObject.position.x += (this.room.blockSize + this.room.blockGap);
-                    this.correctHeight();
-                }
-                break;
-            case 2:
-                if(this.positionY < this.room.roomDataArray[this.positionX].length - 1 && 
-                    this.room.roomDataArray[this.positionX][this.positionY].blocks + maxStepUp >= 
-                    this.room.roomDataArray[this.positionX][this.positionY + 1].blocks){
-                    this.positionY++;
-                    this.graphicalObject.position.z += (this.room.blockSize + this.room.blockGap);
-                    this.correctHeight();
-                }
-                break;
-            case 3:
-                if(this.positionX > 0 && 
-                    this.room.roomDataArray[this.positionX][this.positionY].blocks + maxStepUp >= 
-                    this.room.roomDataArray[this.positionX - 1][this.positionY].blocks){
-                    this.positionX--;
-                    this.graphicalObject.position.x -= (this.room.blockSize + this.room.blockGap);
-                    this.correctHeight();
-                }
-                break;
+        const maxStepUp = 1; // number of bricks that Karel can climb
+        if(!this.isWall()){
+            switch(this.orientation){
+                case 0:
+                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + maxStepUp >= 
+                        this.room.roomDataArray[this.positionX][this.positionY - 1].bricks){
+                       this.positionY--;
+                       this.graphicalObject.position.z -= (this.room.blockSize + this.room.blockGap); 
+                       this.correctHeight();
+                   }
+                   break;
+                case 1:
+                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + maxStepUp >= 
+                        this.room.roomDataArray[this.positionX + 1][this.positionY].bricks){
+                        this.positionX++;
+                        this.graphicalObject.position.x += (this.room.blockSize + this.room.blockGap);
+                        this.correctHeight();
+                    }
+                    break;
+                case 2:
+                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + maxStepUp >= 
+                        this.room.roomDataArray[this.positionX][this.positionY + 1].bricks){
+                        this.positionY++;
+                        this.graphicalObject.position.z += (this.room.blockSize + this.room.blockGap);
+                        this.correctHeight();
+                    }
+                    break;
+                case 3:
+                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + maxStepUp >= 
+                        this.room.roomDataArray[this.positionX - 1][this.positionY].bricks){
+                        this.positionX--;
+                        this.graphicalObject.position.x -= (this.room.blockSize + this.room.blockGap);
+                        this.correctHeight();
+                    }
+                    break;
+            }
         }
     }
     /**
      * Corrects the height of the graphical object of the robot
      */
     correctHeight(){
-       this.graphicalObject.position.y = 0.55 + this.room.placeBlockThickness * this.room.roomDataArray[this.positionX][this.positionY].blocks;
+       this.graphicalObject.position.y = 0.55 + this.room.brickThickness * this.room.roomDataArray[this.positionX][this.positionY].bricks;
     }
     /**
-     * Places block in front of the robot.
+     * Places brick in front of the robot.
      * Checks for room limitations.
      */
-    placeBlock(){
-        switch(this.orientation){
-            case 0:
-                if(this.positionY > 0){
-                    this.room.addBlockToPos(this.positionX, this.positionY - 1);
-               }
-               break;
-            case 1:
-                if(this.positionX < this.room.roomDataArray.length - 1){
-                    this.room.addBlockToPos(this.positionX + 1, this.positionY);
-                }
-                break;
-            case 2:
-                if(this.positionY < this.room.roomDataArray[this.positionX].length - 1){
-                    this.room.addBlockToPos(this.positionX, this.positionY + 1);
-                }
-                break;
-            case 3:
-                if(this.positionX > 0){
-                    this.room.addBlockToPos(this.positionX - 1, this.positionY);
-                }
-                break;
+    placeBrick(){
+        if(!this.isWall()){
+            switch(this.orientation){
+                case 0:
+                    this.room.addBrickToPos(this.positionX, this.positionY - 1);
+                    break;
+                case 1:
+                    this.room.addBrickToPos(this.positionX + 1, this.positionY);
+                    break;
+                case 2:
+                    this.room.addBrickToPos(this.positionX, this.positionY + 1);
+                    break;
+                case 3:
+                    this.room.addBrickToPos(this.positionX - 1, this.positionY);
+                    break;
+            }
+        } else {
+            console.log("PlB error - cannot place brick to wall")
         }
+        
     }
     /**
-     * Picks up block in front of the robot
+     * Picks up brick in front of the robot
      * Checks for room limitation
      */
-    pickUpBlock(){
-        switch(this.orientation){
-            case 0:
-                if(this.positionY > 0){
-                    this.room.removeBlockFromPos(this.positionX, this.positionY - 1);
-               }
-               break;
-            case 1:
-                if(this.positionX < this.room.roomDataArray.length - 1){
-                    this.room.removeBlockFromPos(this.positionX + 1, this.positionY);
-                }
-                break;
-            case 2:
-                if(this.positionY < this.room.roomDataArray[this.positionX].length - 1){
-                    this.room.removeBlockFromPos(this.positionX, this.positionY + 1);
-                }
-                break;
-            case 3:
-                if(this.positionX > 0){
-                    this.room.removeBlockFromPos(this.positionX - 1, this.positionY);
-                }
-                break;
+    pickUpBrick(){
+        if(!this.isWall){
+            switch(this.orientation){
+                case 0:
+                    this.room.removeBrickFromPos(this.positionX, this.positionY - 1);
+                    break;
+                case 1:
+                    this.room.removeBrickFromPos(this.positionX + 1, this.positionY);
+                    break;
+                case 2:
+                    this.room.removeBrickFromPos(this.positionX, this.positionY + 1);
+                    break;
+                case 3:
+                    this.room.removeBrickFromPos(this.positionX - 1, this.positionY);
+                    break;
+            }
+        } else {
+            console.log("PiB error - cannot pic up outside the room");
         }
     }
     /**
@@ -279,13 +270,13 @@ class karel{
         }
         switch(this.orientation){
             case 0:
-                return this.room.roomDataArray[this.positionX][this.positionY - 1].blocks > 0;
+                return this.room.roomDataArray[this.positionX][this.positionY - 1].bricks > 0;
             case 1:
-                return this.room.roomDataArray[this.positionX + 1][this.positionY].blocks > 0;
+                return this.room.roomDataArray[this.positionX + 1][this.positionY].bricks > 0;
             case 2:
-                return this.room.roomDataArray[this.positionX][this.positionY + 1].blocks > 0;
+                return this.room.roomDataArray[this.positionX][this.positionY + 1].bricks > 0;
             case 3:
-                return this.room.roomDataArray[this.positionX - 1][this.positionY].blocks > 0;
+                return this.room.roomDataArray[this.positionX - 1][this.positionY].bricks > 0;
         }
     }
 
@@ -298,20 +289,19 @@ class karel{
 
     /**
      * Executes the code written in editor
-     * @param {*} editor is the editor which contains the code to be executed
+     * @param {editor} editor is the editor which contains the code to be executed
      * TODO - make it work - redo udelej
      */
     async interpretTextCode(editor){
         var n = editor.selection.getCursor().row;
-        var code = editor.getValue();
-        code = code.match(/[^\n]+/g); //cuts the whole string in the editor to words
+        var code = editor.getValue().match(/[^\n]+/g); //cuts the whole string in the editor to words
+        for(var i = 0 ; i < code.lenght; i ++){
+            code[i] = code[i].trim();
+        }
         if(this.textSyntaxChecker(code)){
-            // rolls the code pointer to the begining of function which was selected to be executed
-            for(var i = 0 ; i < code.lenght; i ++){
-                code[i] = code[i].trim();
-            }
+            var activeCounters = []; //used for DO loops
             var words = code[n].match(/[^\ ]+/g);
-            while(words[0] != this.langPack.function){
+            while(words[0] != this.langPack.function){      // rolls the code pointer to the begining of function which was selected to be executed
                 n --;
                 if(n < 0 || code[n] == this.langPack.end){
                     console.log("ITC error - function to be executed not found");
@@ -319,8 +309,6 @@ class karel{
                 }
                 words = code[n].match(/[^\ ]+/g);
             }
-            // primitive function to execute the code
-            var activeCounters = []; //used for DO loops
             while(true){
                 editor.gotoLine(n + 1);
                 words = code[n].match(/[^\ ]+/g);
@@ -329,7 +317,7 @@ class karel{
                         case this.langPack.function:
                             i++; //skip the name of the function
                             break;
-                        case this.langPack.end: //never happen
+                        case this.langPack.end:
                             return;
                         case this.langPack.forward:
                             this.goForward();
@@ -341,10 +329,10 @@ class karel{
                             this.turnLeft();
                             break;
                         case this.langPack.place:
-                            this.placeBlock();
+                            this.placeBrick();
                             break;
                         case this.langPack.pick:
-                            this.pickUpBlock();
+                            this.pickUpBrick();
                             break;
                         case this.langPack.placeMark:
                             this.markOn();
@@ -353,12 +341,12 @@ class karel{
                             this.markOff();
                             break;
                         case this.langPack.do:
-                            if(parseInt(words[1] == 0)){
+                            if(parseInt(words[1]) == 0){
                                 n = this.codeJumper(this.langPack.do, false, code, n);
                             } else {
-                                activeCounters.push(words[1]);
-                                i += 2;  
+                                activeCounters.push(words[1]); 
                             }
+                            i += 2; // skips number and times
                             break;
                         case "*" + this.langPack.do:
                             activeCounters[activeCounters.length - 1]--;
@@ -372,7 +360,7 @@ class karel{
                             if(!this.checkCondition(words[1], words[2])){
                                 n = this.codeJumper(this.langPack.while, false, code, n);
                             }
-                            i += 2;
+                            i += 2; // skips condition prefix and name
                             break;
                         case "*" + this.langPack.while:
                             n = this.codeJumper(this.langPack.while, true, code, n) - 1;
@@ -381,7 +369,7 @@ class karel{
                             if(!this.checkCondition(words[1], words[2])){
                                 n = this.codeJumper(this.langPack.if, false, code, n);
                             }
-                            i += 2;
+                            i += 2; // skips condition prefix and name
                             break;
                         case this.langPack.else:
                             n = this.codeJumper(this.langPack.if, false, code, n);
@@ -390,7 +378,15 @@ class karel{
                         case "*" + this.langPack.if:
                             break;
                         default:
-                            console.log("ITC error - weird word - " + words[i]);
+                            for(var j = 0; j < this.commandList.length; j++){
+                                if(this.commandList[j][0] == words[i]){
+                                    //do this command
+                                    console.log("command detected - not implemented yet though :(");
+                                    // TODO - implement jump to other programs
+                                    break;
+                                }
+                            }
+                            console.log("ITC error - unexpected word - " + words[i]);
                     }
                 }
                 n++;
@@ -403,7 +399,7 @@ class karel{
 
     /**
      * Checks syntax of given code
-     * @param {*} code code to be checked
+     * @param {Array} code code to be checked
      * TODO - add while anf if structures
      */
     textSyntaxChecker(code){
@@ -413,7 +409,7 @@ class karel{
         this.conditionList = [];
         for(var i = 0; i < code.length; i++){
             var line = code[i].trim();
-            if(line.indexOf(' ') > 0){
+            if(line.indexOf(' ') > 0){ // split done so i can tell if lane have more then one command, some Karel's commands must be alone on line
                 // mutiple commansd on one line, function, condition, loops (for, while), if
                 var words = line.match(/[^\ ]+/g);
                 for(var j = 0; j < words.lenght; j++){
@@ -423,19 +419,19 @@ class karel{
                     case this.langPack.function:
                         // begin of command definition
                         if(words.length != 2 || inDefinition){
-                            // correct number of arguments
+                            // correct number of arguments - FUNCTION
                             console.log("TSC error - wrong funcion definition at line " + i);
                             return false;
                         }
                         for(var j = 0; j < this.commandList.length; j++){
-                            // redefinition of user defined command
+                            // redefinition of user defined command - FUNCTION     TODO - add condition name check ??
                             if(this.commandList[j][0] == words[1]){
                                 console.log("TSC error - redefiniton of command at line " + i);
                                 return false;
                             }
                         }
                         for(var j = 0; j < this.langPack.reservedWords.length; j++){
-                            // definition of command name from reserved list
+                            // definition of command name from reserved list - FUNCTION
                             if(this.langPack.reservedWords[j] == words[1]){
                                 console.log("TSC error - redefinition of reserved command at line " + i);
                                 return false;
@@ -445,21 +441,21 @@ class karel{
                         inDefinition = true;
                         break;
                     case this.langPack.condition:
-                        // begin of condition definition
+                        // begin of condition definition - CONDITION
                         if(words.length != 2 || inDefinition){
                             // correct number of arguments
                             console.log("TSC error - wrong funcion definition at line " + i);
                             return false;
                         }
-                        for(var j = 0; j < this.commandList.length; j++){
-                            // redefinition of user defined condition
-                            if(this.commandList[j][0] == words[1]){
+                        for(var j = 0; j < this.conditionList.length; j++){
+                            // redefinition of user defined condition - CONDITION   TODO - add command name check ??
+                            if(this.conditionList[j][0] == words[1]){
                                 console.log("TSC error - redefiniton of command at line " + i);
                                 return false;
                             }
                         }
                         for(var j = 0; j < this.langPack.reservedWords.length; j++){
-                            // definition of condition name from reserved list
+                            // definition of condition name from reserved list - CONDITION
                             if(this.langPack.reservedWords[j] == words[1]){
                                 console.log("TSC error - redefinition of reserved command at line " + i);
                                 return false;
@@ -469,6 +465,7 @@ class karel{
                         inDefinition = true;
                         break;
                     case this.langPack.do:
+                        // checking number of arguments and what are they - DO LOOP
                         if(words.length != 3 || words[2] != this.langPack.times || isNaN(parseInt(words[1]))){
                             console.log("TSC error - wrong DO definition at line " + i);
                             return false;
@@ -476,10 +473,12 @@ class karel{
                         activeStructures.push(this.langPack.do);
                         break;
                     case this.langPack.while:
+                        // checking number of arguments and what are they - WHILE LOOP
                         if(words.length != 3 || ![this.langPack.is, this.langPack.isNot].includes(words[1])){
                             console.log("TSC error - wrong WHILE definiton at line " + i);
                             return false;
                         }
+                        // checking if the condition is defined - IF STATEMENT
                         if(![this.langPack.wall, this.langPack.brick, this.langPack.mark].includes(words[2])){
                             var found = false;
                             for(var j = 0; j < this.conditionList.lenght; j++){
@@ -496,10 +495,12 @@ class karel{
                         activeStructures.push(this.langPack.while);
                         break;
                     case this.langPack.if:
+                        // checking number of arguments and what are they - IF STATEMENT
                         if(words.length != 3 || ![this.langPack.is, this.langPack.isNot].includes(words[1])){
                             console.log("TSC error - wrong IF definition at line " + i);
                             return false;
                         }
+                        // checking if the condition is defined - IF STATEMENT
                         if(![this.langPack.wall, this.langPack.brick, this.langPack.mark].includes(words[2])){
                             var found = false;
                             for(var j = 0; j < this.conditionList.lenght; j++){
@@ -524,7 +525,7 @@ class karel{
                         break;
                     default:
                         console.log("TSC warning - uncomplete state entered at line " + i);
-                        // words that cannot be here - konec, podminka, prikaz, udelej (all)
+                        // words that cannot be here - konec, podminka, prikaz, udelej (all) ... 
                         // search if Karel knows these commands
                 }
             } else {
@@ -599,26 +600,23 @@ class karel{
         return true;
     }
 
+    /**
+     * Evaluates a given condition
+     * @param {string} prefix is the Karel prefix of condition (is/isnt)
+     * @param {string} condition is the condition itself
+     * TODO - user defined conditions
+     */
     checkCondition(prefix, condition){
         // karel is while true
         if(prefix == this.langPack.is){
             // true line
             switch(condition){
                 case this.langPack.wall:
-                    if(this.isWall()){
-                        return true;
-                    }
-                    break;
+                    return this.isWall();
                 case this.langPack.brick:
-                    if(this.isBrick()){
-                        return true;
-                    }
-                    break;
+                    return this.isBrick();
                 case this.langPack.mark:
-                    if(this.isMark()){
-                        return true;
-                    }
-                    break;
+                    return this.isMark();
                 default:
                     // TODO - user defined conditions from conditionList
             }
@@ -626,20 +624,11 @@ class karel{
             // not line
             switch(condition){
                 case this.langPack.wall:
-                    if(!this.isWall()){
-                        return true;
-                    }
-                    break;
+                    return !this.isWall();
                 case this.langPack.brick:
-                    if(!this.isBrick()){
-                        return true;
-                    }
-                    break;
+                    return !this.isBrick();
                 case this.langPack.mark:
-                    if(!this.isMark()){
-                        return true;
-                    }
-                    break;
+                    return !this.isMark()
                 default:
                     // TODO - user defined conditions from conditionList
             }
@@ -647,6 +636,13 @@ class karel{
         return false;
     }
 
+    /**
+     * Makes a specified jump in the code, have special sence for IF constructions
+     * @param {string} command is the comand which tells the type of jump
+     * @param {boolean} up if true, jumps up, otherwise down
+     * @param {array} code is the array of strings of the code
+     * @param {number} pos is the actual position in the code
+     */
     codeJumper(command, up, code, pos){
         var numSkip = 0;
         if(command == this.langPack.if){
@@ -658,7 +654,7 @@ class karel{
                 } else if(words[0] == "*" + command && numSkip > 0){
                     numSkip--;
                 } else if((words[0] == this.langPack.else && numSkip == 0) || (words[0] == "*" + command && numSkip == 0)){
-                    return pos - 1;
+                    return pos;
                 }
             }
         }
@@ -668,12 +664,10 @@ class karel{
                 var words = code[pos].match(/[^\ ]+/g);
                 if(words[0] == "*" + command){
                     numSkip++;
-                } else if(words[0] == command){
-                    if(numSkip > 0){
-                        numSkip--;
-                    }else{
-                        return pos;
-                    }
+                } else if(words[0] == command && numSkip > 0){
+                    numSkip--;
+                } else if(words[0] == command && numSkip == 0){
+                    return pos;
                 }
             }
         } else {
@@ -682,12 +676,10 @@ class karel{
                 var words = code[pos].match(/[^\ ]+/g);
                 if(words[0] == command){
                     numSkip++;
-                } else if(words[0] == "*" + command){
-                    if(numSkip > 0){
-                        numSkip--;
-                    }else{
-                        return pos;
-                    }
+                } else if(words[0] == "*" + command && numSkip > 0){
+                    numSkip--;
+                } else if(words[0] == "*" + command && numSkip == 0){
+                    return pos;
                 }
             }
         }
