@@ -69,9 +69,11 @@ class karel{
                 this.langPack.if = "kdyz";
                 this.langPack.then = "tak";
                 this.langPack.else = "jinak";
+                this.langPack.true = "pravda";
+                this.langPack.false = "nepravda";
                 this.langPack.reservedWords = ["prikaz", "podminka", "konec", "krok", "vpravo",
                     "vlevo", "poloz", "zvedni", "oznac", "odznac", "udelej", "krat", "dokud", "je",
-                    "neni", "zed", "cihla", "znacka", "kdyz", "tak", "jinak"];
+                    "neni", "zed", "cihla", "znacka", "kdyz", "tak", "jinak", "pravda", "nepravda"];
                 break;
             case "english":
                 this.langPack.function = "function";
@@ -95,9 +97,11 @@ class karel{
                 this.langPack.if = "if";
                 this.langPack.then = "then";
                 this.langPack.else = "else";
+                this.langPack.true = "true";
+                this.langPack.false = "false";
                 this.langPack.reservedWords = ["function", "condition", "end", "step", "right", 
                     "left", "place", "pick", "mark", "unmark", "do", "times", "while", "is", "isnt",
-                    "wall", "brick", "mark", "if", "then", "else"];
+                    "wall", "brick", "mark", "if", "then", "else", "true", "false"];
                 break;
         }
     }
@@ -290,7 +294,6 @@ class karel{
     /**
      * Executes the code written in editor
      * @param {editor} editor is the editor which contains the code to be executed
-     * TODO - make it work - redo udelej
      */
     async interpretTextCode(editor){
         var n = editor.selection.getCursor().row;
@@ -300,8 +303,10 @@ class karel{
         }
         if(this.textSyntaxChecker(code)){
             var activeCounters = []; //used for DO loops
+            var programQueue = [];  //used to jump to other programs and return back (saves position from which was jumped)
+            var lastConditionResult = "undef";
             var words = code[n].match(/[^\ ]+/g);
-            while(words[0] != this.langPack.function){      // rolls the code pointer to the begining of function which was selected to be executed
+            while(words[0] != this.langPack.function && words[0] != this.langPack.condition){      // rolls the code pointer to the begining of function which was selected to be executed
                 n --;
                 if(n < 0 || code[n] == this.langPack.end){
                     console.log("ITC error - function to be executed not found");
@@ -315,10 +320,18 @@ class karel{
                 for(var i = 0; i < words.length; i++){ //weird stuff happening with this approach. Need to be redesigned
                     switch(words[i]){
                         case this.langPack.function:
-                            i++; //skip the name of the function
+                        case this.langPack.condition:
+                            i++; //skip the name of the function or condition
                             break;
                         case this.langPack.end:
-                            return;
+                            if(programQueue.length == 0){
+                                return;
+                            } else 
+                            {
+                                n = programQueue[programQueue.length - 1] - 1; //in next step the N will be incremented so we need to substract the addition to maintain the correct jump
+                                programQueue.pop();
+                            }
+                            break;
                         case this.langPack.forward:
                             this.goForward();
                             break;
@@ -357,8 +370,27 @@ class karel{
                             }
                             break;
                         case this.langPack.while:
-                            if(!this.checkCondition(words[1], words[2])){
-                                n = this.codeJumper(this.langPack.while, false, code, n);
+                            if([this.langPack.wall, this.langPack.brick, this.langPack.mark].includes(words[2])){
+                                if(!this.checkBaseCondition(words[1], words[2])){
+                                    n = this.codeJumper(this.langPack.while, false, code, n);
+                                }
+                            } else {
+                                if(lastConditionResult == "undef"){
+                                    var found = false;
+                                    for(var j = 0; j < this.conditionList.length; j++){
+                                        if(words[2] == this.conditionList[j][0]){
+                                            found = true;
+                                            programQueue.push(n);
+                                            n = this.conditionList[j][1];
+                                        }
+                                    }
+                                } else {
+                                    if((lastConditionResult == false && words[1] == this.langPack.is) || 
+                                        (lastConditionResult == true && words[1] == this.langPack.isNot)){
+                                        n = this.codeJumper(this.langPack.while, false, code, n);
+                                    }
+                                    lastConditionResult = "undef";
+                                }
                             }
                             i += 2; // skips condition prefix and name
                             break;
@@ -366,8 +398,27 @@ class karel{
                             n = this.codeJumper(this.langPack.while, true, code, n) - 1;
                             break;
                         case this.langPack.if:
-                            if(!this.checkCondition(words[1], words[2])){
-                                n = this.codeJumper(this.langPack.if, false, code, n);
+                            if([this.langPack.wall, this.langPack.brick, this.langPack.mark].includes(words[2])){
+                                if(!this.checkBaseCondition(words[1], words[2])){
+                                    n = this.codeJumper(this.langPack.if, false, code, n);
+                                }
+                            } else {
+                                if(lastConditionResult == "undef"){
+                                    var found = false;
+                                    for(var j = 0; j < this.conditionList.length; j++){
+                                        if(words[2] == this.conditionList[j][0]){
+                                            found = true;
+                                            programQueue.push(n);
+                                            n = this.conditionList[j][1];
+                                        }
+                                    }
+                                } else {
+                                    if((lastConditionResult == false && words[1] == this.langPack.is) || 
+                                        (lastConditionResult == true && words[1] == this.langPack.isNot)){
+                                        n = this.codeJumper(this.langPack.while, false, code, n);
+                                    }
+                                    lastConditionResult = "undef";
+                                }
                             }
                             i += 2; // skips condition prefix and name
                             break;
@@ -377,30 +428,38 @@ class karel{
                         case this.langPack.then:
                         case "*" + this.langPack.if:
                             break;
+                        case this.langPack.true:
+                            lastConditionResult = true;
+                            break;
+                        case this.langPack.false:
+                            lastConditionResult = false;
+                            break;
                         default:
+                            var found = false;
                             for(var j = 0; j < this.commandList.length; j++){
                                 if(this.commandList[j][0] == words[i]){
                                     //do this command
-                                    console.log("command detected - not implemented yet though :(");
-                                    // TODO - implement jump to other programs
+                                    // TODO - also save the position in the line for better jumps
+                                    programQueue.push(n);
+                                    n = this.commandList[j][1];
+                                    found = true;
                                     break;
                                 }
                             }
-                            console.log("ITC error - unexpected word - " + words[i]);
+                            if(!found){
+                                console.log("ITC error - unexpected word - " + words[i]);
+                            }
                     }
                 }
                 n++;
                 await sleep(125);
             }
         }
-        //console.log(this.commandList);
-        //console.log(activeCounters);
     }
 
     /**
      * Checks syntax of given code
      * @param {Array} code code to be checked
-     * TODO - add while anf if structures
      */
     textSyntaxChecker(code){
         var inDefinition = false; // looking for end of definition
@@ -481,8 +540,8 @@ class karel{
                         // checking if the condition is defined - IF STATEMENT
                         if(![this.langPack.wall, this.langPack.brick, this.langPack.mark].includes(words[2])){
                             var found = false;
-                            for(var j = 0; j < this.conditionList.lenght; j++){
-                                if(words[2] == this.conditionList[j]){
+                            for(var j = 0; j < this.conditionList.length; j++){
+                                if(words[2] == this.conditionList[j][0]){
                                     found = true;
                                 }
                             }
@@ -503,8 +562,8 @@ class karel{
                         // checking if the condition is defined - IF STATEMENT
                         if(![this.langPack.wall, this.langPack.brick, this.langPack.mark].includes(words[2])){
                             var found = false;
-                            for(var j = 0; j < this.conditionList.lenght; j++){
-                                if(words[2] == this.conditionList[j]){
+                            for(var j = 0; j < this.conditionList.length; j++){
+                                if(words[2] == this.conditionList[j][0]){
                                     found = true;
                                 }
                             }
@@ -601,12 +660,11 @@ class karel{
     }
 
     /**
-     * Evaluates a given condition
+     * Evaluates a given basic condition
      * @param {string} prefix is the Karel prefix of condition (is/isnt)
      * @param {string} condition is the condition itself
-     * TODO - user defined conditions
      */
-    checkCondition(prefix, condition){
+    checkBaseCondition(prefix, condition){
         // karel is while true
         if(prefix == this.langPack.is){
             // true line
@@ -617,8 +675,6 @@ class karel{
                     return this.isBrick();
                 case this.langPack.mark:
                     return this.isMark();
-                default:
-                    // TODO - user defined conditions from conditionList
             }
         } else {
             // not line
@@ -628,9 +684,6 @@ class karel{
                 case this.langPack.brick:
                     return !this.isBrick();
                 case this.langPack.mark:
-                    return !this.isMark()
-                default:
-                    // TODO - user defined conditions from conditionList
             }
         }
         return false;
