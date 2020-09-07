@@ -28,13 +28,12 @@ class karel{
         // graphical object of Karel
         const geometry = new THREE.BoxGeometry(this.room.blockSize, this.room.blockSize, this.room.blockSize); 
         const material = [
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}),
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}),
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}),
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}),
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}),
-            new THREE.MeshBasicMaterial({color : 0x0073ff}), //front side
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}),
+            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //right side
+            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //left side
+            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //top side
+            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //bottom side
+            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //front side
+            new THREE.MeshBasicMaterial({color : 0x0073ff}), //back side
         ]
         this.graphicalObject = new THREE.Mesh(geometry, material);
         this.scene.add(this.graphicalObject);
@@ -203,7 +202,7 @@ class karel{
      * Checks for room limitation
      */
     pickUpBrick(){
-        if(!this.isWall){
+        if(!this.isWall()){
             switch(this.orientation){
                 case 0:
                     this.room.removeBrickFromPos(this.positionX, this.positionY - 1);
@@ -250,7 +249,7 @@ class karel{
 
     /**
      * Tells if the robot looks directly to the wall
-     * TODO add placable walls
+     * TODO - add placable walls (if karel cant go (more then 1 brick step) => wall ??)
      */
     isWall(){
         switch(this.orientation){
@@ -329,6 +328,7 @@ class karel{
                             } else 
                             {
                                 n = programQueue[programQueue.length - 1] - 1; //in next step the N will be incremented so we need to substract the addition to maintain the correct jump
+                                //TODO - do not work propperly
                                 programQueue.pop();
                             }
                             break;
@@ -440,7 +440,7 @@ class karel{
                                 if(this.commandList[j][0] == words[i]){
                                     //do this command
                                     // TODO - also save the position in the line for better jumps
-                                    programQueue.push(n);
+                                    programQueue.push(n + 1); //not sure if correct
                                     n = this.commandList[j][1];
                                     found = true;
                                     break;
