@@ -6,7 +6,6 @@ import {karel} from './source/karel.js'
 import {room} from './source/room.js'
 import * as THREE from './three/three.module.js';
 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r119/examples/jsm/controls/OrbitControls.js';
-import * as ACE from './ace-min/ace.js';
 
 /**
  * Starting function, that creates the main structures and generate the main objects of the app
@@ -32,22 +31,22 @@ function start() {
     mainRoom.draw(controls, 8, 8);
     var mainKarel = new karel(scene, mainRoom);
     document.querySelector('#c').addEventListener('keydown', function(event) {
-    if(event.keyCode == 87) {
+    if(event.keyCode == 87 && !mainKarel.getRunning()){
             mainKarel.goForward();
         }
-        else if(event.keyCode == 68) {
+        else if(event.keyCode == 68 && !mainKarel.getRunning()){
             mainKarel.turnRight();
         }
-        else if(event.keyCode == 65){
+        else if(event.keyCode == 65 && !mainKarel.getRunning()){
             mainKarel.turnLeft();
         }
-        else if(event.keyCode == 80){
+        else if(event.keyCode == 80 && !mainKarel.getRunning()){
             mainKarel.placeBrick();
         }
-        else if(event.keyCode == 90){
+        else if(event.keyCode == 90 && !mainKarel.getRunning()){
             mainKarel.pickUpBrick();
         }
-        else if(event.keyCode == 79){
+        else if(event.keyCode == 79 && !mainKarel.getRunning()){
             mainKarel.markSwitch();
         }
     });
@@ -81,12 +80,6 @@ function start() {
 }
 
 var mainKarel = start();
-var editor = ace.edit("text_editor");
-//editor.setTheme("ace/theme/github");
-//editor.getSession().setMode("ace/mode/text");
-//editor.setTheme("ace/theme/chrome");
-//editor.setTheme("ace/theme/tommorrow");
-//editor.getSession().setMode("ace/mode/karel");
-//document.getElementById('deska').onkeydown = function(e) { 
 document.querySelector('#run').onclick = function() {mainKarel.interpretTextCode(editor)};
+document.querySelector('#stop').onclick = function() {mainKarel.stopExecuting()};
 document.querySelector('#test').onclick = function() {console.log(mainKarel.checkCondition("neni", "zed"))};

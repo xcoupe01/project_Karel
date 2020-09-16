@@ -13,12 +13,16 @@
     krok  
     poloz
 konec
+
+
 prikaz pokus2
     krok
     krok
     krok
     oznac
 konec
+
+
 prikaz udelej_pokus
     udelej 3 krat
         krok
@@ -29,12 +33,16 @@ prikaz udelej_pokus
     *udelej
     oznac
 konec
+
+
 prikaz while_test
     vpravo
     dokud neni zed
         krok
     *dokud
 konec
+
+
 prikaz test_IF
     dokud neni cihla
         kdyz je zed
@@ -46,6 +54,8 @@ prikaz test_IF
     *dokud
     pokus2
 konec
+
+
 podminka podminka1
     krok
     kdyz je cihla
@@ -60,6 +70,8 @@ podminka podminka1
     vlevo
     vlevo
 konec
+
+
 prikaz pokus_podminka
     dokud neni podminka1
         krok
@@ -71,6 +83,8 @@ prikaz pokus_podminka
             poloz
     *kdyz
 konec
+
+
 prikaz rekurze_test
     krok
     krok
@@ -87,5 +101,18 @@ konec</div>
     <script type="module" src="js/main.js"></script>
 </body>
 <input type="button" value="run" id="run">
+<input type="button" value="stop" id="stop">
 <input type="button" value="test" id="test">
+
+<script src="js/ace-min/ace.js" type="text/javascript" charset="utf-8"></script>
+
+<script>
+    var editor = ace.edit("text_editor");
+    //editor.setTheme("ace/theme/github");
+    //editor.getSession().setMode("ace/mode/text");
+    //editor.setTheme("ace/chrome");
+    //editor.setTheme("ace/theme/tommorrow");
+    editor.getSession().setMode("ace/mode/karel");
+    //document.getElementById('deska').onkeydown = function(e) { 
+</script>
 </html>

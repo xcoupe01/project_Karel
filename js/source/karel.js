@@ -16,6 +16,7 @@ class karel{
         this.room = room;
         this.commandList = []; // user defined commands list
         this.conditionList = []; // user defined condition list
+        this.running = false; // tells if Karel is executing code
     }
     /**
      * Draws, creates and sets all object and variables needed for robot
@@ -291,15 +292,24 @@ class karel{
     }
 
     /**
+     * Stops Karel from executing code
+     */
+    stopExecuting(){
+        this.running = false;
+    }
+
+    /**
      * Executes the code written in editor
      * @param {editor} editor is the editor which contains the code to be executed
      */
     async interpretTextCode(editor){
-        var n = editor.selection.getCursor().row;
-        var code = editor.getValue().match(/[^\n]+/g); //cuts the whole string in the editor to words
-        for(var i = 0 ; i < code.lenght; i ++){
-            code[i] = code[i].trim();
+        if(this.running){
+            console.log("ITC error - cannot run multiple programs at the same time");
+            return; //cannot run multiple codes at once
         }
+        this.running = true;
+        var n = editor.selection.getCursor().row;
+        var code = editor.getValue().split(/\r?\n/); //cuts the whole string in the editor to lines
         if(this.textSyntaxChecker(code)){
             var activeCounters = []; //used for DO loops
             var programQueue = [];  //used to jump to other programs and return back (saves position from which was jumped)
@@ -309,11 +319,12 @@ class karel{
                 n --;
                 if(n < 0 || code[n] == this.langPack.end){
                     console.log("ITC error - function to be executed not found");
+                    this.running = false;
                     return;
                 }
                 words = code[n].match(/[^\ ]+/g);
             }
-            while(true){
+            while(this.running){
                 editor.gotoLine(n + 1);
                 words = code[n].match(/[^\ ]+/g);
                 for(var i = 0; i < words.length; i++){ //weird stuff happening with this approach. Need to be redesigned
@@ -324,11 +335,11 @@ class karel{
                             break;
                         case this.langPack.end:
                             if(programQueue.length == 0){
+                                this.running = false;
                                 return;
                             } else 
                             {
                                 n = programQueue[programQueue.length - 1] - 1; //in next step the N will be incremented so we need to substract the addition to maintain the correct jump
-                                //TODO - do not work propperly
                                 programQueue.pop();
                             }
                             break;
@@ -434,6 +445,10 @@ class karel{
                         case this.langPack.false:
                             lastConditionResult = false;
                             break;
+                        case "#":
+                            // skip commentary - not connected yet - TODO
+                            i = words.length;
+                            break;
                         default:
                             var found = false;
                             for(var j = 0; j < this.commandList.length; j++){
@@ -455,6 +470,7 @@ class karel{
                 await sleep(125);
             }
         }
+        this.running = false;
     }
 
     /**
@@ -471,9 +487,6 @@ class karel{
             if(line.indexOf(' ') > 0){ // split done so i can tell if lane have more then one command, some Karel's commands must be alone on line
                 // mutiple commansd on one line, function, condition, loops (for, while), if
                 var words = line.match(/[^\ ]+/g);
-                for(var j = 0; j < words.lenght; j++){
-                    words[j] = words[j].trim();
-                }
                 switch(words[0]){
                     case this.langPack.function:
                         // begin of command definition
@@ -629,6 +642,9 @@ class karel{
                         break;
                     default:
                         var found = false;
+                        if(!inDefinition && line == ""){
+                            found = true;
+                        }
                         for(var j = 0; j < this.langPack.reservedWords.length; j++){
                             if(line == this.langPack.reservedWords[j]){
                                 found = true;
@@ -645,7 +661,7 @@ class karel{
                         }
                         if(!found){
                             //TODO rework so it would also scan codes lower in the text file
-                            console.log("TSC error - unknown word at line " + i);
+                            console.log("TSC error - unknown word at line " + i + " " + line);
                             return false;
                         }
                 }
@@ -736,6 +752,13 @@ class karel{
                 }
             }
         }
+    }
+
+    /**
+     * Tells if Karel is executing code
+     */
+    getRunning(){
+        return this.running;
     }
 }
 
