@@ -1,9 +1,9 @@
 # Project Karel
-## Repozitář pro projekt Karel - Vojtěch Čoupek
-
-## Repository for project Karel - Author Vojtěch Čoupek
+### Author - Vojtěch Čoupek
 
 **Last update - 16.9.2020**
+
+___
 
 Momentální stav - spustitelná alfa verze **implementace není finální**
 
@@ -22,6 +22,11 @@ Pro ovládání Karla v místnosti je potřeba kliknout do oblasti místnosti a 
 
 Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly. Pro spuštění programu klikněte v editoru do prostoru nějakého příkazu a klikněte na tlačítko `run`. Tlařítko `stop` slouží k zastavení probíhajícího příkazu. Tlačítko `test` je využito pro interní účely a nemá uživatelskou funkci a bude v budoucnu odstaněno. Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze momentálně přepnout.
 
+**Použité zdroje:**
+- ACE code editor
+- Three.js web 3D graphics
+___
+
 Current state - runable alfa version **implementation is not final**
 
 You need to run local server for Karel to function properly. Easiest way is to run PHP server with command `php -S 127.0.0.1:8080` in the project folder and you need internet connection for it to load properly.
@@ -38,4 +43,8 @@ To control Karel directly, you need to click in the Karel's room and use:
 - mouse to move camera in the room
 
 Karel can climb only one step at a time. To run any program click into any in the text field and press `run` button. Button `stop` stops current execution of program. Button `test` is reserved for internal use and currently have no user function and it will be removed in the future. At the moment you can use only czech version but english is implemented in the code and will be made as an option soon. 
+
+**Used resources:**
+- ACE code editor
+- Three.js web 3D graphics
 

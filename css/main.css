@@ -4,15 +4,20 @@ html, body {
 }
 #main {
   display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr;
   grid-template-rows: 1fr;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
 } 
-#c { 
+#roomCanvas { 
   grid-area: 1 / 1 / 2 / 2;
   width: 100%;
 }
-#text_editor { 
+#blockProgramingCanvas {
   grid-area: 1 / 2 / 2 / 3;
+  width: 100%;
+  height: 100%;
+}
+#text_editor { 
+  grid-area: 1 / 3 / 2 / 4;
 }

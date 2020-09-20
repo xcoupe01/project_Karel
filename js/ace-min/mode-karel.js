@@ -7,28 +7,15 @@ define("ace/mode/karel_highlight_rules",["require","exports","module","ace/lib/o
 var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
-var LuaHighlightRules = function() {
-    var keywords = (
-        "prikaz|konec|kdyz|tak|jinak|udelej|dokud|\*dokud|\*udelej|krat|podminka|příkaz|znamená|udělej|když|krát|podmínka"
-    );
-
+var karelHighlightRules = function() {
+    var keywords = ("prikaz|příkaz|podminka|konec|kdyz|tak|jinak|\*kdyz|udelej|udělej|\*udelej|dokud|\*dokud|\*udělej|krat");
     var builtinConstants = ("pravda|nepravda|zed|cihla|znacka|je|neni");
-
-    var functions = (
-        "krok|vlevo|vpravo|oznac|odznac|poloz|zvedni"
-    );
-
-    //var stdLibaries = ("string|package|os|io|math|debug|table|coroutine");
-
-    //var deprecatedIn5152 = ("setn|foreach|foreachi|gcinfo|log10|maxn");
+    var functions = ("krok|vlevo|vpravo|oznac|odznac|poloz|zvedni");
 
     var keywordMapper = this.createKeywordMapper({
         "keyword": keywords,
         "support.function": functions,
-       // "keyword.deprecated": deprecatedIn5152,
-       // "constant.library": stdLibaries,
         "constant.language": builtinConstants,
-       // "variable.language": "self"
     }, "identifier");
 
     var decimalInteger = "(?:(?:[1-9]\\d*)|(?:0))";
@@ -40,68 +27,11 @@ var LuaHighlightRules = function() {
     var pointFloat = "(?:(?:" + intPart + "?" + fraction + ")|(?:" + intPart + "\\.))";
     var floatNumber = "(?:" + pointFloat + ")";
 
-    this.$rules = {
-        "start" : [{
-            stateName: "bracketedComment",
-            onMatch : function(value, currentState, stack){
-                stack.unshift(this.next, value.length - 2, currentState);
-                return "comment";
-            },
-            regex : /\-\-\[=*\[/,
-            next  : [
-                {
-                    onMatch : function(value, currentState, stack) {
-                        if (value.length == stack[1]) {
-                            stack.shift();
-                            stack.shift();
-                            this.next = stack.shift();
-                        } else {
-                            this.next = "";
-                        }
-                        return "comment";
-                    },
-                    regex : /\]=*\]/,
-                    next  : "start"
-                }, {
-                    defaultToken : "comment"
-                }
-            ]
-        },
-
+    this.$rules = { //rules just for highlighting
+        "start" : [
         {
-            token : "comment",
-            regex : "\\/\\/.*$"
-        },
-        {
-            stateName: "bracketedString",
-            onMatch : function(value, currentState, stack){
-                stack.unshift(this.next, value.length, currentState);
-                return "comment";
-            },
-            regex : /\[=*\[/,
-            next  : [
-                {
-                    onMatch : function(value, currentState, stack) {
-                        if (value.length == stack[1]) {
-                            stack.shift();
-                            stack.shift();
-                            this.next = stack.shift();
-                        } else {
-                            this.next = "";
-                        }
-                        return "comment";
-                    },
-                    
-                    regex : /\]=*\]/,
-                    next  : "start"
-                }, {
-                    defaultToken : "comment"
-                }
-            ]
-        },
-        {
-            token : "string",           // " string
-            regex : '"(?:[^\\\\]|\\\\.)*?"'
+            token : "comment",          // single line comment
+            regex : "#.*$"
         }, {
             token : "constant.numeric", // float
             regex : floatNumber
@@ -109,19 +39,13 @@ var LuaHighlightRules = function() {
             token : "constant.numeric", // integer
             regex : integer + "\\b"
         }, {
-            token : keywordMapper,
-            regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+            token : keywordMapper,      //searching keywords
+            regex : "[\*a-zA-Z_$][a-zA-Z0-9_$]*\\b"
         }, {
-            token : "keyword.operator",
+            token : "keyword.operator", //operators
             regex : "\\+|\\-|\\*|\\/|%|\\#|\\^|~|<|>|<=|=>|==|~=|=|\\:|\\.\\.\\.|\\.\\."
         }, {
-            token : "paren.lparen",
-            regex : "[\\[\\(\\{]"
-        }, {
-            token : "paren.rparen",
-            regex : "[\\]\\)\\}]"
-        }, {
-            token : "text",
+            token : "text",             //text
             regex : "\\s+|\\w+"
         } ]
     };
@@ -129,9 +53,9 @@ var LuaHighlightRules = function() {
     this.normalizeRules();
 }
 
-oop.inherits(LuaHighlightRules, TextHighlightRules);
+oop.inherits(karelHighlightRules, TextHighlightRules);
 
-exports.LuaHighlightRules = LuaHighlightRules;
+exports.karelHighlightRules = karelHighlightRules;
 });
 
 define("ace/mode/folding/karel",["require","exports","module","ace/lib/oop","ace/mode/folding/fold_mode","ace/range","ace/token_iterator"], function(require, exports, module) {
@@ -192,7 +116,7 @@ oop.inherits(FoldMode, BaseFoldMode);
         var match = this.foldingStartMarker.exec(line);
         if (match) {
             if (match[1])
-                return this.luaBlock(session, row, match.index + 1);
+                return this.karelBlock(session, row, match.index + 1);
 
             if (match[2])
                 return session.getCommentFoldRange(row, match.index + 1);
@@ -204,7 +128,7 @@ oop.inherits(FoldMode, BaseFoldMode);
         if (match) {
             if (match[0] === "end") {
                 if (session.getTokenAt(row, match.index + 1).type === "keyword")
-                    return this.luaBlock(session, row, match.index + 1);
+                    return this.karelBlock(session, row, match.index + 1);
             }
 
             if (match[0][0] === "]")
@@ -214,16 +138,12 @@ oop.inherits(FoldMode, BaseFoldMode);
         }
     };
 
-    this.luaBlock = function(session, row, column) {
+    this.karelBlock = function(session, row, column) {
         var stream = new TokenIterator(session, row, column);
         var indentKeywords = {
             "prikaz": 1,
             "podminka": 1,
-            "then": 1,
-            "elseif": -1,
             "konec": -1,
-            "repeat": 1,
-            "\*opakuj": -1
         };
 
         var token = stream.getCurrentToken();
@@ -273,7 +193,7 @@ define("ace/mode/karel",["require","exports","module","ace/lib/oop","ace/mode/te
 
 var oop = require("../lib/oop");
 var TextMode = require("./text").Mode;
-var LuaHighlightRules = require("./karel_highlight_rules").LuaHighlightRules;
+var LuaHighlightRules = require("./karel_highlight_rules").karelHighlightRules;
 var LuaFoldMode = require("./folding/karel").FoldMode;
 var Range = require("../range").Range;
 //var WorkerClient = require("../worker/worker_client").WorkerClient;
@@ -287,24 +207,26 @@ oop.inherits(Mode, TextMode);
 
 (function() {
    
-    this.lineCommentStart = "--";
-    this.blockComment = {start: "--[", end: "]--"};
+    this.lineCommentStart = "#";
+    //this.blockComment = {start: "--[", end: "]--"};
     
+    // tells when the editor should automaticaly indent and dedent
     var indentKeywords = {
-        "function": 1,
-        "then": 1,
-        "do": 1,
-        "else": 1,
-        "elseif": 1,
-        "repeat": 1,
-        "end": -1,
-        "until": -1
+        "prikaz": 1,
+        "tak": 1,
+        "jinak": 1,
+        "\*kdyz": -1,
+        "dokud": 1,
+        "\*dokud": -1,
+        "udelej": 1,
+        "\*udelej": -1
     };
     var outdentKeywords = [
-        "else",
-        "elseif",
-        "end",
-        "until"
+        "konec",
+        "jinak",
+        "\*kdyz",
+        "\*dokud",
+        "\*udelej"
     ];
 
     function getNetIndentLevel(tokens) {
@@ -315,10 +237,6 @@ oop.inherits(Mode, TextMode);
                 if (token.value in indentKeywords) {
                     level += indentKeywords[token.value];
                 }
-            } else if (token.type == "paren.lparen") {
-                level += token.value.length;
-            } else if (token.type == "paren.rparen") {
-                level -= token.value.length;
             }
         }
         if (level < 0) {

@@ -6,7 +6,8 @@
 </head>
 <body>
     <div id="main">
-        <canvas id="c"></canvas>
+        <canvas id="roomCanvas"></canvas>
+        <canvas id="blockProgramingCanvas"></canvas>
         <div id="text_editor">prikaz pokus1
     vpravo
     krok  
@@ -46,10 +47,10 @@ konec
 prikaz test_IF
     dokud neni cihla
         kdyz je zed
-            tak 
-                vlevo
-            jinak 
-                krok
+        tak 
+            vlevo
+        jinak 
+            krok
         *kdyz
     *dokud
     pokus2
@@ -59,10 +60,10 @@ konec
 podminka podminka1
     krok
     kdyz je cihla
-        tak
-            pravda
-        jinak  
-            nepravda
+    tak
+        pravda
+    jinak  
+        nepravda
     *kdyz
     vlevo
     vlevo
@@ -77,10 +78,10 @@ prikaz pokus_podminka
         krok
     *dokud
     kdyz je podminka1
-        tak
-            oznac
-        jinak
-            poloz
+    tak
+        oznac
+    jinak
+        poloz
     *kdyz
 konec
 
@@ -89,23 +90,24 @@ prikaz rekurze_test
     krok
     krok
     kdyz je zed
-        tak 
-            vlevo
-            vlevo
-        jinak
-            rekurze_test
+    tak 
+        vlevo
+        vlevo
+    jinak
+        rekurze_test
     *kdyz
     krok
 konec</div>
     </div>
+    <script src="./js/pixi/pixi.min.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>
 <input type="button" value="run" id="run">
 <input type="button" value="stop" id="stop">
 <input type="button" value="test" id="test">
 
+<!-- ace settings - best works here -->
 <script src="js/ace-min/ace.js" type="text/javascript" charset="utf-8"></script>
-
 <script>
     var editor = ace.edit("text_editor");
     //editor.setTheme("ace/theme/github");
@@ -115,4 +117,5 @@ konec</div>
     editor.getSession().setMode("ace/mode/karel");
     //document.getElementById('deska').onkeydown = function(e) { 
 </script>
+
 </html>

@@ -6,13 +6,14 @@ import {karel} from './source/karel.js'
 import {room} from './source/room.js'
 import * as THREE from './three/three.module.js';
 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r119/examples/jsm/controls/OrbitControls.js';
+//import * as PIXI from './pixi/pixi.min.js';
 
 /**
  * Starting function, that creates the main structures and generate the main objects of the app
  * sets camera scene ect
  */
 function start() {
-    const canvas = document.querySelector('#c');
+    const canvas = document.querySelector('#roomCanvas');
     const renderer = new THREE.WebGLRenderer({canvas});
 
     const fov = 45;
@@ -20,17 +21,17 @@ function start() {
     const near = 0.1;
     const far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.position.set(-10, 10, -10);
+    camera.position.set(-5, 5, -5);
 
     const controls = new OrbitControls(camera, canvas);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('gray');   
+    scene.background = new THREE.Color('gray');  
 
     var mainRoom = new room(scene);
     mainRoom.draw(controls, 8, 8);
     var mainKarel = new karel(scene, mainRoom);
-    document.querySelector('#c').addEventListener('keydown', function(event) {
+    document.querySelector('#roomCanvas').addEventListener('keydown', function(event) {
     if(event.keyCode == 87 && !mainKarel.getRunning()){
             mainKarel.goForward();
         }
@@ -82,4 +83,4 @@ function start() {
 var mainKarel = start();
 document.querySelector('#run').onclick = function() {mainKarel.interpretTextCode(editor)};
 document.querySelector('#stop').onclick = function() {mainKarel.stopExecuting()};
-document.querySelector('#test').onclick = function() {console.log(mainKarel.checkCondition("neni", "zed"))};
+document.querySelector('#test').onclick = function() {console.log(mainKarel.addBlock())};
