@@ -2,22 +2,26 @@ html, body {
   margin: 0;
   height: 100%;
 }
+
 #main {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
+  width: 100%;
+  height: 90%;
 } 
+
 #roomCanvas { 
   grid-area: 1 / 1 / 2 / 2;
   width: 100%;
-}
-#blockProgramingCanvas {
-  grid-area: 1 / 2 / 2 / 3;
-  width: 100%;
   height: 100%;
 }
-#text_editor { 
+#blocklyDiv {
+  grid-area: 1 / 2 / 2 / 3;
+  position: absolute;
+}
+#textEditor { 
   grid-area: 1 / 3 / 2 / 4;
 }

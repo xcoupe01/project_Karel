@@ -35,12 +35,11 @@ class karel{
             new THREE.MeshBasicMaterial({color : 0x94a8ff}), //top side
             new THREE.MeshBasicMaterial({color : 0x94a8ff}), //bottom side
             new THREE.MeshBasicMaterial({color : 0x94a8ff}), //front side
-            new THREE.MeshBasicMaterial({color : 0x0073ff}), //back side
+            new THREE.MeshBasicMaterial({color : 0x0073ff})  //back side
         ]
         this.graphicalObject = new THREE.Mesh(geometry, material);
         this.scene.add(this.graphicalObject);
         this.graphicalObject.position.y = 0.55;
-        this.createBlockProgramer();
     }
     /**
      * Sets Karel to specified language (just the keywords)
@@ -771,61 +770,8 @@ class karel{
             }
         }
     }
-
-    createBlockProgramer(){
-        this.blockProg = new PIXI.Application({
-            view: document.querySelector("#blockProgramingCanvas"),
-            width: 600 ,//document.querySelector('#blockProgramingCanvas').width,
-            height: 600, //document.querySelector('#blockProgramingCanvas').height,
-            backgroundColor: 0x7ab4ff,
-            antialias: true
-          });
-    }
-
-    addBlock(){
-        const texture = PIXI.Texture.from('img/placeholder.png');
-        texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
-
-        const programBox = new PIXI.Sprite(texture);
-        programBox.interactive = true;
-        programBox.buttonMode = true;
-        programBox.anchor.set(0.5);
-        programBox.scale.set(0.05);
-        programBox.on('pointerdown', onDragStart)
-                .on('pointerup', onDragEnd)
-                .on('pointerupoutside', onDragEnd)
-                .on('pointermove', onDragMove);
-        programBox.x=150;
-        programBox.y=150;
-    
-        this.blockProg.stage.addChild(programBox);
-    }
 }
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function onDragStart(event) {
-    // store a reference to the data
-    // the reason for this is because of multitouch
-    // we want to track the movement of this particular touch
-    this.data = event.data;
-    this.alpha = 0.5;
-    this.dragging = true;
-}
-
-function onDragEnd() {
-    this.alpha = 1;
-    this.dragging = false;
-    // set the interaction data to null
-    this.data = null;
-}
-
-function onDragMove() {
-    if (this.dragging) {
-        const newPosition = this.data.getLocalPosition(this.parent);
-        this.x = newPosition.x;
-        this.y = newPosition.y;
-    }
 }

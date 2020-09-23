@@ -6,7 +6,6 @@ import {karel} from './source/karel.js'
 import {room} from './source/room.js'
 import * as THREE from './three/three.module.js';
 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r119/examples/jsm/controls/OrbitControls.js';
-//import * as PIXI from './pixi/pixi.min.js';
 
 /**
  * Starting function, that creates the main structures and generate the main objects of the app
@@ -21,7 +20,7 @@ function start() {
     const near = 0.1;
     const far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.position.set(-5, 5, -5);
+    camera.position.set(-10, 10, -10);
 
     const controls = new OrbitControls(camera, canvas);
 
@@ -83,4 +82,11 @@ function start() {
 var mainKarel = start();
 document.querySelector('#run').onclick = function() {mainKarel.interpretTextCode(editor)};
 document.querySelector('#stop').onclick = function() {mainKarel.stopExecuting()};
-document.querySelector('#test').onclick = function() {console.log(mainKarel.addBlock())};
+document.querySelector('#test').onclick = function() { 
+    var x = document.getElementById("textEditor");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+};

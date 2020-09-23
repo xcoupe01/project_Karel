@@ -1,11 +1,10 @@
 # Project Karel
 ### Author - Vojtěch Čoupek
 
-**Last update - 16.9.2020**
+**Last update - 23.9.2020**
 
 ___
 
-Momentální stav - spustitelná alfa verze **implementace není finální**
 
 Je potřeba spouštět přes lokální server, nejlépe v adresáři projektu spustit server pomocí PHP přes command `php -S 127.0.0.1:8080` a prozatím je potřeba mít dostupný internet pro stuštění.
 Grafika obsahuje placeholder objekty, opravdové modely budou doplněny v budoucnu.
@@ -20,14 +19,14 @@ Pro ovládání Karla v místnosti je potřeba kliknout do oblasti místnosti a 
 - `Z` pro zvednutí cihly 
 - myší lze pohybovat kamerou v místnosti. 
 
-Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly. Pro spuštění programu klikněte v editoru do prostoru nějakého příkazu a klikněte na tlačítko `run`. Tlařítko `stop` slouží k zastavení probíhajícího příkazu. Tlačítko `test` je využito pro interní účely a nemá uživatelskou funkci a bude v budoucnu odstaněno. Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze momentálně přepnout.
+Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly. Pro spuštění programu klikněte v editoru do prostoru nějakého příkazu a klikněte na tlačítko `run`. Tlařítko `stop` slouží k zastavení probíhajícího příkazu. Tlačítko `test` je využito pro interní účely a nemá uživatelskou funkci a bude v budoucnu odstaněno. Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze momentálně přepnout. Momentálně implementovaná verze blokového programování není zatím interpretovatelná, jedná se pouze o prototyp.
 
 **Použité zdroje:**
 - ACE code editor
 - Three.js web 3D graphics
+- Blockly programming
 ___
 
-Current state - runable alfa version **implementation is not final**
 
 You need to run local server for Karel to function properly. Easiest way is to run PHP server with command `php -S 127.0.0.1:8080` in the project folder and you need internet connection for it to load properly.
 Graphics contains placeholder objects for now, real models will be added in the future.
@@ -42,9 +41,10 @@ To control Karel directly, you need to click in the Karel's room and use:
 - `Z` to pick up brick
 - mouse to move camera in the room
 
-Karel can climb only one step at a time. To run any program click into any in the text field and press `run` button. Button `stop` stops current execution of program. Button `test` is reserved for internal use and currently have no user function and it will be removed in the future. At the moment you can use only czech version but english is implemented in the code and will be made as an option soon. 
+Karel can climb only one step at a time. To run any program click into any in the text field and press `run` button. Button `stop` stops current execution of program. Button `test` is reserved for internal use and currently have no user function and it will be removed in the future. At the moment you can use only czech version but english is implemented in the code and will be made as an option soon. Current block programing cannot be interpreted by the robot its just a prototype.
 
 **Used resources:**
 - ACE code editor
 - Three.js web 3D graphics
+- Blockly programming
 
