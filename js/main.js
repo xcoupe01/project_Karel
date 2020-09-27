@@ -2,10 +2,11 @@
 // Three.js - Load .OBJ - ?
 // from https://threejsfundamentals.org/threejs/threejs-load-obj-wat.html
 
-import {karel} from './source/karel.js'
-import {room} from './source/room.js'
+import {karel} from './source/karel.js';
+import {room} from './source/room.js';
 import * as THREE from './three/three.module.js';
 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r119/examples/jsm/controls/OrbitControls.js';
+import {interpret} from './source/interpret.js';
 
 /**
  * Starting function, that creates the main structures and generate the main objects of the app
@@ -31,28 +32,29 @@ function start() {
     mainRoom.draw(controls, 8, 8);
     var mainKarel = new karel(scene, mainRoom);
     document.querySelector('#roomCanvas').addEventListener('keydown', function(event) {
-    if(event.keyCode == 87 && !mainKarel.getRunning()){
+    if(event.keyCode == 87){
             mainKarel.goForward();
         }
-        else if(event.keyCode == 68 && !mainKarel.getRunning()){
+        else if(event.keyCode == 68){
             mainKarel.turnRight();
         }
-        else if(event.keyCode == 65 && !mainKarel.getRunning()){
+        else if(event.keyCode == 65){
             mainKarel.turnLeft();
         }
-        else if(event.keyCode == 80 && !mainKarel.getRunning()){
+        else if(event.keyCode == 80){
             mainKarel.placeBrick();
         }
-        else if(event.keyCode == 90 && !mainKarel.getRunning()){
+        else if(event.keyCode == 90){
             mainKarel.pickUpBrick();
         }
-        else if(event.keyCode == 79 && !mainKarel.getRunning()){
+        else if(event.keyCode == 79){
             mainKarel.markSwitch();
         }
     });
 
     mainKarel.draw();
-    mainKarel.languageSetter("czech");
+
+    var mainInterpret =  new interpret(editor, mainKarel);
 
     function resizeRendererToDisplaySize(renderer) {
         const canvas = renderer.domElement;
@@ -76,17 +78,70 @@ function start() {
     }
 
   requestAnimationFrame(render);
-  return mainKarel;
+  return mainInterpret;
 }
 
-var mainKarel = start();
-document.querySelector('#run').onclick = function() {mainKarel.interpretTextCode(editor)};
-document.querySelector('#stop').onclick = function() {mainKarel.stopExecuting()};
+// ACE settings
+var editor = ace.edit("textEditor");
+//editor.setTheme("ace/theme/github");
+//editor.getSession().setMode("ace/mode/text");
+//editor.setTheme("ace/chrome");
+//editor.setTheme("ace/theme/tommorrow");
+editor.getSession().setMode("ace/mode/karel");
+//document.getElementById('deska').onkeydown = function(e) { 
+// ------------------------------------------------
+
+
+// Blockly settings
+var blocklyArea = document.getElementById('blocklyArea');
+var blocklyDiv = document.getElementById('blocklyDiv');
+var workspace = Blockly.inject(blocklyDiv,
+    {toolbox: document.getElementById('toolbox')});
+var onresize = function(e) {
+    // Compute the absolute coordinates and dimensions of blocklyArea.
+    var element = blocklyArea;
+    var x = 0;
+    var y = 0;
+    do {
+        x += element.offsetLeft;
+        y += element.offsetTop;
+        element = element.offsetParent;
+    } while (element);
+    // Position blocklyDiv over blocklyArea.
+    blocklyDiv.style.left = x + 'px';
+    blocklyDiv.style.top = y + 'px';
+    blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
+    blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
+    Blockly.svgResize(workspace);
+};
+window.addEventListener('resize', onresize, false);
+onresize();
+Blockly.svgResize(workspace);
+// -----------------------------
+
+
+var mainInterpret = start();
+import('./source/languages/cs.js')
+    .then((module) => {
+        mainInterpret.languageSetter(module.setLang());
+        blocklySetBlockLang(module.setLang());
+    });
+
+document.querySelector('#run').onclick = function() {mainInterpret.interpretTextCode()};
+document.querySelector('#stop').onclick = function() {mainInterpret.stopExecuting()};
 document.querySelector('#test').onclick = function() { 
+    /*
     var x = document.getElementById("textEditor");
     if (x.style.display === "none") {
         x.style.display = "block";
     } else {
         x.style.display = "none";
     }
+    */
+   //way to change languages 
+   import('./source/languages/en.js')
+    .then((module) => {
+        mainInterpret.languageSetter(module.setLang());
+        blocklySetBlockLang(module.setLang());
+    });
 };

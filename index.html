@@ -108,24 +108,14 @@ konec</div>
 <input type="button" value="test" id="test">
 
 <!-- ace settings - best works here -->
-<script src="js/ace-min/ace.js" type="text/javascript" charset="utf-8"></script>
-<script>
-    var editor = ace.edit("textEditor");
-    //editor.setTheme("ace/theme/github");
-    //editor.getSession().setMode("ace/mode/text");
-    //editor.setTheme("ace/chrome");
-    //editor.setTheme("ace/theme/tommorrow");
-    editor.getSession().setMode("ace/mode/karel");
-    //document.getElementById('deska').onkeydown = function(e) { 
-</script>
-
+<script src="js/ace-min/ace.js" charset="utf-8"></script>
 
 <!-- blockly settings -->
 <script src="js/blockly/blockly_compressed.js"></script>
 <script src="js/blockly/karel_blocks.js"></script>
 <script src="js/blockly/msg/js/en.js"></script>
-<xml xmlns="https://developers.google.com/blockly/xml" id="toolbox" style="display: none">
-    <category name="zaklad" color="0">
+<xml id="toolbox" style="display: none">
+    <category name="Základ" colour="0">
         <block type="base_function">
             <field name="NAME"/>
         </block>
@@ -133,7 +123,7 @@ konec</div>
             <field name="NAME"/>
         </block>
     </category>
-    <category name="funkce" color="90">
+    <category name="Funkce" colour="90">
         <block type="function_step"></block>
         <block type="function_right"></block>
         <block type="function_left"></block>
@@ -144,7 +134,7 @@ konec</div>
         <block type="function_true"></block>
         <block type="function_false"></block>
     </category>
-    <category name="rizeni toku" color="180">
+    <category name="Řízení toku" colour="180">
         <block type="control_repeat">
             <field name="NAME">0</field>
         </block>
@@ -158,39 +148,12 @@ konec</div>
             <field name="conditionPrefix">optionIs</field>
         </block>
     </category>
-    <category name="podminky" color="270">
+    <category name="Podmínky" colour="270">
         <block type="condition_brick"></block>
         <block type="condition_wall"></block>
         \<block type="condition_mark"></block>
     </category>
 </xml>
-<script>
-    var blocklyArea = document.getElementById('blocklyArea');
-    var blocklyDiv = document.getElementById('blocklyDiv');
-    var workspace = Blockly.inject(blocklyDiv,
-        {toolbox: document.getElementById('toolbox')});
-    var onresize = function(e) {
-        // Compute the absolute coordinates and dimensions of blocklyArea.
-        var element = blocklyArea;
-        var x = 0;
-        var y = 0;
-        do {
-            x += element.offsetLeft;
-            y += element.offsetTop;
-            element = element.offsetParent;
-        } while (element);
-        // Position blocklyDiv over blocklyArea.
-        blocklyDiv.style.left = x + 'px';
-        blocklyDiv.style.top = y + 'px';
-        blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
-        blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
-        Blockly.svgResize(workspace);
-    };
-    window.addEventListener('resize', onresize, false);
-    onresize();
-    Blockly.svgResize(workspace);
-</script>
-
 
 <script type="module" src="js/main.js"></script>
 

@@ -1,7 +1,7 @@
 # Project Karel
 ### Author - Vojtěch Čoupek
 
-**Last update - 23.9.2020**
+**Last update - 27.9.2020**
 
 ___
 
@@ -25,6 +25,48 @@ Karel může vylézt pouze na políčko s maximálním převýšením jedné cih
 - ACE code editor
 - Three.js web 3D graphics
 - Blockly programming
+
+**Plán funkcí projektu**
+- 3D prostředí
+    - <span style="color:green"> implementováno pomocí Three.js 
+    - v plánu další objekty z originálního Karla 
+- textový editor kódu
+    - <span style="color:green"> implementováno pomocí ACE.js, 
+    - <span style="color:green"> implementováno podbarvování textu
+    - <span style="color:green"> implementováno automatické zalamování textu
+    - v plánu přidání dalších funkcí z knihovny ACE
+    - v plánu ukaládání a načítání kódu
+- blokový editor kódu
+    - <span style="color:green"> implementováno pomocí Blockly.js
+    - <span style="color:green"> implementovány základní bloky
+    - v plánu spouštění a propojení s interpretem
+    - v plánu možnost definování vlastních bloků
+- syntaktická kontrola textu
+    - <span style="color:green"> implementována v jednoduché podobě
+    - v plánu sofistikovanější (možná s využitím ACE)
+- jednoduchý debugger
+    - v plánu možnost spuštění s krokováním (možná breakpointy s ACE)
+- uživatelsky dostupné modifikace místnosti
+    - v plánu nastavení rozměrů místnosti
+    - v plánu ukládání a načítání místosti
+- přidání čísel a proměnných do programu
+    - v plánu navržení proměnných v jazyku
+    - v plánu jednoduché operace s čísly
+- jazykové mutace
+    - <span style="color:green"> implementováno pomocí js lang file
+    - v plánu mutace do anglického jazyka
+- ukládání na google disku
+    - v plánu propojení s google účtem
+    - v plánu načítat a ukládat z google disku
+- kampaň pro začátečníka a seznam příkladů
+    - v plánu kampaň s popisem funkcí Karla a základních myšlenek programování
+    - v plánu seznam a kontrola příkladů
+- vlastní grafické modely pro místnost
+    - v plánu vlastní grafické modely pro objekty v místnosti
+- přehledné GUI
+    - v plánu vlastní lehce modifikovatelné prostředí
+    - v plánu různé témata
+
 ___
 
 
@@ -47,4 +89,20 @@ Karel can climb only one step at a time. To run any program click into any in th
 - ACE code editor
 - Three.js web 3D graphics
 - Blockly programming
+
+
+**Road map**
+
+- 3D graphics
+- text code editing
+- block code editing
+- text syntax check
+- simple debugger
+- user reachable room modification
+- numbers and variables adition
+- languages adition
+- google disk saving
+- studiing campain and exercice list
+- custom 3D models for room
+- custom GUI
 
