@@ -117,15 +117,23 @@ var onresize = function(e) {
 window.addEventListener('resize', onresize, false);
 onresize();
 Blockly.svgResize(workspace);
+
+// setting block listener
+function myUpdateFunction(event) {
+    var code = Blockly.Karel.workspaceToCode(workspace);
+    document.getElementById('textArea').value = code;
+}
+workspace.addChangeListener(myUpdateFunction);
 // -----------------------------
 
 
+// setting of language
 var mainInterpret = start();
 import('./source/languages/cs.js')
     .then((module) => {
         mainInterpret.languageSetter(module.setLang());
         blocklySetBlockLang(module.setLang());
-    });
+});
 
 document.querySelector('#run').onclick = function() {mainInterpret.interpretTextCode()};
 document.querySelector('#stop').onclick = function() {mainInterpret.stopExecuting()};

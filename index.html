@@ -101,6 +101,7 @@ prikaz rekurze_test
     krok
 konec</div>
     </div>
+    <textarea id="textArea"></textarea>
 </body>
 
 <input type="button" value="run" id="run">
@@ -113,14 +114,15 @@ konec</div>
 <!-- blockly settings -->
 <script src="js/blockly/blockly_compressed.js"></script>
 <script src="js/blockly/karel_blocks.js"></script>
+<script src="js/blockly/karel_blocks_generator.js"></script>
 <script src="js/blockly/msg/js/en.js"></script>
 <xml id="toolbox" style="display: none">
     <category name="Základ" colour="0">
         <block type="base_function">
-            <field name="NAME"/>
+            <field name="PROG_NAME"></field>
         </block>
         <block type="base_condition">
-            <field name="NAME"/>
+            <field name="COND_NAME"></field>
         </block>
     </category>
     <category name="Funkce" colour="90">
@@ -136,16 +138,16 @@ konec</div>
     </category>
     <category name="Řízení toku" colour="180">
         <block type="control_repeat">
-            <field name="NAME">0</field>
+            <field name="DO_TIMES">0</field>
         </block>
         <block type="control_while">
-            <field name="conditionPrefix">optionIs</field>
+            <field name="COND_PREF">optionIs</field>
         </block>
         <block type="control_if">
-            <field name="coditionPrefix">oprtionIs</field>
+            <field name="COND_PREF">optionIs</field>
         </block>
         <block type="control_ifelse">
-            <field name="conditionPrefix">optionIs</field>
+            <field name="COND_PREF">optionIs</field>
         </block>
     </category>
     <category name="Podmínky" colour="270">

@@ -41,7 +41,7 @@ Blockly.Blocks['function_left'] = {
 Blockly.Blocks['function_place'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField(Blockly.langDictionary["keywords"]["placeBlock"]);
+        .appendField(Blockly.langDictionary["keywords"]["placeBrick"]);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(90);
@@ -53,7 +53,7 @@ Blockly.Blocks['function_place'] = {
 Blockly.Blocks['function_pick'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField(Blockly.langDictionary["keywords"]["pickBlock"]);
+        .appendField(Blockly.langDictionary["keywords"]["pickBrick"]);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(90);
@@ -114,9 +114,9 @@ Blockly.Blocks['control_repeat'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["do"])
-        .appendField(new Blockly.FieldNumber(0), "NAME")
+        .appendField(new Blockly.FieldNumber(0), "DO_TIMES")
         .appendField(Blockly.langDictionary["keywords"]["times"]);
-    this.appendStatementInput("NAME")
+    this.appendStatementInput("INNER_CODE")
         .setCheck(null);
     this.appendDummyInput()
         .appendField("*"+Blockly.langDictionary["keywords"]["do"]);
@@ -130,11 +130,11 @@ Blockly.Blocks['control_repeat'] = {
 
 Blockly.Blocks['control_while'] = {
   init: function() {
-    this.appendValueInput("condition")
+    this.appendValueInput("COND")
         .setCheck("condition")
         .appendField(Blockly.langDictionary["keywords"]["while"])
-        .appendField(new Blockly.FieldDropdown([[Blockly.langDictionary["keywords"]["is"],"optionIs"], [Blockly.langDictionary["keywords"]["isNot"],"oprionIsNot"]]), "conditionPrefix");
-    this.appendStatementInput("statements")
+        .appendField(new Blockly.FieldDropdown([[Blockly.langDictionary["keywords"]["is"],"optionIs"], [Blockly.langDictionary["keywords"]["isNot"],"oprionIsNot"]]), "COND_PREF");
+    this.appendStatementInput("INNER_CODE")
         .setCheck(null);
     this.appendDummyInput()
         .appendField("*"+Blockly.langDictionary["keywords"]["while"]);
@@ -148,11 +148,11 @@ Blockly.Blocks['control_while'] = {
 
 Blockly.Blocks['control_if'] = {
   init: function() {
-    this.appendValueInput("conditon")
+    this.appendValueInput("COND")
         .setCheck(null)
         .appendField(Blockly.langDictionary["keywords"]["if"])
-        .appendField(new Blockly.FieldDropdown([[Blockly.langDictionary["keywords"]["is"],"oprtionIs"], [Blockly.langDictionary["keywords"]["isNot"],"optionIsNot"]]), "coditionPrefix");
-    this.appendStatementInput("NAME")
+        .appendField(new Blockly.FieldDropdown([[Blockly.langDictionary["keywords"]["is"],"optionIs"], [Blockly.langDictionary["keywords"]["isNot"],"optionIsNot"]]), "COND_PREF");
+    this.appendStatementInput("INNER_CODE")
         .setCheck(null)
         .appendField(Blockly.langDictionary["keywords"]["then"]);
     this.appendDummyInput()
@@ -167,14 +167,14 @@ Blockly.Blocks['control_if'] = {
 
 Blockly.Blocks['control_ifelse'] = {
   init: function() {
-    this.appendValueInput("condition")
+    this.appendValueInput("COND")
         .setCheck(null)
         .appendField(Blockly.langDictionary["keywords"]["if"])
-        .appendField(new Blockly.FieldDropdown([[Blockly.langDictionary["keywords"]["is"],"optionIs"], [Blockly.langDictionary["keywords"]["isNot"],"optionIsNot"]]), "conditionPrefix");
-    this.appendStatementInput("thenPath")
+        .appendField(new Blockly.FieldDropdown([[Blockly.langDictionary["keywords"]["is"],"optionIs"], [Blockly.langDictionary["keywords"]["isNot"],"optionIsNot"]]), "COND_PREF");
+    this.appendStatementInput("INNER_CODE_THEN")
         .setCheck(null)
         .appendField(Blockly.langDictionary["keywords"]["then"]);
-    this.appendStatementInput("elsePath")
+    this.appendStatementInput("INNER_CODE_ELSE")
         .setCheck(null)
         .appendField(Blockly.langDictionary["keywords"]["else"]);
     this.appendDummyInput()
@@ -224,8 +224,8 @@ Blockly.Blocks['base_function'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["function"])
-        .appendField(new Blockly.FieldTextInput(""), "NAME");
-    this.appendStatementInput("NAME")
+        .appendField(new Blockly.FieldTextInput(""), "PROG_NAME");
+    this.appendStatementInput("INNER_CODE")
         .setCheck(null);
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["end"]);
@@ -239,8 +239,8 @@ Blockly.Blocks['base_condition'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["condition"])
-        .appendField(new Blockly.FieldTextInput(""), "NAME");
-    this.appendStatementInput("NAME")
+        .appendField(new Blockly.FieldTextInput(""), "COND_NAME");
+    this.appendStatementInput("NINNER_CODE")
         .setCheck(null);
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["end"]);

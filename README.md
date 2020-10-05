@@ -1,7 +1,7 @@
 # Project Karel
 ### Author - Vojtěch Čoupek
 
-**Last update - 27.9.2020**
+**Last update - 5.10.2020**
 
 ___
 
@@ -19,7 +19,7 @@ Pro ovládání Karla v místnosti je potřeba kliknout do oblasti místnosti a 
 - `Z` pro zvednutí cihly 
 - myší lze pohybovat kamerou v místnosti. 
 
-Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly. Pro spuštění programu klikněte v editoru do prostoru nějakého příkazu a klikněte na tlačítko `run`. Tlařítko `stop` slouží k zastavení probíhajícího příkazu. Tlačítko `test` je využito pro interní účely a nemá uživatelskou funkci a bude v budoucnu odstaněno. Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze momentálně přepnout. Momentálně implementovaná verze blokového programování není zatím interpretovatelná, jedná se pouze o prototyp.
+Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly. Pro spuštění programu klikněte v editoru do prostoru nějakého příkazu a klikněte na tlačítko `run`. Tlařítko `stop` slouží k zastavení probíhajícího příkazu. Tlačítko `test` je využito pro interní účely a nemá uživatelskou funkci a bude v budoucnu odstaněno. Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze momentálně přepnout. Momentálně implementovaná verze blokového programování generuje kód do textové oblasti u tlačítek. Tento kód sám o sobě není přímo interpretovatelný ale po nakopírování textu do editoru pro kód by zde měl jít spustit.
 
 **Použité zdroje:**
 - ACE code editor
@@ -39,6 +39,7 @@ Karel může vylézt pouze na políčko s maximálním převýšením jedné cih
 - blokový editor kódu
     - <span style="color:green"> implementováno pomocí Blockly.js
     - <span style="color:green"> implementovány základní bloky
+    - <span style="color:green"> implementováno generování přepisu do nativního jazyka
     - v plánu spouštění a propojení s interpretem
     - v plánu možnost definování vlastních bloků
 - syntaktická kontrola textu
@@ -83,7 +84,7 @@ To control Karel directly, you need to click in the Karel's room and use:
 - `Z` to pick up brick
 - mouse to move camera in the room
 
-Karel can climb only one step at a time. To run any program click into any in the text field and press `run` button. Button `stop` stops current execution of program. Button `test` is reserved for internal use and currently have no user function and it will be removed in the future. At the moment you can use only czech version but english is implemented in the code and will be made as an option soon. Current block programing cannot be interpreted by the robot its just a prototype.
+Karel can climb only one step at a time. To run any program click into any in the text field and press `run` button. Button `stop` stops current execution of program. Button `test` is reserved for internal use and currently have no user function and it will be removed in the future. At the moment you can use only czech version but english is implemented in the code and will be made as an option soon. Current block programing cannot only creates code in the text area below the room. It cannot be interpreted from here but you can copy it to the code editor field and it sholud run as expected.
 
 **Used resources:**
 - ACE code editor
