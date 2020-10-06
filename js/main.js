@@ -28,31 +28,31 @@ function start() {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('gray');  
 
-    var mainRoom = new room(scene);
-    mainRoom.draw(controls, 8, 8);
-    var mainKarel = new karel(scene, mainRoom);
-    document.querySelector('#roomCanvas').addEventListener('keydown', function(event) {
-    if(event.keyCode == 87){
-            mainKarel.goForward();
-        }
-        else if(event.keyCode == 68){
-            mainKarel.turnRight();
-        }
-        else if(event.keyCode == 65){
-            mainKarel.turnLeft();
-        }
-        else if(event.keyCode == 80){
-            mainKarel.placeBrick();
-        }
-        else if(event.keyCode == 90){
-            mainKarel.pickUpBrick();
-        }
-        else if(event.keyCode == 79){
-            mainKarel.markSwitch();
-        }
-    });
-
+    var mainKarel = new karel(scene, controls);
     mainKarel.draw();
+    document.querySelector('#roomCanvas').addEventListener('keydown', function(event) {
+        if(event.keyCode == 87){
+                mainKarel.goForward();
+            }
+            else if(event.keyCode == 68){
+                mainKarel.turnRight();
+            }
+            else if(event.keyCode == 65){
+                mainKarel.turnLeft();
+            }
+            else if(event.keyCode == 80){
+                mainKarel.placeBrick();
+            }
+            else if(event.keyCode == 90){
+                mainKarel.pickUpBrick();
+            }
+            else if(event.keyCode == 79){
+                mainKarel.markSwitch();
+            }
+            else if(event.keyCode == 73){
+                mainKarel.toggleRoomBlock();
+            }
+        });
 
     var mainInterpret =  new interpret(editor, mainKarel);
 
@@ -82,12 +82,20 @@ function start() {
 }
 
 // ACE settings
+ace.require("ace/ext/language_tools");
 var editor = ace.edit("textEditor");
 //editor.setTheme("ace/theme/github");
 //editor.getSession().setMode("ace/mode/text");
-//editor.setTheme("ace/chrome");
 //editor.setTheme("ace/theme/tommorrow");
 editor.getSession().setMode("ace/mode/karel");
+/* future upgrade
+editor.setTheme("ace/chrome");
+editor.setOptions({
+    enableBasicAutocompletion: true,
+    enableSnippets: true,
+    enableLiveAutocompletion: false
+});
+*/
 //document.getElementById('deska').onkeydown = function(e) { 
 // ------------------------------------------------
 
@@ -139,6 +147,7 @@ document.querySelector('#run').onclick = function() {mainInterpret.interpretText
 document.querySelector('#stop').onclick = function() {mainInterpret.stopExecuting()};
 document.querySelector('#test').onclick = function() { 
     /*
+    make editor disappear
     var x = document.getElementById("textEditor");
     if (x.style.display === "none") {
         x.style.display = "block";
@@ -153,3 +162,4 @@ document.querySelector('#test').onclick = function() {
         blocklySetBlockLang(module.setLang());
     });
 };
+document.querySelector('#room').onclick = function(){mainInterpret.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value)};

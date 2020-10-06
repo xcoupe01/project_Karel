@@ -1,7 +1,7 @@
 # Project Karel
 ### Author - Vojtěch Čoupek
 
-**Last update - 5.10.2020**
+**Last update - 6.10.2020**
 
 ___
 
@@ -17,9 +17,20 @@ Pro ovládání Karla v místnosti je potřeba kliknout do oblasti místnosti a 
 - `O` pro označení nebo odznačení aktuální karlovy pozice
 - `P` pro položení cihly
 - `Z` pro zvednutí cihly 
+- `I` pro odebrání nebo vrácení políčka před Karlem
 - myší lze pohybovat kamerou v místnosti. 
 
-Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly. Pro spuštění programu klikněte v editoru do prostoru nějakého příkazu a klikněte na tlačítko `run`. Tlařítko `stop` slouží k zastavení probíhajícího příkazu. Tlačítko `test` je využito pro interní účely a nemá uživatelskou funkci a bude v budoucnu odstaněno. Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze momentálně přepnout. Momentálně implementovaná verze blokového programování generuje kód do textové oblasti u tlačítek. Tento kód sám o sobě není přímo interpretovatelný ale po nakopírování textu do editoru pro kód by zde měl jít spustit.
+Popis tlačítek ovládající aplikaci:
+
+- `textarea` - prozatimní prostor pro generování kódu z blokového programování
+- `run` - spuštění kódu v aktuální pozici kurzoru
+- `stop` - zastavení probíhajícího kódu
+- `room` - nastavení rozměrů místnosti na hodnoty z následujících polí
+- `X value` - "x-ový" rozměr místnosti pro nastavení
+- `Y value` - "y-ový" rozměr místnosti pro nastavení
+- `test` - prozatimní interní testovací tlačítko
+
+Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly. Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze momentálně přepnout. Momentálně implementovaná verze blokového programování generuje kód do textové oblasti u tlačítek. Tento kód sám o sobě není přímo interpretovatelný ale po nakopírování textu do editoru pro kód by zde měl jít spustit.
 
 **Použité zdroje:**
 - ACE code editor
@@ -29,7 +40,7 @@ Karel může vylézt pouze na políčko s maximálním převýšením jedné cih
 **Plán funkcí projektu**
 - 3D prostředí
     - <span style="color:green"> implementováno pomocí Three.js 
-    - v plánu další objekty z originálního Karla 
+    - <span style="color:green"> implementovány objekty z originálního Karla 
 - textový editor kódu
     - <span style="color:green"> implementováno pomocí ACE.js, 
     - <span style="color:green"> implementováno podbarvování textu
@@ -48,7 +59,7 @@ Karel může vylézt pouze na políčko s maximálním převýšením jedné cih
 - jednoduchý debugger
     - v plánu možnost spuštění s krokováním (možná breakpointy s ACE)
 - uživatelsky dostupné modifikace místnosti
-    - v plánu nastavení rozměrů místnosti
+    - <span style="color:green"> implementováno nastavení rozměrů místnosti
     - v plánu ukládání a načítání místosti
 - přidání čísel a proměnných do programu
     - v plánu navržení proměnných v jazyku
@@ -82,9 +93,20 @@ To control Karel directly, you need to click in the Karel's room and use:
 - `O` to mark current Karel's position
 - `P` to place brick
 - `Z` to pick up brick
+- `I` to remove or return block in front of Karel
 - mouse to move camera in the room
 
-Karel can climb only one step at a time. To run any program click into any in the text field and press `run` button. Button `stop` stops current execution of program. Button `test` is reserved for internal use and currently have no user function and it will be removed in the future. At the moment you can use only czech version but english is implemented in the code and will be made as an option soon. Current block programing cannot only creates code in the text area below the room. It cannot be interpreted from here but you can copy it to the code editor field and it sholud run as expected.
+Button description:
+
+- `textarea` - space where generated code from block generator appears
+- `run` - to run currently selected (with cursor) program in text editor
+- `stop` - to stop currently running code
+- `room` - to set the roomsize based on the next two fields
+- `X value` - x dimension of the room for set
+- `Y value` - y dimension of the room for set
+- `test` - provisional developer only button
+ 
+ Karel can climb only one step at a time.At the moment you can use only czech version but english is implemented in the code and will be made as an option soon. Current block programing cannot only creates code in the text area below the room. It cannot be interpreted from here but you can copy it to the code editor field and it sholud run as expected.
 
 **Used resources:**
 - ACE code editor

@@ -27,9 +27,9 @@ class room{
         controls.target.set(countX/2 - this.blockSize/2, 0, countY/2 - this.blockSize/2);
         controls.update();
         this.roomDataArray = [];
-        for(let currX = 0; currX < countX; currX++){
+        for(var currX = 0; currX < countX; currX++){
             this.roomDataArray[currX] = [];
-            for(let currY = 0; currY < countY; currY++){
+            for(var currY = 0; currY < countY; currY++){
                 const geometry = new THREE.BoxGeometry(this.blockSize, this.blockThickness, this.blockSize);
                 const material = new THREE.MeshBasicMaterial({color : 0xffffff});
                 const cube = new THREE.Mesh(geometry, material);
@@ -40,14 +40,40 @@ class room{
                 cube.position.x = line.position.x = currX * (this.blockSize+this.blockGap);
                 cube.position.z = line.position.z = currY * (this.blockSize+this.blockGap);
                 this.roomDataArray[currX][currY] = {};
+                this.roomDataArray[currX][currY].blockObject = {};
+                this.roomDataArray[currX][currY].blockObject.cube = cube;
+                this.roomDataArray[currX][currY].blockObject.line = line;
                 this.roomDataArray[currX][currY].bricks = 0;
                 this.roomDataArray[currX][currY].mark = false;
                 this.roomDataArray[currX][currY].brickObjects = [];
                 this.roomDataArray[currX][currY].brickObjectsLines = [];
                 this.roomDataArray[currX][currY].markObject;
+                this.roomDataArray[currX][currY].inRoom = true;
             }
         }
     }
+
+    /**
+     * Erases every object of the room (all blocks, bricks marks ect.)
+     * Room does not inluce Karel in this case (Karel wont be erased)
+     */
+    erase(){
+        for(var currX = 0; currX < this.roomDataArray.length; currX++){
+            for(var currY = 0; currY < this.roomDataArray[currX].length; currY++){
+                if(this.roomDataArray[currY][currY].inRoom){
+                    if(this.roomDataArray[currX][currY].mark){
+                        this.scene.remove(this.roomDataArray[currX][currY].markObject);
+                    }
+                    while(this.roomDataArray[currX][currY].bricks > 0){
+                        this.removeBrickFromPos(currX, currY);
+                    }
+                    this.scene.remove(this.roomDataArray[currX][currY].blockObject.cube);
+                    this.scene.remove(this.roomDataArray[currX][currY].blockObject.line);
+                }
+            }
+        }
+    }
+
     /**
      * Adds brick to a specified position in the room
      * Also handles all graphical objects and saves them into the roomDataArray
@@ -77,6 +103,7 @@ class room{
             this.updateMark(posX, posY);
         }
     }
+
     /**
      * Removes brick from a specified position in the room
      * Also handles all graphical objects and saves changes into the roomDataArray
@@ -102,6 +129,7 @@ class room{
             console.log("ROOM RBFP error - nothing to pick up at [" + posX + "][" + posY + "]");
         }
     }
+
     /**
      * Marks a specified position in the room
      * Also handles all graphical objects and saves them into the roomDataArray
@@ -123,6 +151,7 @@ class room{
             console.log("Failed markPosition at [" + posX + "][" + posY + "] - already marked");
         }
     }
+
     /**
      * Removes mark from the room on the specified position
      * Also handles all graphical objects and saves them into the roomDataArray
@@ -138,6 +167,7 @@ class room{
             console.log("Failed unmarkPosition at [" + posX + "][" + posY + "] - not marked");
         }
     }
+
     /**
      * Updates a mark height based on number of bricks on a specified position
      * @param {number} posX is the X axis coordinate
@@ -145,5 +175,56 @@ class room{
      */
     updateMark(posX, posY){
         this.roomDataArray[posX][posY].markObject.position.y = 0.06 + this.brickThickness * (this.roomDataArray[posX][posY].bricks);
+    }
+
+    /**
+     * Makes walls in the room by removing given block. It erases and blocks block on a given position
+     * @param {*} posX is the X coordinate of the block to be removed
+     * @param {*} posY is the Y coordinate of the block to be removed
+     */
+    removeBlockFromRoomPos(posX, posY){
+        if(!this.roomDataArray[posX][posY].inRoom){
+            console.log("RBFRP error - block already removed at [" + posX + "," + posY + "]");
+            return;
+        }
+        if(this.roomDataArray[posX][posY].bricks > 0){
+            console.log("RBFRP error - cannot remove becase of bricks at [" + posX + "," + posY + "]");
+            return;
+        }
+        if(this.roomDataArray[posX][posY].mark){
+            console.log("RBFRP error - cannot remove becase of mark at [" + posX + "," + posY + "]");
+            return;
+        }
+        this.scene.remove(this.roomDataArray[posX][posY].blockObject.cube);
+        this.scene.remove(this.roomDataArray[posX][posY].blockObject.line);
+        this.roomDataArray[posX][posY].inRoom = false;
+    }
+
+    /**
+     * Restores erased block by function `removeBlockFromPos`. It activate given block and draws him back
+     * @param {*} posX is the X coordinate of the block to be activated
+     * @param {*} posY is the Y coordinate of the block to be activated
+     */
+    putBlockToRoomPos(posX, posY){
+        if(this.roomDataArray[posX][posY].inRoom){
+            console.log("PBTRP error - block already present at [" + posX + "," + posY + "]");
+            return;
+        }
+        this.scene.add(this.roomDataArray[posX][posY].blockObject.cube);
+        this.scene.add(this.roomDataArray[posX][posY].blockObject.line);
+        this.roomDataArray[posX][posY].inRoom = true;
+    }
+
+    /**
+     * Toggles given block active status
+     * @param {*} posX is the X coordinate of the block to be toggled
+     * @param {*} posY is the Y coordinate of the block to be toggled
+     */
+    toggleRoomBlockPos(posX, posY){
+        if(this.roomDataArray[posX][posY].inRoom){
+            this.removeBlockFromRoomPos(posX, posY);
+        } else {
+            this.putBlockToRoomPos(posX, posY);
+        }
     }
 }
