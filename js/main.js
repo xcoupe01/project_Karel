@@ -143,8 +143,9 @@ import('./source/languages/cs.js')
         blocklySetBlockLang(module.setLang());
 });
 
-document.querySelector('#run').onclick = function() {mainInterpret.interpretTextCode()};
+document.querySelector('#run').onclick = function() {mainInterpret.nativeCodeInterpretFromEditor()};
 document.querySelector('#stop').onclick = function() {mainInterpret.stopExecuting()};
+document.querySelector('#room').onclick = function(){mainInterpret.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value)};
 document.querySelector('#test').onclick = function() { 
     /*
     make editor disappear
@@ -155,11 +156,13 @@ document.querySelector('#test').onclick = function() {
         x.style.display = "none";
     }
     */
+    /*
    //way to change languages 
    import('./source/languages/en.js')
     .then((module) => {
         mainInterpret.languageSetter(module.setLang());
         blocklySetBlockLang(module.setLang());
     });
+    */
+   console.log(mainInterpret.nativeCodeChecker(mainInterpret.nativeCodeSplitter(editor.getValue())));
 };
-document.querySelector('#room').onclick = function(){mainInterpret.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value)};

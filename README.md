@@ -33,9 +33,9 @@ Popis tlačítek ovládající aplikaci:
 Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly. Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze momentálně přepnout. Momentálně implementovaná verze blokového programování generuje kód do textové oblasti u tlačítek. Tento kód sám o sobě není přímo interpretovatelný ale po nakopírování textu do editoru pro kód by zde měl jít spustit.
 
 **Použité zdroje:**
-- ACE code editor
-- Three.js web 3D graphics
-- Blockly programming
+- ACE code editor (https://ace.c9.io/)
+- Three.js web 3D graphics (https://threejs.org/)
+- Blockly programming (https://developers.google.com/blockly)
 
 **Plán funkcí projektu**
 - 3D prostředí
@@ -54,13 +54,17 @@ Karel může vylézt pouze na políčko s maximálním převýšením jedné cih
     - v plánu spouštění a propojení s interpretem
     - v plánu možnost definování vlastních bloků
 - syntaktická kontrola textu
-    - <span style="color:green"> implementována v jednoduché podobě
-    - v plánu sofistikovanější (možná s využitím ACE)
-- jednoduchý debugger
+    - <span style="color:green"> implementována kontrola s tabulkovým zadáváním kontrol
+    - <span style="color:green"> implementován přehledný interpret nativního kódu
+    - možná s využitím ACE
+    - jednoduchý debugger
     - v plánu možnost spuštění s krokováním (možná breakpointy s ACE)
 - uživatelsky dostupné modifikace místnosti
     - <span style="color:green"> implementováno nastavení rozměrů místnosti
     - v plánu ukládání a načítání místosti
+- mutace jazyka Karel
+    - mutace programovacího jazyka karel do podoby C lang
+    - mutace programovacího jazyka karel do podoby Python
 - přidání čísel a proměnných do programu
     - v plánu navržení proměnných v jazyku
     - v plánu jednoduché operace s čísly
@@ -109,9 +113,9 @@ Button description:
  Karel can climb only one step at a time.At the moment you can use only czech version but english is implemented in the code and will be made as an option soon. Current block programing cannot only creates code in the text area below the room. It cannot be interpreted from here but you can copy it to the code editor field and it sholud run as expected.
 
 **Used resources:**
-- ACE code editor
-- Three.js web 3D graphics
-- Blockly programming
+- ACE code editor (https://ace.c9.io/)
+- Three.js web 3D graphics (https://threejs.org/)
+- Blockly programming (https://developers.google.com/blockly)
 
 
 **Road map**

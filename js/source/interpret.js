@@ -3,11 +3,11 @@ export {interpret};
 class interpret{
 
     constructor(textEditor, karel){
-        this.dictionary = {};
+        this.dictionary = {};           // current language dictionary
         this.karel = karel;             // given robot karel to operate with
         this.textEditor = textEditor;   // given text editor to interpret
-        this.commandList = [];          // user defined commands list
-        this.conditionList = [];        // user defined condition list
+        this.commandList = {};          // user defined commands list dictionary
+        this.conditionList = {};        // user defined condition list dictionary
         this.running = false;           // tells if Karel is executing code
     }
 
@@ -24,7 +24,7 @@ class interpret{
         this.functions = [];
         for(const [key, value] of Object.entries(this.dictionary["keywords"])){
             this.reservedWords.push(value);
-            if(["forward", "right", "left", "placeBrick", "pickBrick", "placeMark", "pickMark", "true", "false"].includes(key)){
+            if(["forward", "right", "left", "placeBrick", "pickBrick", "placeMark", "pickMark", "true", "false", "wall", "brick", "mark"].includes(key)){
                 this.functions.push(value);
             }
         }
@@ -45,387 +45,279 @@ class interpret{
     }
 
     /**
-     * Executes the code written in editor
-     * the interpret splits the given code into lines and then further into words. 
-     * It processes one line at a time
+     * Adds command record to the interprets dictionary to make it callable
+     * @param {string} name is the name of the command
+     * @param {number} line is the starting line of the command
      */
-    async interpretTextCode(){
-        if(this.running){
-            console.log("ITC error - cannot run multiple programs at the same time");
-            return; //cannot run multiple codes at once
+    addCommandToList(name, line){
+        if(name in this.commandList){
+            console.log("ACommaTL error - command redefiniton at line [" + line + "]");
+            return false;
+        } else if(this.reservedWords.includes(name)){
+            console.log("ACommaTL error - redefining reserved word at line [" + line + "]");
+            return false;
+        } else {
+            this.commandList[name] = line;
+            return true;
         }
-
-        this.running = true;
-        var n = this.textEditor.selection.getCursor().row;
-        var code = this.textEditor.getValue().split(/\r?\n/); //cuts the whole string in the editor to lines
-
-        if(!this.textSyntaxChecker(code)){
-            this.running = false;
-            return;
-        }
-
-        var activeCounters = [];    //used for DO loops
-        var programQueue = [];      //used to jump to other programs and return back (saves position from which was jumped)
-        var lastConditionResult = "undef";
-        var words = code[n].match(/[^\ ]+/g);
-
-        while(words[0] != this.dictionary["keywords"]["function"] && words[0] != this.dictionary["keywords"]["condition"]){      
-            // rolls the code pointer to the begining of function which was selected to be executed
-            n --;
-            if(n < 0 || code[n] == this.dictionary["keywords"]["end"]){
-                console.log("ITC error - function to be executed not found");
-                this.running = false;
-                return;
-            }
-            words = code[n].match(/[^\ ]+/g);
-        }
-
-        while(this.running){
-            this.textEditor.gotoLine(n + 1);
-            words = code[n].match(/[^\ ]+/g);
-            for(var i = 0; i < words.length; i++){ //weird stuff happening with this approach. Need to be redesigned
-                switch(words[i]){
-                    case this.dictionary["keywords"]["function"]:
-                    case this.dictionary["keywords"]["condition"]:
-                        i++; //skip the name of the function or condition
-                         break;
-                    case this.dictionary["keywords"]["end"]:
-                        if(programQueue.length == 0){
-                            this.running = false;
-                            return;
-                        } else {
-                            n = programQueue[programQueue.length - 1] - 1; //in next step the N will be incremented so we need to substract the addition to maintain the correct jump
-                            programQueue.pop();
-                        }
-                        break;
-                    case this.dictionary["keywords"]["forward"]:
-                        this.karel.goForward();
-                        break;
-                    case this.dictionary["keywords"]["right"]:
-                        this.karel.turnRight();
-                        break;
-                    case this.dictionary["keywords"]["left"]:
-                        this.karel.turnLeft();
-                        break;
-                    case this.dictionary["keywords"]["placeBrick"]:
-                        this.karel.placeBrick();
-                        break;
-                    case this.dictionary["keywords"]["pickBrick"]:
-                        this.karel.pickUpBrick();
-                        break;
-                    case this.dictionary["keywords"]["placeMark"]:
-                        this.karel.markOn();
-                        break;
-                    case this.dictionary["keywords"]["pickMark"]:
-                        this.karel.markOff();
-                        break;
-                    case this.dictionary["keywords"]["do"]:
-                        if(parseInt(words[1]) == 0){
-                            n = this.codeJumper(this.dictionary["keywords"]["do"], false, code, n);
-                        } else {
-                            activeCounters.push(words[1]); 
-                        }
-                        i += 2; // skips number and times
-                        break;
-                    case "*" + this.dictionary["keywords"]["do"]:
-                        activeCounters[activeCounters.length - 1]--;
-                        if(activeCounters[activeCounters.length - 1] > 0){
-                            n = this.codeJumper(this.dictionary["keywords"]["do"], true, code, n);
-                        } else {
-                            activeCounters.pop();
-                        }
-                        break;
-                    case this.dictionary["keywords"]["while"]:
-                        if([this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], this.dictionary["keywords"]["mark"]].includes(words[2])){
-                            if(!this.checkBaseCondition(words[1], words[2])){
-                                n = this.codeJumper(this.dictionary["keywords"]["while"], false, code, n);
-                            }
-                        } else {
-                            if(lastConditionResult == "undef"){
-                                var found = false;
-                                for(var j = 0; j < this.conditionList.length; j++){
-                                    if(words[2] == this.conditionList[j][0]){
-                                        found = true;
-                                        programQueue.push(n);
-                                        n = this.conditionList[j][1];
-                                    }
-                                }
-                            } else {
-                                if((lastConditionResult == false && words[1] == this.dictionary["keywords"]["is"]) || 
-                                    (lastConditionResult == true && words[1] == this.dictionary["keywords"]["isNot"])){
-                                    n = this.codeJumper(this.dictionary["keywords"]["while"], false, code, n);
-                                }
-                                lastConditionResult = "undef";
-                            }
-                        }
-                        i += 2; // skips condition prefix and name
-                        break;
-                    case "*" + this.dictionary["keywords"]["while"]:
-                        n = this.codeJumper(this.dictionary["keywords"]["while"], true, code, n) - 1;
-                        break;
-                    case this.dictionary["keywords"]["if"]:
-                        if([this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], this.dictionary["keywords"]["mark"]].includes(words[2])){
-                            if(!this.checkBaseCondition(words[1], words[2])){
-                                n = this.codeJumper(this.dictionary["keywords"]["if"], false, code, n);
-                            }
-                        } else {
-                            if(lastConditionResult == "undef"){
-                                var found = false;
-                                for(var j = 0; j < this.conditionList.length; j++){
-                                    if(words[2] == this.conditionList[j][0]){
-                                        found = true;
-                                        programQueue.push(n);
-                                        n = this.conditionList[j][1];
-                                    }
-                                }
-                            } else {
-                                if((lastConditionResult == false && words[1] == this.dictionary["keywords"]["is"]) || 
-                                    (lastConditionResult == true && words[1] == this.dictionary["keywords"]["isNot"])){
-                                    n = this.codeJumper(this.dictionary["keywords"]["while"], false, code, n);
-                                }
-                                lastConditionResult = "undef";
-                            }
-                        }
-                        i += 2; // skips condition prefix and name
-                        break;
-                    case this.dictionary["keywords"]["else"]:
-                        n = this.codeJumper(this.dictionary["keywords"]["if"], false, code, n);
-                        break;
-                    case this.dictionary["keywords"]["then"]:
-                    case "*" + this.dictionary["keywords"]["if"]:
-                        break;
-                    case this.dictionary["keywords"]["true"]:
-                        lastConditionResult = true;
-                        break;
-                    case this.dictionary["keywords"]["false"]:
-                        lastConditionResult = false;
-                        break;
-                    case "#":
-                        // skip commentary - not connected yet - TODO
-                        i = words.length;
-                        break;
-                    default:
-                        var found = false;
-                        for(var j = 0; j < this.commandList.length; j++){
-                            if(this.commandList[j][0] == words[i]){
-                                //do this command
-                                // TODO - also save the position in the line for better jumps
-                                programQueue.push(n + 1); //not sure if correct
-                                n = this.commandList[j][1];
-                                found = true;
-                                break;
-                            }
-                        }
-                        if(!found){
-                            console.log("ITC error - unexpected word - " + words[i]);
-                        }
-                }
-            }
-            n++;
-            await sleep(125);
-        }
-    this.running = false;
     }
 
     /**
-     * Checks syntax of given code
-     * @param {Array} code code to be checked
+     * Adds condition record to the interprets dictionary to make it callable
+     * @param {string} name is the name of the condition
+     * @param {number} line is the starting line of the condition
      */
-    textSyntaxChecker(code){
-        var inDefinition = false; // looking for end of definition
-        var activeStructures = [];  
-        this.commandList = [];
-        this.conditionList = [];
+    addConditionToList(name, line){
+        if(name in this.conditionList){
+            console.log("ACondTL error - condition redefiniton at line [" + line + "]");
+            return false;
+        } else if(this.reservedWords.includes(name)){
+            console.log("ACommaTL error - redefining reserved word at line [" + line + "]");
+            return false;
+        } else {
+            this.conditionList[name] = line;
+            return true;
+        }
+    }
 
-        for(var i = 0; i < code.length; i++){
-            var line = code[i].trim();
-            if(line.indexOf(' ') > 0){ // split done so i can tell if lane have more then one command, some Karel's commands must be alone on line
-                // mutiple commands on one line, function, condition, loops (for, while), if
-                var words = line.match(/[^\ ]+/g);
-                switch(words[0]){
-                    case this.dictionary["keywords"]["function"]:
-                        // begin of command definition
-                        if(words.length != 2 || inDefinition){
-                            // correct number of arguments - FUNCTION
-                            console.log("TSC error - wrong funcion definition at line " + i);
-                            return false;
-                        }
-                        for(var j = 0; j < this.commandList.length; j++){
-                            // redefinition of user defined command - FUNCTION     TODO - add condition name check ??
-                            if(this.commandList[j][0] == words[1]){
-                                console.log("TSC error - redefiniton of command at line " + i);
-                                return false;
-                            }
-                        }
-                        for(var j = 0; j < this.reservedWords.length; j++){
-                            // definition of command name from reserved list - FUNCTION
-                            if(this.reservedWords[j] == words[1]){
-                                console.log("TSC error - redefinition of reserved command at line " + i);
-                                return false;
-                            }
-                        }
-                        this.commandList.push([words[1], i]);
-                        inDefinition = true;
-                        break;
-                    case this.dictionary["keywords"]["condition"]:
-                        // begin of condition definition - CONDITION
-                        if(words.length != 2 || inDefinition){
-                            // correct number of arguments
-                            console.log("TSC error - wrong funcion definition at line " + i);
-                            return false;
-                        }
-                        for(var j = 0; j < this.conditionList.length; j++){
-                            // redefinition of user defined condition - CONDITION   TODO - add command name check ??
-                            if(this.conditionList[j][0] == words[1]){
-                                console.log("TSC error - redefiniton of command at line " + i);
-                                return false;
-                            }
-                        }
-                        for(var j = 0; j < this.reservedWords.length; j++){
-                            // definition of condition name from reserved list - CONDITION
-                            if(this.reservedWords[j] == words[1]){
-                                console.log("TSC error - redefinition of reserved command at line " + i);
-                                return false;
-                            }
-                        }
-                        this.conditionList.push([words[1], i]);
-                        inDefinition = true;
-                        break;
-                    case this.dictionary["keywords"]["do"]:
-                        // checking number of arguments and what are they - DO LOOP
-                        if(words.length != 3 || words[2] != this.dictionary["keywords"]["times"] || isNaN(parseInt(words[1])) || !inDefinition){
-                            console.log("TSC error - wrong DO definition at line " + i);
-                            return false;
-                        }
-                        activeStructures.push(this.dictionary["keywords"]["do"]);
-                        break;
-                    case this.dictionary["keywords"]["while"]:
-                        // checking number of arguments and what are they - WHILE LOOP
-                        if(words.length != 3 || ![this.dictionary["keywords"]["is"], this.dictionary["keywords"]["isNot"]].includes(words[1]) || !inDefinition){
-                            console.log("TSC error - wrong WHILE definiton at line " + i);
-                            return false;
-                        }
-                        // checking if the condition is defined - IF STATEMENT
-                        if(![this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], this.dictionary["keywords"]["mark"]].includes(words[2])){
-                            var found = false;
-                            for(var j = 0; j < this.conditionList.length; j++){
-                                if(words[2] == this.conditionList[j][0]){
-                                    found = true;
-                                }
-                            }
-                            if(!found){
-                                //TODO - rework for it to be able to call conditions written later in the text
-                                console.log("TSC error - contition not found at line " + i);
-                                return false;
-                            }
-                        }
-                        activeStructures.push(this.dictionary["keywords"]["while"]);
-                        break;
-                    case this.dictionary["keywords"]["if"]:
-                        // checking number of arguments and what are they - IF STATEMENT
-                        if(words.length != 3 || ![this.dictionary["keywords"]["is"], this.dictionary["keywords"]["isNot"]].includes(words[1]) || !inDefinition){
-                            console.log("TSC error - wrong IF definition at line " + i);
-                            return false;
-                        }
-                        // checking if the condition is defined - IF STATEMENT
-                        if(![this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], this.dictionary["keywords"]["mark"]].includes(words[2])){
-                            var found = false;
-                            for(var j = 0; j < this.conditionList.length; j++){
-                                if(words[2] == this.conditionList[j][0]){
-                                    found = true;
-                                }
-                            }
-                            if(!found){
-                                //TODO - rework for it to be able to call conditions written later in the text
-                                console.log("TSC error - contition not found at line " + i);
-                                return false;
-                            }
-                        }
-                        activeStructures.push(this.dictionary["keywords"]["if"]);
-                        break;
-                    case this.dictionary["keywords"]["then"]:
-                    case this.dictionary["keywords"]["else"]:
-                        if(activeStructures[activeStructures.length - 1] != tthis.dictionary["keywords"]["if"]){
-                            console.log("TSC error - IF fail, wrong structure at line " + i);
-                            return false;
-                        }
-                        break;
-                    default:
-                        console.log("TSC warning - uncomplete state entered at line " + i);
-                        // words that cannot be here - konec, podminka, prikaz, udelej (all) ... 
-                        // search if Karel knows these commands
+    /**
+     * Splits the native code to array, Its use as a basic interpret format here
+     * @param {string} code is the string to be splitted
+     */
+    nativeCodeSplitter(code){
+        var arrayCode = [];
+        var splitCode = code.split(/\r?\n/);
+        for(var i = 0; i < splitCode.length; i++){
+            splitCode[i] = splitCode[i].trim();
+            arrayCode[i] = splitCode[i].split(/\ +/);
+        }
+        return arrayCode;
+    }
+
+    /**
+     * Returns Rule dictionary for the native syntax checker function
+     * Rules are related to the words of the language
+     * Its format requires that every end node contains string `token`, array `checks` and array `action`
+     * The checker will control the `checks` section and trigger the `action` section
+     */
+    createNativeRulesTable(){
+        return {
+            "function" : {
+                "token": "function",
+                "checks": [2, "notInDef"],
+                "action": ["addToCommadnList", "setDef"]
+            },
+            "condition" : {
+                "token": "condition",
+                "checks": [2, "notInDef"],
+                "action": ["addToConditionList", "setDef"]
+            },
+            "end" : {
+                "token": "end",
+                "checks": [1, "inDef", "checkActive"],
+                "action": ["unsetDef"]
+            },
+            "do" : {
+                "start": {
+                    "token" : "do",
+                    "checks": [3, "checkKWTimes", "checkNumber", "inDef"],
+                    "action": ["pushActive"]
+                },
+                "end":{
+                    "token" : "do",
+                    "checks":[1, "checkActive" ,"inDef"],
+                    "action":["popActive"]
                 }
-            } else {
-                switch(line){
-                    // single commands 
-                    case this.dictionary["keywords"]["end"]:
-                        if(!inDefinition){
-                            console.log("TSC error - wrong end of definiton at line " + i);
-                            return false;
-                        }
-                        if(activeStructures.length > 0){
-                            console.log("TSC error - missing end of syntax structure at line " + i);
-                            return false;
-                        }
-                        inDefinition = false;
-                        break;
-                    case "*" + this.dictionary["keywords"]["do"]:
-                        if(activeStructures[activeStructures.length - 1] != this.dictionary["keywords"]["do"]){
-                            console.log("TSC error - missing end of structure at line " + i  + " - structure " + activeStructures[activeStructures.length - 1]);
-                            return false;
-                        }
-                        activeStructures.pop();
-                        break;
-                    case "*" + this.dictionary["keywords"]["while"]:
-                        if(activeStructures[activeStructures.length - 1] != this.dictionary["keywords"]["while"]){
-                            console.log("TSC error - missing end of structure at line " + i  + " - structure " + activeStructures[activeStructures.length - 1]);
-                            return false;
-                        }
-                        activeStructures.pop();
-                        break;
-                    case this.dictionary["keywords"]["then"]:
-                    case this.dictionary["keywords"]["else"]:
-                        if(activeStructures[activeStructures.length - 1] != this.dictionary["keywords"]["if"]){
-                            console.log("TSC error - IF fail, wrong structure at line " + i);
-                            return false;
-                        }
-                        break;
-                    case "*" + this.dictionary["keywords"]["if"]:
-                        if(activeStructures[activeStructures.length - 1] != this.dictionary["keywords"]["if"]){
-                            console.log("TSC error - missing end of structure at line " + i  + " - structure " + activeStructures[activeStructures.length - 1])
-                        }
-                        activeStructures.pop();
-                        break;
-                    default:
-                        var found = false;
-                        if(!inDefinition && line == ""){
-                            found = true;
-                        }
-                        for(var j = 0; j < this.functions.length; j++){
-                            if(line == this.functions[j]){
-                                found = true;
-                                break;
-                            }
-                        }
-                        if(!found){
-                            for(var j = 0; j < this.commandList.length; j++){
-                                if(line == this.commandList[j][0]){
-                                    found = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if(!found){
-                            //TODO rework so it would also scan codes lower in the text file
-                            console.log("TSC error - unknown word at line " + i + " " + line);
-                            return false;
-                        }
+            },
+            "while" : {
+                "start": {
+                    "token" : "while",
+                    "checks": [3, "checkCondPrefix", "checkCondition", "inDef"],
+                    "action": ["pushActive"]
+                },
+                "end" : {
+                    "token" : "while",
+                    "checks": [1, "checkActive", "inDef"],
+                    "action": ["popActive"]
                 }
+            },
+            "if" : {
+                "start": {
+                    "token" : "if",
+                    "checks": [3, "checkCondPrefix", "checkCondition", "inDef"],
+                    "action": ["pushActive"]
+                },
+                "in": {
+                    "token" : "if",
+                    "checks": [1, "checkActive", "inDef"],
+                    "action": []
+                },
+                "end" : {
+                    "token" : "if",
+                    "checks": [1, "checkActive", "inDef"],
+                    "action": ["popActive"]
+                }
+            },
+            "def" : {
+                "token" : "def",
+                "checks": [1, "checkDef"],
+                "action": []
+            },
+            "comment" : {
+                "token" : "comment",
+                "checks": [],
+                "action": []
             }
         }
-        if(inDefinition){
-            console.log("TSC error - missing end of definition at line " + i);
-            return false;
+    }
+
+    /**
+     * Interprets native Karel code
+     * @param {string} code is the code to be interpreted
+     */
+    nativeCodeChecker(code){
+
+        this.commandList = {};
+        this.conditionList = {};
+        var inDefinition = false;
+        var activeStructures = []; 
+        var rules = this.createNativeRulesTable();
+        var currentRule;
+
+        for(var line = 0; line < code.length; line++){
+            currentRule = [];
+            switch(code[line][0]){
+                case this.dictionary["keywords"]["function"]:
+                    currentRule = rules["function"];
+                    break;
+                case this.dictionary["keywords"]["condition"]:
+                    currentRule = rules["condition"];
+                    break;
+                case this.dictionary["keywords"]["end"]:
+                    currentRule = rules["end"];
+                    break;
+                case this.dictionary["keywords"]["do"]:
+                    currentRule = rules["do"]["start"];
+                    break;
+                case "*" + this.dictionary["keywords"]["do"]:
+                    currentRule = rules["do"]["end"];
+                    break;
+                case this.dictionary["keywords"]["while"]:
+                    currentRule = rules["while"]["start"];
+                    break;
+                case "*" + this.dictionary["keywords"]["while"]:
+                    currentRule = rules["while"]["end"];
+                    break;
+                case this.dictionary["keywords"]["if"]:
+                    currentRule = rules["if"]["start"];
+                    break;
+                case this.dictionary["keywords"]["then"]:
+                case this.dictionary["keywords"]["else"]:
+                    currentRule = rules["if"]["in"];
+                    break;
+                case "*" + this.dictionary["keywords"]["if"]:
+                    currentRule = rules["if"]["end"];
+                    break;
+                default:
+                    if(code[line][0].startsWith("#")){
+                        currentRule = rules["comment"];
+                    } else {
+                        currentRule = rules["def"];
+                    }
+            }
+
+            if(currentRule["token"] != "comment" && code[line].length != currentRule["checks"][0]){
+                console.log("nativeCodeChecker error - bad number of word on line [" + line + "]");
+                return false;
+            }
+
+            for(var i = 1; i < currentRule["checks"].length; i++){
+                switch(currentRule["checks"][i]){
+                    case "notInDef":
+                        if(inDefinition){
+                            console.log("nativeCodeChecker error - notInDef check failed at line [" + line + "]");
+                            return false;
+                        }
+                        break;
+                    case "inDef":
+                        if(!inDefinition){
+                            console.log("nativeCodeChecker error - InDef check failed at line [" + line + "]");
+                            return false;
+                        }
+                        break;
+                    case "checkActive":
+                        if(currentRule["token"] == "end"){
+                            if(activeStructures.length > 0){
+                                console.log("nativeCodeChecker error - checkActive check failed at line [" + line + "]");
+                                return false;
+                            }
+                        } else {
+                            if(activeStructures[activeStructures.length - 1] != currentRule["token"]){
+                                console.log("nativeCodeChecker error - checkActive check failed at line [" + line + "]");
+                                return false;
+                            }
+                        }
+                        break;
+                    case "checkKWTimes":
+                        if(code[line][2] != this.dictionary["keywords"]["times"]){
+                            console.log("nativeCodeChecker error - checkKWTimes check failed at line [" + line + "]");
+                            return false;
+                        }
+                        break;
+                    case "checkNumber":
+                        if(isNaN(parseInt(code[line][1]))){
+                            console.log("nativeCodeChecker error - checkNumber check failed at line [" + line + "]");
+                            return false;
+                        }
+                        break;
+                    case "checkCondPrefix":
+                        if(![this.dictionary["keywords"]["is"], this.dictionary["keywords"]["isNot"]].includes(code[line][1])){
+                            console.log("nativeCodeChecker error - checkCondPrefix check failed at line [" + line + "]");
+                            return false;
+                        }
+                        break;
+                    case "checkCondition":
+                        if(![this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], this.dictionary["keywords"]["mark"]].includes(code[line][2]) 
+                            && !(code[line][2] in this.conditionList)){
+                            console.log("nativeCodeChecker error - checkCondition check failed at line [" + line + "]");
+                            return false;
+                        }
+                        break;
+                    case "checkDef":
+                        if(!this.functions.includes(code[line][0]) && !(code[line][0] in this.commandList) && code[line] != ""){
+                            console.log("nativeCodeChecker error - checkDef check failed at line [" + line + "]");
+                            return false;
+                        }
+                        break;
+                }
+            }
+
+            for(var i = 0; i < currentRule["action"].length; i++){
+                switch(currentRule["action"][i]){
+                    case "addToCommadnList":
+                        if(!this.addCommandToList(code[line][1], line)){
+                            return false;
+                        }
+                        break;
+                    case "addToConditionList":
+                        if(!this.addConditionToList(code[line][1], line)){
+                            return false;
+                        }
+                        break;
+                    case "setDef":
+                        inDefinition = true;
+                        break;
+                    case "unsetDef":
+                        inDefinition = false;
+                        break;
+                    case "pushActive":
+                        activeStructures.push(currentRule["token"]);
+                        break;
+                    case "popActive":
+                        activeStructures.pop();
+                        break;
+                }
+            }
         }
         return true;
     }
@@ -436,9 +328,7 @@ class interpret{
      * @param {string} condition is the condition itself
      */
     checkBaseCondition(prefix, condition){
-        // karel is while true
         if(prefix == this.dictionary["keywords"]["is"]){
-            // true line
             switch(condition){
                 case this.dictionary["keywords"]["wall"]:
                     return this.karel.isWall();
@@ -448,7 +338,6 @@ class interpret{
                     return this.karel.isMark();
             }
         } else {
-            // not line
             switch(condition){
                 case this.dictionary["keywords"]["wall"]:
                     return !this.karel.isWall();
@@ -462,51 +351,201 @@ class interpret{
     }
 
     /**
-     * Makes a specified jump in the code, have special sence for IF constructions
-     * @param {string} command is the comand which tells the type of jump
-     * @param {boolean} up if true, jumps up, otherwise down
-     * @param {array} code is the array of strings of the code
-     * @param {number} pos is the actual position in the code
+     * Evaluates given condition in native code
+     * @param {string} codeLine the line where the condition appears
+     * @param {string} lastConditionResult to pass new result
+     * @param {number} line to pass jump to user defined condition
      */
-    codeJumper(command, up, code, pos){
+    nativeCodeConditionEval(codeLine, lastConditionResult, line){
+        if([this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], this.dictionary["keywords"]["mark"]].includes(codeLine[2])){
+            return [(this.checkBaseCondition(codeLine[1], codeLine[2]) === true) ? "true" : "false", line] ;
+        }
+        if(lastConditionResult != "undef"){
+            if(codeLine[1] == this.dictionary["keywords"]["is"]){
+                return [(lastConditionResult == "true") ? "true" : "false", line];
+            } else {
+                return [(lastConditionResult == "false") ? "true" : "false", line];
+            }
+        }
+        return ["undef", this.conditionList[codeLine[2]]];
+    }
+
+    /**
+     * Computes where to jump in code based on given values
+     * @param {string} command is the command which requires jump
+     * @param {boolean} up if true, the jump is upwards in the code, downwards otherwise
+     * @param {Array} code is the array thats produced by nativeCodeSplitter
+     * @param {number} line is the current place in code
+     */
+    nativeCodeJumper(command, up, code, line){
         var numSkip = 0;
         if(command == this.dictionary["keywords"]["if"]){
             while(true){
-                pos++;
-                var words = code[pos].match(/[^\ ]+/g);
-                if(words[0] == command){
-                    numSkip++;
-                } else if(words[0] == "*" + command && numSkip > 0){
+                line ++;
+                if(code[line][0] == command){
+                    numSkip ++;
+                } else if(code[line][0] == "*" + command && numSkip > 0){
                     numSkip--;
-                } else if((words[0] == this.dictionary["keywords"]["else"] && numSkip == 0) || (words[0] == "*" + command && numSkip == 0)){
-                    return pos;
+                } else if((code[line][0] == this.dictionary["keywords"]["else"] && numSkip == 0) || (code[line][0] == "*" + command && numSkip == 0)){
+                    return line;
                 }
             }
         }
         if(up){
             while(true){
-                pos--;
-                var words = code[pos].match(/[^\ ]+/g);
-                if(words[0] == "*" + command){
+                line --;
+                if(code[line][0] == "*" + command){
                     numSkip++;
-                } else if(words[0] == command && numSkip > 0){
+                } else if(code[line][0] == command && numSkip > 0){
                     numSkip--;
-                } else if(words[0] == command && numSkip == 0){
-                    return pos;
+                } else if(code[line][0] == command && numSkip == 0){
+                    return line;
                 }
             }
         } else {
             while(true){
-                pos++;
-                var words = code[pos].match(/[^\ ]+/g);
-                if(words[0] == command){
+                line ++;
+                if(code[line][0] == command){
                     numSkip++;
-                } else if(words[0] == "*" + command && numSkip > 0){
+                } else if(code[line][0] == "*" + command && numSkip > 0){
                     numSkip--;
-                } else if(words[0] == "*" + command && numSkip == 0){
-                    return pos;
+                } else if(code[line][0] == "*" + command && numSkip == 0){
+                    return line;
                 }
             }
+        }
+    }
+
+    /**
+     * Interpret native code from Editor
+     */
+    async nativeCodeInterpretFromEditor(){
+        if(this.running){
+            console.log("ITC error - cannot run multiple programs at the same time");
+            return;
+        }
+
+        this.running = true;
+        var line = this.textEditor.selection.getCursor().row;
+        var code = this.nativeCodeSplitter(this.textEditor.getValue());
+
+        if(!this.nativeCodeChecker(code)){
+            this.running = false;
+            return;
+        }
+
+        var activeCounters = [];    //used for DO loops
+        var programQueue = [];      //used to jump to other programs and return back (saves position from which was jumped)
+        var lastConditionResult = "undef";
+
+        while(code[line][0] != this.dictionary["keywords"]["function"] && code[line][0] != this.dictionary["keywords"]["condition"]){
+            line --;
+            if(line < 0 || code[line][0] == this.dictionary["keywords"]["end"]){
+                console.log("nativeCodeInterpret error - behining of code to be interpreted not found");
+                this.running = false;
+                return;
+            }
+        }
+
+        while(this.running){
+            this.textEditor.gotoLine(line + 1);
+            switch(code[line][0]){
+                case this.dictionary["keywords"]["function"]:
+                case this.dictionary["keywords"]["condition"]:
+                    break;
+                case this.dictionary["keywords"]["end"]:
+                    if(programQueue.length == 0){
+                        this.running = false;
+                        return;
+                    } else {
+                        line = programQueue[programQueue.length - 1]; 
+                        //in next step the N will be incremented so we need to substract the addition to maintain the correct jump
+                        programQueue.pop();
+                    }
+                    break;
+                case this.dictionary["keywords"]["forward"]:
+                    this.karel.goForward();
+                    break;
+                case this.dictionary["keywords"]["right"]:
+                    this.karel.turnRight();
+                    break;
+                case this.dictionary["keywords"]["left"]:
+                    this.karel.turnLeft();
+                    break;
+                case this.dictionary["keywords"]["placeBrick"]:
+                    this.karel.placeBrick();
+                    break;
+                case this.dictionary["keywords"]["pickBrick"]:
+                    this.karel.pickUpBrick();
+                    break;
+                case this.dictionary["keywords"]["placeMark"]:
+                    this.karel.markOn();
+                    break;
+                case this.dictionary["keywords"]["pickMark"]:
+                    this.karel.markOff();
+                    break;
+                case this.dictionary["keywords"]["do"]:
+                    if(parseInt(code[line][1]) == 0){
+                        line = this.nativeCodeJumper(this.dictionary["keywords"]["do"], false, code, line);
+                    } else {
+                        activeCounters.push(code[line][1]); 
+                    }
+                    break;
+                case "*" + this.dictionary["keywords"]["do"]:
+                    activeCounters[activeCounters.length - 1] --;
+                    if(activeCounters[activeCounters.length - 1] > 0){
+                        line = this.nativeCodeJumper(this.dictionary["keywords"]["do"], true, code, line);
+                    } else {
+                        activeCounters.pop();
+                    }
+                    break;
+                case this.dictionary["keywords"]["while"]:
+                    var result = this.nativeCodeConditionEval(code[line], lastConditionResult, line);
+                    lastConditionResult = "undef";
+                    if(result[0] == "undef"){
+                        programQueue.push(line - 1);
+                        line = result[1];
+                    } else if(result[0] == "false"){
+                        line = this.nativeCodeJumper(this.dictionary["keywords"]["while"], false, code, line);
+                    }
+                    break;
+                case "*" + this.dictionary["keywords"]["while"]:
+                    line = this.nativeCodeJumper(this.dictionary["keywords"]["while"], true, code, line) - 1;
+                    break;
+                case this.dictionary["keywords"]["if"]:
+                    var result = this.nativeCodeConditionEval(code[line], lastConditionResult, line);
+                    lastConditionResult = "undef";
+                    if(result[0] == "undef"){
+                        programQueue.push(line - 1);
+                        line = result[1];
+                    } else if(result[0] == "false"){
+                        line = this.nativeCodeJumper(this.dictionary["keywords"]["if"], false, code, line);
+                    }
+                    break;
+                case this.dictionary["keywords"]["else"]:
+                    line = this.nativeCodeJumper(this.dictionary["keywords"]["if"], false, code, line);
+                    break;
+                case this.dictionary["keywords"]["then"]:
+                case "*" + this.dictionary["keywords"]["if"]:
+                    break;
+                case this.dictionary["keywords"]["true"]:
+                    lastConditionResult = "true";
+                    break;
+                case this.dictionary["keywords"]["false"]:
+                    lastConditionResult = "false";
+                    break;
+                case "#":
+                    break;
+                default:
+                    if(!(code[line][0] in this.commandList)){
+                        console.log("ITC error - unexpected word - " + code[line][0]);
+                        return;
+                    }
+                    programQueue.push(line);
+                    line = this.commandList[code[line][0]];
+            }
+            line ++;
+            await sleep(125);
         }
     }
 }

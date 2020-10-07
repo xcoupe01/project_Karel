@@ -1,38 +1,36 @@
 export function setLang(){
-    var dictionary = {};
-    var keywords = {};
-    var blocklyCategory = {};
-    keywords["function"] = "prikaz";
-    keywords["condition"] = "podminka";
-    keywords["end"] = "konec";
-    keywords["forward"] = "krok";
-    keywords["right"] = "vpravo";
-    keywords["left"] = "vlevo";
-    keywords["placeBrick"] = "poloz";
-    keywords["pickBrick"] = "zvedni";
-    keywords["placeMark"] = "oznac";
-    keywords["pickMark"] = "odznac";
-    keywords["do"] = "udelej";
-    keywords["times"] = "krat";
-    keywords["while"] = "dokud";
-    keywords["is"] = "je";
-    keywords["isNot"] = "neni";
-    keywords["wall"] = "zed";
-    keywords["brick"] = "cihla";
-    keywords["mark"] = "znacka";
-    keywords["if"] = "kdyz";
-    keywords["then"] = "tak";
-    keywords["else"] = "jinak";
-    keywords["true"] = "pravda";
-    keywords["false"] = "nepravda";
-
-    blocklyCategory["base"] = "Základ";
-    blocklyCategory["functions"] = "Funkce";
-    blocklyCategory["progFlow"] = "Řízení toku";
-    blocklyCategory["condition"] = "Podmínky";
-
-    dictionary["keywords"] = keywords;
-    dictionary["blocklyCategory"] = blocklyCategory;
-    return dictionary;
+    return {
+        "keywords" : {
+            "function"      : "prikaz",
+            "condition"     : "podminka",
+            "end"           : "konec",
+            "forward"       : "krok",
+            "right"         : "vpravo",
+            "left"          : "vlevo",
+            "placeBrick"    : "poloz",
+            "pickBrick"     : "zvedni",
+            "placeMark"     : "oznac",
+            "pickMark"      : "odznac",
+            "do"            : "udelej",
+            "times"         : "krat",
+            "while"         : "dokud",
+            "is"            : "je",
+            "isNot"         : "neni",
+            "wall"          : "zed",
+            "brick"         : "cihla",
+            "mark"          : "znacka",
+            "if"            : "kdyz",
+            "then"          : "tak",
+            "else"          : "jinak",
+            "true"          : "pravda",
+            "false"         : "nepravda"
+        },
+        "blocklyCategory" : {
+            "base"      : "Základ",
+            "functions" : "Funkce",
+            "progFlow"  : "Řízení toku",
+            "condition" : "Podmínky",
+        }
+    };
 }
 
