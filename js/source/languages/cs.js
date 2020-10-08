@@ -19,11 +19,15 @@ export function setLang(){
             "wall"          : "zed",
             "brick"         : "cihla",
             "mark"          : "znacka",
+            "vacant"        : "volno",
             "if"            : "kdyz",
             "then"          : "tak",
             "else"          : "jinak",
             "true"          : "pravda",
-            "false"         : "nepravda"
+            "false"         : "nepravda",
+            "faster"        : "rychle",
+            "slower"        : "pomalu",
+            "beep"          : "pip"
         },
         "blocklyCategory" : {
             "base"      : "Základ",

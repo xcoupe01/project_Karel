@@ -15,10 +15,13 @@ class karel{
      * @param {contols} controls are the controls of the camera of the scene
      */
     constructor(scene, controls){
-        this.scene = scene;
-        this.controls = controls;
-        this.room = new room(scene);
-        this.room.draw(controls, 8, 8);
+        this.scene = scene;                         // scene handle
+        this.controls = controls;                   // controls handle
+        this.room = new room(scene);                // creates himself a room to be in
+        this.room.draw(controls, 8, 8);             // implicitly the room is 8 by 8
+        this.sound = new Audio();                   // audio handle
+        this.sound.src = "sounds/karelBeep.mp3";    // connecting file to the handle
+        this.maxStepUp = 1;                         // number of bricks that Karel can climb
     }
 
     /**
@@ -43,7 +46,7 @@ class karel{
         ]
         this.graphicalObject = new THREE.Mesh(geometry, material);
         this.scene.add(this.graphicalObject);
-        this.graphicalObject.position.y = 0.55;
+        this.correctHeight();
     }
 
     /**
@@ -86,40 +89,27 @@ class karel{
      * Makes step in a given direction, also controls to not get out of the room and for step height limitation
      */
     goForward(){
-        const maxStepUp = 1; // number of bricks that Karel can climb
-        if(!this.isWall()){
+        if(this.isVacant()){
             switch(this.orientation){
                 case 0:
-                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + maxStepUp >= 
-                        this.room.roomDataArray[this.positionX][this.positionY - 1].bricks){
-                       this.positionY--;
-                       this.graphicalObject.position.z -= (this.room.blockSize + this.room.blockGap); 
-                       this.correctHeight();
-                   }
-                   break;
+                    this.positionY--;
+                    this.graphicalObject.position.z -= (this.room.blockSize + this.room.blockGap); 
+                    this.correctHeight();
+                    break;
                 case 1:
-                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + maxStepUp >= 
-                        this.room.roomDataArray[this.positionX + 1][this.positionY].bricks){
-                        this.positionX++;
-                        this.graphicalObject.position.x += (this.room.blockSize + this.room.blockGap);
-                        this.correctHeight();
-                    }
+                    this.positionX++;
+                    this.graphicalObject.position.x += (this.room.blockSize + this.room.blockGap);
+                    this.correctHeight();
                     break;
                 case 2:
-                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + maxStepUp >= 
-                        this.room.roomDataArray[this.positionX][this.positionY + 1].bricks){
-                        this.positionY++;
-                        this.graphicalObject.position.z += (this.room.blockSize + this.room.blockGap);
-                        this.correctHeight();
-                    }
+                    this.positionY++;
+                    this.graphicalObject.position.z += (this.room.blockSize + this.room.blockGap);
+                    this.correctHeight();
                     break;
                 case 3:
-                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + maxStepUp >= 
-                        this.room.roomDataArray[this.positionX - 1][this.positionY].bricks){
-                        this.positionX--;
-                        this.graphicalObject.position.x -= (this.room.blockSize + this.room.blockGap);
-                        this.correctHeight();
-                    }
+                    this.positionX--;
+                    this.graphicalObject.position.x -= (this.room.blockSize + this.room.blockGap);
+                    this.correctHeight();
                     break;
             }
         }
@@ -202,9 +192,17 @@ class karel{
             this.markOn();
         }
     }
+
+    /**
+     * Plays a predefined sound
+     */
+    beep(){
+        this.sound.play();
+    }
     
     /**
      * Tells if the robot looks directly to the wall, also checks for the "holes" in the room
+     * @returns true if there is a wall in front of Karel
      */
     isWall(){
         switch(this.orientation){
@@ -221,6 +219,7 @@ class karel{
 
     /**
      * Tells if there is at least one brick in front of robot
+     * @returns true if there is at least one brick in fron of Karel
      */
     isBrick(){
         if(this.isWall()){
@@ -240,9 +239,46 @@ class karel{
 
     /**
      * Tells if robot stays on mark or not
+     * @returns true if there is mark on the current Karel's position
      */
     isMark(){
         return this.room.roomDataArray[this.positionX][this.positionY].mark;
+    }
+
+    /**
+     * Tells if robot can go to the facing block
+     * @returns true if the block in front of him is vacant (so he is able to go there), false otherwise
+     */
+    isVacant(){
+        if(!this.isWall()){
+            switch(this.orientation){
+                case 0:
+                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
+                        this.room.roomDataArray[this.positionX][this.positionY - 1].bricks){
+                       return true;
+                    }
+                    break;
+                case 1:
+                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
+                        this.room.roomDataArray[this.positionX + 1][this.positionY].bricks){
+                        return true;
+                    }
+                    break;
+                case 2:
+                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
+                        this.room.roomDataArray[this.positionX][this.positionY + 1].bricks){
+                        return true;
+                    }
+                    break;
+                case 3:
+                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
+                        this.room.roomDataArray[this.positionX - 1][this.positionY].bricks){
+                        return true;
+                    }
+                    break;
+            }
+        }
+        return false;
     }
 
     /**
@@ -277,6 +313,7 @@ class karel{
      * Resizes room to a specified dimensions
      * The dimensions must be greater then 1 and less or equal the 100 for now
      * The current data before calling this method will be forgotten
+     * The program asks the user if he really want to delete the old room
      * @param {*} valueX is the X dimension of the new room
      * @param {*} valueY is the Y dimension of the new room
      */

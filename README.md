@@ -1,43 +1,24 @@
-# Project Karel
+# Projek Karel 3D
 ### Author - Vojtěch Čoupek
+### Bakalářksá práce za podpory VUT FIT Brno a Gymnasium Šlapanice
 
-**Last update - 6.10.2020**
+![alt text](https://gympl.gslapanice.cz/themes/slapanice/images/gympls.jpg)
 
+![alt text](https://pbs.twimg.com/media/CSPA_wFWUAAUobu.png)
+
+**Last update - 8.10.2020**
+
+**English version below**
 ___
+## Téma projektu
+Cílem projektu je implementovat pedagogický nástroj, které by hravým způsobem seznámil žáky druhých stupňů a nišších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána [této adrese](http://karel.webz.cz/uvodni-strana), kde je i originální verze dostupná a například pomocí emulátoru `DOSBox` spustitelná. Zkráceně aplikace `Robot Karel 3D` umožnuje převzetí kontroly nad robotem v místnosti, a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na předělání originálu do moderního prostředí a zapojit moderní prvky, které jsou dnes již běžnou součástí při vyučování. Detailnější popis vylepnšení níže.
 
-
-Je potřeba spouštět přes lokální server, nejlépe v adresáři projektu spustit server pomocí PHP přes command `php -S 127.0.0.1:8080` a prozatím je potřeba mít dostupný internet pro stuštění.
-Grafika obsahuje placeholder objekty, opravdové modely budou doplněny v budoucnu.
-Programování je v základní míře dostupné v textové podobě, bloková možnost bude doplněna, zvýrazňování syntaxe zatím v základní verzi.
-Pro ovládání Karla v místnosti je potřeba kliknout do oblasti místnosti a použít klávesy: 
-
-- `W` pro krok vpřed 
-- `A` pro otočení vlevo 
-- `D` pro otočení vpravo
-- `O` pro označení nebo odznačení aktuální karlovy pozice
-- `P` pro položení cihly
-- `Z` pro zvednutí cihly 
-- `I` pro odebrání nebo vrácení políčka před Karlem
-- myší lze pohybovat kamerou v místnosti. 
-
-Popis tlačítek ovládající aplikaci:
-
-- `textarea` - prozatimní prostor pro generování kódu z blokového programování
-- `run` - spuštění kódu v aktuální pozici kurzoru
-- `stop` - zastavení probíhajícího kódu
-- `room` - nastavení rozměrů místnosti na hodnoty z následujících polí
-- `X value` - "x-ový" rozměr místnosti pro nastavení
-- `Y value` - "y-ový" rozměr místnosti pro nastavení
-- `test` - prozatimní interní testovací tlačítko
-
-Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly. Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze momentálně přepnout. Momentálně implementovaná verze blokového programování generuje kód do textové oblasti u tlačítek. Tento kód sám o sobě není přímo interpretovatelný ale po nakopírování textu do editoru pro kód by zde měl jít spustit.
-
-**Použité zdroje:**
+## Použité zdroje:
 - ACE code editor (https://ace.c9.io/)
 - Three.js web 3D graphics (https://threejs.org/)
 - Blockly programming (https://developers.google.com/blockly)
 
-**Plán funkcí projektu**
+## Plán funkcí projektu
 - 3D prostředí
     - <span style="color:green"> implementováno pomocí Three.js 
     - <span style="color:green"> implementovány objekty z originálního Karla 
@@ -51,7 +32,7 @@ Karel může vylézt pouze na políčko s maximálním převýšením jedné cih
     - <span style="color:green"> implementováno pomocí Blockly.js
     - <span style="color:green"> implementovány základní bloky
     - <span style="color:green"> implementováno generování přepisu do nativního jazyka
-    - v plánu spouštění a propojení s interpretem
+    - <span style="color:green"> implementováno spouštění a propojení s interpretem
     - v plánu možnost definování vlastních bloků
 - syntaktická kontrola textu
     - <span style="color:green"> implementována kontrola s tabulkovým zadáváním kontrol
@@ -83,14 +64,113 @@ Karel může vylézt pouze na políčko s maximálním převýšením jedné cih
     - v plánu vlastní lehce modifikovatelné prostředí
     - v plánu různé témata
 
+## Spuštění
+Je potřeba spouštět přes lokální server, nejlépe v adresáři projektu spustit server pomocí PHP například přes command `php -S 127.0.0.1:8080` a prozatím je potřeba mít dostupný internet pro stuštění.
+
+## Popis kódového programování
+Kód pište do nejpravějšího ze tří zobrazených oken - `Editor kódu`. Dostupné kódové programování obsahuje všechny originální příkazy z aplikace `Robot Karel 3D`, jmenovitě to jsou příkazy:
+- `krok` - robot udělá krok vpřed
+- `vpravo` - robot se otočí doprava
+- `vlevo` - robot se otočí doleva
+- `poloz` - robot položí cihlu
+- `zvedni` - robot zvedne cihlu
+- `oznac` - robot označí pole
+- `odznac` - robot odznačí pole
+- `rychle` - robot se přepne do rychlého režimu
+- `pomalu` - robot se přepne do pomalého režimu
+- `pip` - robot přehraje upozornění
+
+Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly.Tyto příkazy lze různě podle potřeby skládat zasebe jako v každém jiném programovacím jazyku, je ale potřeba, **aby na každém řádku byl pouze jeden příkaz**. Příkazy lze vkládat i do strukrur jako jsou:
+- `udelej` - struktura, která vykoná daný kód N krát. 
+    ```
+    udelej [N] krat
+        [prikazy]
+    *udelej
+    ```
+- `dokud` - struktura, která vykonává kód dokud platí podmínka.
+    ```
+    dokud [je/neni] [podminka]
+        [prikazy]
+    *dokud
+    ```
+- `kdyz` - struktura, která vykoná část kódu pokud podmínka platí, případně jinou část pokud neplatí. Část jinak je nepovinná.
+    ```
+    kdyz [je/neni] [podminka]
+    tak
+        [prikazy]
+    jinak
+        [prikazy]
+    *kdyz
+    ```
+Dále je zapotřebí tvořit vlastní bolky kódu ohraničené těmito způsoby:
+- vytvoření příkazu - je možno vytvořit vlastní příkaz, kterému je nutno přidělit vlastní název nekolidující s jinýmy příkazy (jak vestavěnými tak uživatelsky vytvořenými). Příkaz je pak možné volat v dalších příkazech. 
+    ```
+    prikaz [nazev]
+        [prikazy]
+    konec  
+    ```
+- vytvoření podmínky - je možnost vytvořit vlastní podmínku. Je opět nutno přidělit vlastní název, aby byla později volatelná. Očekává se, že bude obsahovat příkazy `pravda` nebo `nepravda` ve svém kódu.
+    ```
+    podminka [nazev]
+        [prikazy]
+        kdyz [je/neni] [podminka]
+        tak
+            pravda
+        jinak
+            nepravda
+        *kdyz
+    konec
+    ```
+Pokud je při interpretaci jazyka nalezen nějaký problém, aplikace o tom informuje do konzole prohlížeče.
+
+## Popis blokového programování
+Blokové programování je syntakticky velmi podobné (ne li stejné) jako textové programování. Bloky jsou schovány pod svými kategoriemi a funkčností přímo korespondují na textovou reprezentaci. V momentální implementaci se spustí nejvyše postavená sestava bloků v pracovním poli.
+
+## Popis UI
+Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku
+- Místnost s robotem - ovládání
+    - `W` pro krok vpřed 
+    - `A` pro otočení vlevo 
+    - `D` pro otočení vpravo
+    - `O` pro označení nebo odznačení aktuální karlovy pozice
+    - `P` pro položení cihly
+    - `Z` pro zvednutí cihly 
+    - `I` pro odebrání nebo vrácení políčka před Karlem
+    - myší a šipkami lze pohybovat kamerou v místnosti. 
+- Blokový editor
+- Textový editor
+
+Pod těmito prvky se nachází sada tlačítek pro ovládání
+- `run code` - spuštění kódu v textovém editoru na aktuální pozici kurzoru
+- `run blocks` - spuštění blokového programu, který je nejvýše na ploše
+- `stop` - zastavení probíhajícího kódu
+- `room` - nastavení rozměrů místnosti na hodnoty z následujících polí
+- `X value` - "x-ový" rozměr místnosti pro nastavení
+- `Y value` - "y-ový" rozměr místnosti pro nastavení
+- `test` - prozatimní interní testovací tlačítko
+- (`textarea` - prozatimní prostor pro generování kódu z blokového programování)
+
+## Upozornění
+- Nejedná se o finální produkt a aplikace je pouze v ranné fázi vývoje.
+- Grafika obsahuje placeholder objekty, opravdové modely budou doplněny v budoucnu.
+- Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze v aktuálním stavu přepnout.
 ___
 
+# English Version
 
+## Subject of this project
+
+Subject of this project is to recreate application `Robot Karel 3D` which is used to teach kids to code. Sadly the english version of my project is not ready yet but it will be up soon. 
+
+## How to run 
 You need to run local server for Karel to function properly. Easiest way is to run PHP server with command `php -S 127.0.0.1:8080` in the project folder and you need internet connection for it to load properly.
-Graphics contains placeholder objects for now, real models will be added in the future.
-Programming is accesable in text form, block programing will be added in the future, as well as english syntax highlight.
-To control Karel directly, you need to click in the Karel's room and use:
 
+## Disclaimer
+- This is not the final version and future functions will be added
+- Graphics contains placeholder objects for now, real models will be added in the future.
+- English version not supported yet
+
+## Room controls
 - `W` to go forward
 - `A` to rotate left
 - `D` to rotate right
@@ -100,8 +180,7 @@ To control Karel directly, you need to click in the Karel's room and use:
 - `I` to remove or return block in front of Karel
 - mouse to move camera in the room
 
-Button description:
-
+## Button description
 - `textarea` - space where generated code from block generator appears
 - `run` - to run currently selected (with cursor) program in text editor
 - `stop` - to stop currently running code
@@ -109,27 +188,9 @@ Button description:
 - `X value` - x dimension of the room for set
 - `Y value` - y dimension of the room for set
 - `test` - provisional developer only button
- 
- Karel can climb only one step at a time.At the moment you can use only czech version but english is implemented in the code and will be made as an option soon. Current block programing cannot only creates code in the text area below the room. It cannot be interpreted from here but you can copy it to the code editor field and it sholud run as expected.
 
-**Used resources:**
+## Used resources
 - ACE code editor (https://ace.c9.io/)
 - Three.js web 3D graphics (https://threejs.org/)
 - Blockly programming (https://developers.google.com/blockly)
-
-
-**Road map**
-
-- 3D graphics
-- text code editing
-- block code editing
-- text syntax check
-- simple debugger
-- user reachable room modification
-- numbers and variables adition
-- languages adition
-- google disk saving
-- studiing campain and exercice list
-- custom 3D models for room
-- custom GUI
 

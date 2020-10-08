@@ -110,6 +110,42 @@ Blockly.Blocks['function_false'] = {
   }
 };
 
+Blockly.Blocks['function_faster'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.langDictionary["keywords"]["faster"]);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(90);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+Blockly.Blocks['function_slower'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.langDictionary["keywords"]["slower"]);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(90);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+Blockly.Blocks['function_beep'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.langDictionary["keywords"]["beep"]);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(90);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
 Blockly.Blocks['control_repeat'] = {
   init: function() {
     this.appendDummyInput()
@@ -213,6 +249,17 @@ Blockly.Blocks['condition_mark'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["mark"]);
+    this.setOutput(true, "condition");
+    this.setColour(270);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+Blockly.Blocks['condition_vacant'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.langDictionary["keywords"]["vacant"]);
     this.setOutput(true, "condition");
     this.setColour(270);
     this.setTooltip("");

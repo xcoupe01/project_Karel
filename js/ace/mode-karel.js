@@ -9,8 +9,8 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
 var karelHighlightRules = function() {
     var keywords = ("prikaz|příkaz|podminka|konec|kdyz|tak|jinak|\*kdyz|udelej|udělej|\*udelej|dokud|\*dokud|\*udělej|krat");
-    var builtinConstants = ("pravda|nepravda|zed|cihla|znacka|je|neni");
-    var functions = ("krok|vlevo|vpravo|oznac|odznac|poloz|zvedni");
+    var builtinConstants = ("pravda|nepravda|zed|cihla|znacka|je|neni|volno");
+    var functions = ("krok|vlevo|vpravo|oznac|odznac|poloz|zvedni|rychle|pomalu|pip");
 
     var keywordMapper = this.createKeywordMapper({
         "keyword": keywords,

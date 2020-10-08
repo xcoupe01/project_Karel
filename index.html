@@ -99,12 +99,22 @@ prikaz rekurze_test
         rekurze_test
     *kdyz
     krok
+konec
+
+prikaz test_volno
+    kdyz je volno
+    tak
+        krok
+    jinak
+        vlevo
+    *kdyz
 konec</div>
     </div>
-    <textarea id="textArea"></textarea>
 </body>
 
-<input type="button" value="run" id="run">
+
+<input type="button" value="run code" id="runCode">
+<input type="button" value="run blocks" id="runBlocks">
 <input type="button" value="stop" id="stop">
 <input type="button" value="room" id="room">
 <label for="xVal">X value</label>
@@ -112,6 +122,8 @@ konec</div>
 <label for="yVal">Y value</label>
 <input type="text" name="yVal" id="yVal">
 <input type="button" value="test" id="test">
+<br>
+<textarea id="textArea" style="display:none"></textarea>
 
 <!-- ace settings - best works here -->
 <script src="js/ace/ace.js" charset="utf-8"></script>
@@ -121,13 +133,14 @@ konec</div>
 <script src="js/blockly/karel_blocks.js"></script>
 <script src="js/blockly/karel_blocks_generator.js"></script>
 <script src="js/blockly/msg/js/en.js"></script>
+
 <xml id="toolbox" style="display: none">
     <category name="Základ" colour="0">
         <block type="base_function">
-            <field name="PROG_NAME"></field>
+            <field name="PROG_NAME">nazev</field>
         </block>
         <block type="base_condition">
-            <field name="COND_NAME"></field>
+            <field name="COND_NAME">nazev</field>
         </block>
     </category>
     <category name="Funkce" colour="90">
@@ -140,6 +153,9 @@ konec</div>
         <block type="function_unmark"></block>
         <block type="function_true"></block>
         <block type="function_false"></block>
+        <block type="function_faster"></block>
+        <block type="function_slower"></block>
+        <block type="function_beep"></block>
     </category>
     <category name="Řízení toku" colour="180">
         <block type="control_repeat">
@@ -158,7 +174,8 @@ konec</div>
     <category name="Podmínky" colour="270">
         <block type="condition_brick"></block>
         <block type="condition_wall"></block>
-        \<block type="condition_mark"></block>
+        <block type="condition_mark"></block>
+        <block type="condition_vacant"></block>
     </category>
 </xml>
 

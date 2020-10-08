@@ -3,7 +3,6 @@
 // from https://threejsfundamentals.org/threejs/threejs-load-obj-wat.html
 
 import {karel} from './source/karel.js';
-import {room} from './source/room.js';
 import * as THREE from './three/three.module.js';
 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r119/examples/jsm/controls/OrbitControls.js';
 import {interpret} from './source/interpret.js';
@@ -143,19 +142,20 @@ import('./source/languages/cs.js')
         blocklySetBlockLang(module.setLang());
 });
 
-document.querySelector('#run').onclick = function() {mainInterpret.nativeCodeInterpretFromEditor()};
+document.querySelector('#runCode').onclick = function() {mainInterpret.nativeCodeInterpretFromEditor()};
+document.querySelector('#runBlocks').onclick = function() {mainInterpret.nativeCodeInterpretFromBlockly()};
 document.querySelector('#stop').onclick = function() {mainInterpret.stopExecuting()};
 document.querySelector('#room').onclick = function(){mainInterpret.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value)};
 document.querySelector('#test').onclick = function() { 
-    /*
-    make editor disappear
-    var x = document.getElementById("textEditor");
+    
+    // make block text representation disappear
+    var x = document.getElementById("textArea");
     if (x.style.display === "none") {
         x.style.display = "block";
     } else {
         x.style.display = "none";
     }
-    */
+
     /*
    //way to change languages 
    import('./source/languages/en.js')
@@ -164,5 +164,4 @@ document.querySelector('#test').onclick = function() {
         blocklySetBlockLang(module.setLang());
     });
     */
-   console.log(mainInterpret.nativeCodeChecker(mainInterpret.nativeCodeSplitter(editor.getValue())));
 };

@@ -90,6 +90,36 @@ Blockly.Karel['function_false'] = function(block){
     return code;
 }
 
+Blockly.Karel['function_faster'] = function(block){
+    var code = Blockly.langDictionary["keywords"]["faster"];
+    if(block.getNextBlock() != null){
+        code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
+    }else {
+        code += "\n";
+    }
+    return code;
+}
+
+Blockly.Karel['function_slower'] = function(block){
+    var code = Blockly.langDictionary["keywords"]["slower"];
+    if(block.getNextBlock() != null){
+        code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
+    }else {
+        code += "\n";
+    }
+    return code;
+}
+
+Blockly.Karel['function_beep'] = function(block){
+    var code = Blockly.langDictionary["keywords"]["beep"];
+    if(block.getNextBlock() != null){
+        code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
+    }else {
+        code += "\n";
+    }
+    return code;
+}
+
 Blockly.Karel['control_repeat'] = function(block){
     var code = Blockly.langDictionary["keywords"]["do"] + " " + block.getFieldValue('DO_TIMES') + " " + Blockly.langDictionary["keywords"]["times"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
@@ -171,6 +201,10 @@ Blockly.Karel['condition_brick'] = function(){
 
 Blockly.Karel['condition_mark'] = function(){
     return [Blockly.langDictionary["keywords"]["mark"], 0];
+}
+
+Blockly.Karel['condition_vacant'] = function(){
+    return [Blockly.langDictionary["keywords"]["vacant"], 0];
 }
 
 Blockly.Karel['base_function'] = function(block){
