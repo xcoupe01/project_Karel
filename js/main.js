@@ -18,9 +18,8 @@ function start() {
     const fov = 45;
     const aspect = 2;  // the canvas default
     const near = 0.1;
-    const far = 1000;
+    const far = 100;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.position.set(-10, 10, -10);
 
     const controls = new OrbitControls(camera, canvas);
 
@@ -29,8 +28,12 @@ function start() {
 
     var mainKarel = new karel(scene, controls);
     mainKarel.draw();
+    mainKarel.homeCamera(camera);
+    var mainInterpret =  new interpret(editor, mainKarel);
+
     document.querySelector('#roomCanvas').addEventListener('keydown', function(event) {
-        if(event.keyCode == 87){
+        if(mainInterpret.getRunning() == false){
+            if(event.keyCode == 87){
                 mainKarel.goForward();
             }
             else if(event.keyCode == 68){
@@ -51,9 +54,9 @@ function start() {
             else if(event.keyCode == 73){
                 mainKarel.toggleRoomBlock();
             }
-        });
+        }
+    });
 
-    var mainInterpret =  new interpret(editor, mainKarel);
 
     function resizeRendererToDisplaySize(renderer) {
         const canvas = renderer.domElement;
@@ -144,8 +147,10 @@ import('./source/languages/cs.js')
 
 document.querySelector('#runCode').onclick = function() {mainInterpret.nativeCodeInterpretFromEditor()};
 document.querySelector('#runBlocks').onclick = function() {mainInterpret.nativeCodeInterpretFromBlockly()};
+document.querySelector('#runDebug').onclick = function() {mainInterpret.nativeCodeDebugInterpretFromEditor();};
 document.querySelector('#stop').onclick = function() {mainInterpret.stopExecuting()};
 document.querySelector('#room').onclick = function(){mainInterpret.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value)};
+document.querySelector('#homeCamera').onclick = function() {mainInterpret.karel.homeCamera()};
 document.querySelector('#test').onclick = function() { 
     
     // make block text representation disappear
@@ -155,7 +160,6 @@ document.querySelector('#test').onclick = function() {
     } else {
         x.style.display = "none";
     }
-
     /*
    //way to change languages 
    import('./source/languages/en.js')

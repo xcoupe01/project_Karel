@@ -2,11 +2,11 @@
 ### Author - Vojtěch Čoupek
 ### Bakalářksá práce za podpory VUT FIT Brno a Gymnasium Šlapanice
 
-![alt text](https://gympl.gslapanice.cz/themes/slapanice/images/gympls.jpg)
+[![Foo](https://gympl.gslapanice.cz/themes/slapanice/images/gympls.jpg)](https://gympl.gslapanice.cz/)
+[![Foo](https://pbs.twimg.com/media/CSPA_wFWUAAUobu.png)](https://www.fit.vut.cz/.cs)
 
-![alt text](https://pbs.twimg.com/media/CSPA_wFWUAAUobu.png)
 
-**Last update - 8.10.2020**
+**Last update - 12.10.2020**
 
 **English version below**
 ___
@@ -39,7 +39,8 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> implementován přehledný interpret nativního kódu
     - možná s využitím ACE
     - jednoduchý debugger
-    - v plánu možnost spuštění s krokováním (možná breakpointy s ACE)
+    - <span style="color:green"> implementována možnost spuštění s krokováním 
+    - (možná breakpointy s ACE)
 - uživatelsky dostupné modifikace místnosti
     - <span style="color:green"> implementováno nastavení rozměrů místnosti
     - v plánu ukládání a načítání místosti
@@ -143,10 +144,12 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku
 Pod těmito prvky se nachází sada tlačítek pro ovládání
 - `run code` - spuštění kódu v textovém editoru na aktuální pozici kurzoru
 - `run blocks` - spuštění blokového programu, který je nejvýše na ploše
+- `run debug` - možnost spuštění s krokováním (po každém kliknutí na tlačítko se provede jeden řádek)
 - `stop` - zastavení probíhajícího kódu
 - `room` - nastavení rozměrů místnosti na hodnoty z následujících polí
 - `X value` - "x-ový" rozměr místnosti pro nastavení
 - `Y value` - "y-ový" rozměr místnosti pro nastavení
+- `home camera` - vrátí kameru místnosti do základní pozice (buď po nastartování aplikace a nebo při změně místnosti)
 - `test` - prozatimní interní testovací tlačítko
 - (`textarea` - prozatimní prostor pro generování kódu z blokového programování)
 
@@ -156,7 +159,7 @@ Pod těmito prvky se nachází sada tlačítek pro ovládání
 - Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze v aktuálním stavu přepnout.
 ___
 
-# English Version
+# English Version - Full english descritpion will be added after English language mutation will be implemented properly
 
 ## Subject of this project
 
@@ -183,10 +186,12 @@ You need to run local server for Karel to function properly. Easiest way is to r
 ## Button description
 - `textarea` - space where generated code from block generator appears
 - `run` - to run currently selected (with cursor) program in text editor
+- `run debug` - simple debug mode, by clicking on this button Karel will do one line of code
 - `stop` - to stop currently running code
 - `room` - to set the roomsize based on the next two fields
 - `X value` - x dimension of the room for set
 - `Y value` - y dimension of the room for set
+- `home camera` - resets the camera to the staring position
 - `test` - provisional developer only button
 
 ## Used resources

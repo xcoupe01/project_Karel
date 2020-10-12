@@ -3,13 +3,19 @@ export {interpret};
 class interpret{
 
     constructor(textEditor, karel){
-        this.dictionary = {};           // current language dictionary
-        this.karel = karel;             // given robot karel to operate with
-        this.textEditor = textEditor;   // given text editor to interpret
-        this.commandList = {};          // user defined commands list dictionary
-        this.conditionList = {};        // user defined condition list dictionary
-        this.running = false;           // tells if Karel is executing code
-        this.speed = 125;               // tells the time for interpet step
+        this.dictionary = {};                   // current language dictionary
+        this.karel = karel;                     // given robot karel to operate with
+        this.textEditor = textEditor;           // given text editor to interpret
+        this.commandList = {};                  // user defined commands list dictionary
+        this.conditionList = {};                // user defined condition list dictionary
+        this.running = false;                   // tells if Karel is executing code
+        this.speed = 125;                       // tells the time for interpet step
+        this.activeCounters = [];               // used for DO loops
+        this.programQueue = [];                 // used to jump to other programs and return back (saves position from which was jumped)
+        this.lastConditionResult = "undef";     // used for user defined condition evaluation
+        this.interpretMode = "standard";        // tells in which state is the interpret
+        this.line = 0;                          // actual interpret line position in the code 
+        this.code = [];                         // code formated by function nativeCodeSplitter
     }
     
     /**
@@ -84,17 +90,16 @@ class interpret{
 
     /**
      * Splits the native code to array, Its use as a basic interpret format here
-     * @param {string} code is the string to be splitted
-     * @returns the code splitted by lines in an array
+     * The result is stored in `this.code` variable
+     * @param {string} codeString is the string to be splitted
      */
-    nativeCodeSplitter(code){
-        var arrayCode = [];
-        var splitCode = code.split(/\r?\n/);
+    nativeCodeSplitter(codeString){
+        this.code = [];
+        var splitCode = codeString.split(/\r?\n/);
         for(var i = 0; i < splitCode.length; i++){
             splitCode[i] = splitCode[i].trim();
-            arrayCode[i] = splitCode[i].split(/\ +/);
+            this.code[i] = splitCode[i].split(/\ +/);
         }
-        return arrayCode;
     }
 
     /**
@@ -192,10 +197,13 @@ class interpret{
     /**
      * Checks Karel's native code
      * If an error is found, information is posted in the console
-     * @param {string} code is the code to be interpreted
+     * Code thats beeing checked is located in `this.code`
+     * it does not utulize the `this.line` varibale
+     * It also scans for command and condition definitions and stores them in catalogue (`this.commandList` and `this.conditionList`)
+     * Utulizes the rules created by `createNativeRulesTable` function
      * @returns true if the code is correct, false otherwise
      */
-    nativeCodeChecker(code){
+    nativeCodeChecker(){
 
         this.commandList = {};
         this.conditionList = {};
@@ -204,9 +212,9 @@ class interpret{
         var rules = this.createNativeRulesTable();
         var currentRule;
 
-        for(var line = 0; line < code.length; line++){
+        for(var line = 0; line < this.code.length; line++){
             currentRule = [];
-            switch(code[line][0]){
+            switch(this.code[line][0]){
                 case this.dictionary["keywords"]["function"]:
                     currentRule = rules["function"];
                     break;
@@ -239,14 +247,14 @@ class interpret{
                     currentRule = rules["if"]["end"];
                     break;
                 default:
-                    if(code[line][0].startsWith("#")){
+                    if(this.code[line][0].startsWith("#")){
                         currentRule = rules["comment"];
                     } else {
                         currentRule = rules["def"];
                     }
             }
 
-            if(currentRule["token"] != "comment" && code[line].length != currentRule["checks"][0]){
+            if(currentRule["token"] != "comment" && this.code[line].length != currentRule["checks"][0]){
                 console.log("nativeCodeChecker error - bad number of word on line [" + line + "]");
                 return false;
             }
@@ -279,39 +287,39 @@ class interpret{
                         }
                         break;
                     case "checkKWTimes":
-                        if(code[line][2] != this.dictionary["keywords"]["times"]){
+                        if(this.code[line][2] != this.dictionary["keywords"]["times"]){
                             console.log("nativeCodeChecker error - checkKWTimes check failed at line [" + line + "]");
                             return false;
                         }
                         break;
                     case "checkNumber":
-                        if(isNaN(parseInt(code[line][1]))){
+                        if(isNaN(parseInt(this.code[line][1]))){
                             console.log("nativeCodeChecker error - checkNumber check failed at line [" + line + "]");
                             return false;
                         }
                         break;
                     case "checkCondPrefix":
-                        if(![this.dictionary["keywords"]["is"], this.dictionary["keywords"]["isNot"]].includes(code[line][1])){
+                        if(![this.dictionary["keywords"]["is"], this.dictionary["keywords"]["isNot"]].includes(this.code[line][1])){
                             console.log("nativeCodeChecker error - checkCondPrefix check failed at line [" + line + "]");
                             return false;
                         }
                         break;
                     case "checkCondition":
                         if(![this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], 
-                                this.dictionary["keywords"]["mark"], this.dictionary["keywords"]["vacant"]].includes(code[line][2]) 
-                            && !(code[line][2] in this.conditionList)){
+                                this.dictionary["keywords"]["mark"], this.dictionary["keywords"]["vacant"]].includes(this.code[line][2]) 
+                            && !(this.code[line][2] in this.conditionList)){
                             console.log("nativeCodeChecker error - checkCondition check failed at line [" + line + "]");
                             return false;
                         }
                         break;
                     case "checkDef":
-                        if(!this.functions.includes(code[line][0]) && !(code[line][0] in this.commandList) && code[line] != ""){
+                        if(!this.functions.includes(this.code[line][0]) && !(this.code[line][0] in this.commandList) && this.code[line] != ""){
                             console.log("nativeCodeChecker error - checkDef check failed at line [" + line + "]");
                             return false;
                         }
                         break;
                     case "checkNextThen":
-                        if(code[line + 1][0] != this.dictionary["keywords"]["then"]){
+                        if(this.code[line + 1][0] != this.dictionary["keywords"]["then"]){
                             console.log("nativeCodeChecker error - checkNextThen check failed at line [" + line + "]");
                             return false;
                         }
@@ -321,12 +329,12 @@ class interpret{
             for(var i = 0; i < currentRule["action"].length; i++){
                 switch(currentRule["action"][i]){
                     case "addToCommadnList":
-                        if(!this.addCommandToList(code[line][1], line)){
+                        if(!this.addCommandToList(this.code[line][1], line)){
                             return false;
                         }
                         break;
                     case "addToConditionList":
-                        if(!this.addConditionToList(code[line][1], line)){
+                        if(!this.addConditionToList(this.code[line][1], line)){
                             return false;
                         }
                         break;
@@ -383,237 +391,287 @@ class interpret{
 
     /**
      * Evaluates given condition in native code
-     * It returns two information:
-     *  1) the result (which can be one of: "true", "false", and "undef")
-     *  2) the jump location (if the condition result is "undef", you need to jump to this location to evaluate it)
-     * @param {string} codeLine the line where the condition appears
-     * @param {string} lastConditionResult to pass new result
-     * @param {number} line to pass jump to user defined condition
-     * @returns array which contains (index 0) - result of the condition (index 1) - line to jump to
+     * The function can evaluate Karels base conditions as well as user defined conditions
+     * For base conditions the `checkBaseCondition` function is used
+     * To check user defined conditions the function returns "undef" string and makes jump to desired condition
+     * While evaluating user defined conditon the result is stored and when the condition ends and we jump back to original
+     * code point, the stored value is processed and correct answer is returned
+     * It manipulates with `this.line` and `this.programQueue` variables if needed
+     * Also it takes in mind the Karel's condition prefix
+     * @returns string "true" if the result was true, string "false" if the result was false and "undef" if a jump is needed
      */
-    nativeCodeConditionEval(codeLine, lastConditionResult, line){
+    nativeCodeConditionEval(){
         if([this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], 
-                this.dictionary["keywords"]["mark"], this.dictionary["keywords"]["vacant"]].includes(codeLine[2])){
-            return [(this.checkBaseCondition(codeLine[1], codeLine[2]) === true) ? "true" : "false", line] ;
+                this.dictionary["keywords"]["mark"], this.dictionary["keywords"]["vacant"]].includes(this.code[this.line][2])){
+            this.lastConditionResult = "undef";
+            return (this.checkBaseCondition(this.code[this.line][1], this.code[this.line][2]) === true) ? "true" : "false";
         }
-        if(lastConditionResult != "undef"){
-            if(codeLine[1] == this.dictionary["keywords"]["is"]){
-                return [(lastConditionResult == "true") ? "true" : "false", line];
+        if(this.lastConditionResult != "undef"){
+            if(this.code[this.line][1] == this.dictionary["keywords"]["is"]){
+                return (this.lastConditionResult == "true") ? "true" : "false";
             } else {
-                return [(lastConditionResult == "false") ? "true" : "false", line];
+                return (this.lastConditionResult == "false") ? "true" : "false";
             }
         }
-        return ["undef", this.conditionList[codeLine[2]]];
+        this.programQueue.push(this.line - 1);
+        this.line = this.conditionList[this.code[this.line][2]];
+        return "undef";
     }
 
     /**
      * Computes where to jump in code based on given values
+     * The computed jump is then directly stored in `this.line`
      * @param {string} command is the command which requires jump
      * @param {boolean} up if true, the jump is upwards in the code, downwards otherwise
-     * @param {Array} code is the array thats produced by nativeCodeSplitter
-     * @param {number} line is the current place in code
-     * @returns the line to jump to
      */
-    nativeCodeJumper(command, up, code, line){
+    nativeCodeJumper(command, up){
         var numSkip = 0;
         if(command == this.dictionary["keywords"]["if"]){
             while(true){
-                line ++;
-                if(code[line][0] == command){
+                this.line ++;
+                if(this.code[this.line][0] == command){
                     numSkip ++;
-                } else if(code[line][0] == "*" + command && numSkip > 0){
+                } else if(this.code[this.line][0] == "*" + command && numSkip > 0){
                     numSkip--;
-                } else if((code[line][0] == this.dictionary["keywords"]["else"] && numSkip == 0) || (code[line][0] == "*" + command && numSkip == 0)){
-                    return line;
+                } else if((this.code[this.line][0] == this.dictionary["keywords"]["else"] && numSkip == 0) || 
+                            (this.code[this.line][0] == "*" + command && numSkip == 0)){
+                    return;
                 }
             }
         }
         if(up){
             while(true){
-                line --;
-                if(code[line][0] == "*" + command){
+                this.line --;
+                if(this.code[this.line][0] == "*" + command){
                     numSkip++;
-                } else if(code[line][0] == command && numSkip > 0){
+                } else if(this.code[this.line][0] == command && numSkip > 0){
                     numSkip--;
-                } else if(code[line][0] == command && numSkip == 0){
-                    return line;
+                } else if(this.code[this.line][0] == command && numSkip == 0){
+                    return;
                 }
             }
         } else {
             while(true){
-                line ++;
-                if(code[line][0] == command){
+                this.line ++;
+                if(this.code[this.line][0] == command){
                     numSkip++;
-                } else if(code[line][0] == "*" + command && numSkip > 0){
+                } else if(this.code[this.line][0] == "*" + command && numSkip > 0){
                     numSkip--;
-                } else if(code[line][0] == "*" + command && numSkip == 0){
-                    return line;
+                } else if(this.code[this.line][0] == "*" + command && numSkip == 0){
+                    return;
                 }
             }
         }
     }
 
     /**
-     * Interprets the native code of robot Karel
-     * It dont do any checks and expects that the code is error free
-     * @param {Array} code is the code string prefabricated by nativeCodeSplitter
-     * @param {*} line is the line where the interpret should start
-     * @param {*} move tells if the interpret should move the text editors cursor
+     * Resets the important variables for interpret and sets the textEditor to read only mode
      */
-    async nativeCodeInterpret(code, line, move){
+    resetNativeCodeInterpret(){
+        this.activeCounters = [];
+        this.programQueue = [];
+        this.lastConditionResult = "undef";
+        this.speed = 125;
+        this.textEditor.setReadOnly(true);
+    }
 
-        var activeCounters = [];                // used for DO loops
-        var programQueue = [];                  // used to jump to other programs and return back (saves position from which was jumped)
-        var lastConditionResult = "undef";      // used for user defined condition evaluation
+    /**
+     * Makes the interpret stop and unsets the text's editor read only mode
+     */
+    turnOffInterpret(){
+        this.interpretMode = "none";
+        this.running = false;
+        this.textEditor.setReadOnly(false);
+    }
 
+    /**
+     * Sets the `this.line` to start of a command or condition
+     * It can end with an error if end of file is found or "end" in the text is found
+     */
+    nativeCodeFindStartLine(){
+        while(this.code[this.line][0] != this.dictionary["keywords"]["function"] && this.code[this.line][0] != this.dictionary["keywords"]["condition"]){
+            this.line --;
+            if(this.line < 0 || this.code[this.line][0] == this.dictionary["keywords"]["end"]){
+                console.log("nativeCodeFindStartLine error - behining of code to be interpreted not found");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Makes a one step (interpets on line) of Karel's native language.
+     * To run, it needs `this.code` and `this.line` to be initiated properly.
+     * Its meant to run in a loop, The loop should end when this function returns true.
+     * Its highly recomended to use `this.resetNativeCodeInterpret` function before interpret loop.
+     * and its also highly recomended to call `turnOffInterpret` to end the interpretation becase these 
+     * functions will set the coreect object variable values.
+     * The code you want to interpret shoul be error free because there are no syntax checks. 
+     * To check the syntax of the code use `nativeCodeChecker` function.
+     * @returns true if the interpretation should end, false otherwise
+     */
+    nativeCodeInterpretStep(){
+        if(this.line >= this.code.length){
+            console.log("nativeCodeInterpret warning - end not found but EOF emerged, shutting down");
+            return true;
+        }
+        switch(this.code[this.line][0]){
+            case this.dictionary["keywords"]["function"]:
+            case this.dictionary["keywords"]["condition"]:
+                break;
+            case this.dictionary["keywords"]["end"]:
+                if(this.programQueue.length == 0){
+                    return true;
+                } else {
+                    this.line = this.programQueue[this.programQueue.length - 1]; 
+                    //in next step the N will be incremented so we need to substract the addition to maintain the correct jump
+                    this.programQueue.pop();
+                }
+                break;
+            case this.dictionary["keywords"]["forward"]:
+                this.karel.goForward();
+                break;
+            case this.dictionary["keywords"]["right"]:
+                this.karel.turnRight();
+                break;
+            case this.dictionary["keywords"]["left"]:
+                this.karel.turnLeft();
+                break;
+            case this.dictionary["keywords"]["placeBrick"]:
+                this.karel.placeBrick();
+                break;
+            case this.dictionary["keywords"]["pickBrick"]:
+                this.karel.pickUpBrick();
+                break;
+            case this.dictionary["keywords"]["placeMark"]:
+                this.karel.markOn();
+                break;
+            case this.dictionary["keywords"]["pickMark"]:
+                this.karel.markOff();
+                break;
+            case this.dictionary["keywords"]["do"]:
+                if(parseInt(this.code[this.line][1]) == 0){
+                    this.nativeCodeJumper(this.dictionary["keywords"]["do"], false);
+                } else {
+                    this.activeCounters.push(this.code[this.line][1]); 
+                }
+                break;
+            case "*" + this.dictionary["keywords"]["do"]:
+                this.activeCounters[this.activeCounters.length - 1] --;
+                if(this.activeCounters[this.activeCounters.length - 1] > 0){
+                    this.nativeCodeJumper(this.dictionary["keywords"]["do"], true);
+                } else {
+                    this.activeCounters.pop();
+                }
+                break;
+            case this.dictionary["keywords"]["while"]:
+                var result = this.nativeCodeConditionEval();
+                this.lastConditionResult = "undef";
+                if(result == "false"){
+                    this.nativeCodeJumper(this.dictionary["keywords"]["while"], false);
+                }
+                break;
+            case "*" + this.dictionary["keywords"]["while"]:
+                this.nativeCodeJumper(this.dictionary["keywords"]["while"], true);
+                this.line --;
+                break;
+            case this.dictionary["keywords"]["if"]:
+                var result = this.nativeCodeConditionEval();
+                this.lastConditionResult = "undef";
+                if(result == "false"){
+                    this.nativeCodeJumper(this.dictionary["keywords"]["if"], false);
+                }
+                break;
+            case this.dictionary["keywords"]["else"]:
+                this.nativeCodeJumper(this.dictionary["keywords"]["if"], false);
+                break;
+            case this.dictionary["keywords"]["then"]:
+            case "*" + this.dictionary["keywords"]["if"]:
+                break;
+            case this.dictionary["keywords"]["true"]:
+                this.lastConditionResult = "true";
+                break;
+            case this.dictionary["keywords"]["false"]:
+                this.lastConditionResult = "false";
+                break;
+            case "#":
+            case "":
+                break;
+            case this.dictionary["keywords"]["faster"]:
+                this.speedUpInterpret();
+                break;
+            case this.dictionary["keywords"]["slower"]:
+                this.slowDownInterpret();
+                break;
+            case this.dictionary["keywords"]["beep"]:
+                this.karel.beep();
+                break;
+            default:
+                if(!(this.code[this.line][0] in this.commandList)){
+                    console.log("ITC error - unexpected word - [" + this.code[this.line][0] + "]");
+                    return true;
+                }
+                this.programQueue.push(this.line);
+                this.line = this.commandList[this.code[this.line][0]];
+        }
+        this.line ++;
+        return false;
+    }
+
+    /**
+     * Interprets Karel's native code.
+     * The code should be error free, use `nativeCodeChecker`
+     * Look in the desription of `nativeCodeInterpretStep` becase lots of the information there
+     * corresponds with this function. Its basicaly a loop wrap for it.
+     * It utulizes the `turnOffInterpret` funtion
+     * Also moves the cursor in the code editor if you wish
+     * It can run in two modes:
+     *  `standard` mode - runs till the end of the command
+     *  `debug` mode - makes one step and waits for event (probably button press)
+     * @param {boolean} cursor tells if the cursor will be moved, true means yes, false no
+     */
+    async nativeCodeInterpret(cursor){
+        this.textEditor.read
         while(this.running){
-            if(line >= code.length){
-                console.log("nativeCodeInterpret warning - end not found but EOF emerged, shutting down");
-                this.running = false;
+            if(cursor){
+                this.textEditor.gotoLine(this.line + 1);
+            }
+            if(this.nativeCodeInterpretStep(this.code)){
+                this.turnOffInterpret();
+            };
+            await sleep(this.speed);
+            if(this.interpretMode == "debug"){
                 return;
             }
-            if(move){
-                this.textEditor.gotoLine(line + 1);
-            }
-            switch(code[line][0]){
-                case this.dictionary["keywords"]["function"]:
-                case this.dictionary["keywords"]["condition"]:
-                    break;
-                case this.dictionary["keywords"]["end"]:
-                    if(programQueue.length == 0){
-                        this.running = false;
-                        return;
-                    } else {
-                        line = programQueue[programQueue.length - 1]; 
-                        //in next step the N will be incremented so we need to substract the addition to maintain the correct jump
-                        programQueue.pop();
-                    }
-                    break;
-                case this.dictionary["keywords"]["forward"]:
-                    this.karel.goForward();
-                    break;
-                case this.dictionary["keywords"]["right"]:
-                    this.karel.turnRight();
-                    break;
-                case this.dictionary["keywords"]["left"]:
-                    this.karel.turnLeft();
-                    break;
-                case this.dictionary["keywords"]["placeBrick"]:
-                    this.karel.placeBrick();
-                    break;
-                case this.dictionary["keywords"]["pickBrick"]:
-                    this.karel.pickUpBrick();
-                    break;
-                case this.dictionary["keywords"]["placeMark"]:
-                    this.karel.markOn();
-                    break;
-                case this.dictionary["keywords"]["pickMark"]:
-                    this.karel.markOff();
-                    break;
-                case this.dictionary["keywords"]["do"]:
-                    if(parseInt(code[line][1]) == 0){
-                        line = this.nativeCodeJumper(this.dictionary["keywords"]["do"], false, code, line);
-                    } else {
-                        activeCounters.push(code[line][1]); 
-                    }
-                    break;
-                case "*" + this.dictionary["keywords"]["do"]:
-                    activeCounters[activeCounters.length - 1] --;
-                    if(activeCounters[activeCounters.length - 1] > 0){
-                        line = this.nativeCodeJumper(this.dictionary["keywords"]["do"], true, code, line);
-                    } else {
-                        activeCounters.pop();
-                    }
-                    break;
-                case this.dictionary["keywords"]["while"]:
-                    var result = this.nativeCodeConditionEval(code[line], lastConditionResult, line);
-                    lastConditionResult = "undef";
-                    if(result[0] == "undef"){
-                        programQueue.push(line - 1);
-                        line = result[1];
-                    } else if(result[0] == "false"){
-                        line = this.nativeCodeJumper(this.dictionary["keywords"]["while"], false, code, line);
-                    }
-                    break;
-                case "*" + this.dictionary["keywords"]["while"]:
-                    line = this.nativeCodeJumper(this.dictionary["keywords"]["while"], true, code, line) - 1;
-                    break;
-                case this.dictionary["keywords"]["if"]:
-                    var result = this.nativeCodeConditionEval(code[line], lastConditionResult, line);
-                    lastConditionResult = "undef";
-                    if(result[0] == "undef"){
-                        programQueue.push(line - 1);
-                        line = result[1];
-                    } else if(result[0] == "false"){
-                        line = this.nativeCodeJumper(this.dictionary["keywords"]["if"], false, code, line);
-                    }
-                    break;
-                case this.dictionary["keywords"]["else"]:
-                    line = this.nativeCodeJumper(this.dictionary["keywords"]["if"], false, code, line);
-                    break;
-                case this.dictionary["keywords"]["then"]:
-                case "*" + this.dictionary["keywords"]["if"]:
-                    break;
-                case this.dictionary["keywords"]["true"]:
-                    lastConditionResult = "true";
-                    break;
-                case this.dictionary["keywords"]["false"]:
-                    lastConditionResult = "false";
-                    break;
-                case "#":
-                case "":
-                    break;
-                case this.dictionary["keywords"]["faster"]:
-                    this.speedUpInterpret();
-                    break;
-                case this.dictionary["keywords"]["slower"]:
-                    this.slowDownInterpret();
-                    break;
-                case this.dictionary["keywords"]["beep"]:
-                    await this.karel.beep();
-                    break;
-                default:
-                    if(!(code[line][0] in this.commandList)){
-                        console.log("ITC error - unexpected word - [" + code[line][0] + "]");
-                        this.running = false
-                        return;
-                    }
-                    programQueue.push(line);
-                    line = this.commandList[code[line][0]];
-            }
-            line ++;
-            await sleep(this.speed);
-        }
+        }  
     }
 
     /**
      * Interprets native code from text editor
      */
     nativeCodeInterpretFromEditor(){
+
         if(this.running){
             console.log("nativeCodeInterpretFromEditor error - cannot run multiple programs at the same time");
             return;
         }
 
-        this.running = true;
-        var line = this.textEditor.selection.getCursor().row;
-        var code = this.nativeCodeSplitter(this.textEditor.getValue());
+        this.line = this.textEditor.selection.getCursor().row;
+        this.nativeCodeSplitter(this.textEditor.getValue());
 
-        while(code[line][0] != this.dictionary["keywords"]["function"] && code[line][0] != this.dictionary["keywords"]["condition"]){
-            line --;
-            if(line < 0 || code[line][0] == this.dictionary["keywords"]["end"]){
-                console.log("nativeCodeInterpret error - behining of code to be interpreted not found");
-                this.running = false;
-                return;
-            }
-        }
-
-        if(!this.nativeCodeChecker(code, line)){
-            this.running = false;
+        if(!this.nativeCodeFindStartLine()){
             return;
         }
 
-        this.nativeCodeInterpret(code, line, true);
+        if(!this.nativeCodeChecker()){
+            return;
+        }
+
+        this.resetNativeCodeInterpret();
+        this.running = true;
+        this.interpretMode = "standard";
+
+        this.nativeCodeInterpret(true);
     }
 
     /**
@@ -625,10 +683,38 @@ class interpret{
             return;
         }
 
-        this.running = true;
-        var code = this.nativeCodeSplitter(document.getElementById('textArea').value);
+        this.nativeCodeSplitter(document.getElementById('textArea').value);
+        this.line = 0;
 
-        this.nativeCodeInterpret(code, 0, false);
+        this.resetNativeCodeInterpret();
+        this.running = true;
+        this.interpretMode = "standard";
+
+        this.nativeCodeInterpret(false); 
+    }
+
+    /**
+     * Runs debug mode Interpret from text code editor
+     */
+    nativeCodeDebugInterpretFromEditor(){
+        if(this.running && this.interpretMode == "standard"){
+            console.log("nativeCodeInterpretFromEditor error - cannot run multiple programs at the same time");
+            return;
+        }
+        if(!this.running){
+            this.line = this.textEditor.selection.getCursor().row;
+            this.nativeCodeSplitter(this.textEditor.getValue());
+            if(!this.nativeCodeFindStartLine()){
+                return;
+            }
+            if(!this.nativeCodeChecker(true)){
+                return;
+            }
+            this.resetNativeCodeInterpret();
+            this.running = true;
+            this.interpretMode = "debug";
+        }
+        this.nativeCodeInterpret(true);
     }
 }
 

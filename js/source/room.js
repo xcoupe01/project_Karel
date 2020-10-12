@@ -24,7 +24,7 @@ class room{
         this.blockGap = 0.05;
         this.blockThickness = 0.1;
         this.brickThickness = 0.25;
-        controls.target.set(countX/2 - this.blockSize/2, 0, countY/2 - this.blockSize/2);
+        controls.target.set(countX/2 * this.blockSize/2, 0, countY/2 * this.blockSize/2);
         controls.update();
         this.roomDataArray = [];
         for(var currX = 0; currX < countX; currX++){
@@ -60,16 +60,14 @@ class room{
     erase(){
         for(var currX = 0; currX < this.roomDataArray.length; currX++){
             for(var currY = 0; currY < this.roomDataArray[currX].length; currY++){
-                if(this.roomDataArray[currY][currY].inRoom){
-                    if(this.roomDataArray[currX][currY].mark){
-                        this.scene.remove(this.roomDataArray[currX][currY].markObject);
-                    }
-                    while(this.roomDataArray[currX][currY].bricks > 0){
-                        this.removeBrickFromPos(currX, currY);
-                    }
-                    this.scene.remove(this.roomDataArray[currX][currY].blockObject.cube);
-                    this.scene.remove(this.roomDataArray[currX][currY].blockObject.line);
+                if(this.roomDataArray[currX][currY].mark){
+                    this.scene.remove(this.roomDataArray[currX][currY].markObject);
                 }
+                while(this.roomDataArray[currX][currY].bricks > 0){
+                    this.removeBrickFromPos(currX, currY);
+                }
+                this.scene.remove(this.roomDataArray[currX][currY].blockObject.cube);
+                this.scene.remove(this.roomDataArray[currX][currY].blockObject.line);
             }
         }
     }

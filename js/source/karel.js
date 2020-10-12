@@ -342,4 +342,13 @@ class karel{
             this.draw();
         }
     }
+
+    /**
+     * Sets the camera and the controls in the room to the starting point
+     */
+    homeCamera(){
+        this.controls.object.position.set(-10, 10, -10);
+        this.controls.target.set(this.room.roomDataArray.length/2 * this.room.blockSize/2, 0, this.room.roomDataArray[0].length/2 * this.room.blockSize/2);
+        this.controls.update();
+    }
 }
