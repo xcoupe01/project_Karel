@@ -114,7 +114,6 @@ konec</div>
 
 
 <input type="button" value="run code" id="runCode">
-<input type="button" value="run blocks" id="runBlocks">
 <input type="button" value="run debug" id="runDebug">
 <input type="button" value="stop" id="stop">
 <input type="button" value="room" id="room">
@@ -136,50 +135,54 @@ konec</div>
 <script src="js/blockly/karel_blocks_generator.js"></script>
 <script src="js/blockly/msg/js/en.js"></script>
 
-<xml id="toolbox" style="display: none">
-    <category name="Základ" colour="0">
-        <block type="base_function">
-            <field name="PROG_NAME">nazev</field>
-        </block>
-        <block type="base_condition">
-            <field name="COND_NAME">nazev</field>
-        </block>
-    </category>
-    <category name="Funkce" colour="90">
-        <block type="function_step"></block>
-        <block type="function_right"></block>
-        <block type="function_left"></block>
-        <block type="function_place"></block>
-        <block type="function_pick"></block>
-        <block type="function_placemark"></block>
-        <block type="function_unmark"></block>
-        <block type="function_true"></block>
-        <block type="function_false"></block>
-        <block type="function_faster"></block>
-        <block type="function_slower"></block>
-        <block type="function_beep"></block>
-    </category>
-    <category name="Řízení toku" colour="180">
-        <block type="control_repeat">
-            <field name="DO_TIMES">0</field>
-        </block>
-        <block type="control_while">
-            <field name="COND_PREF">optionIs</field>
-        </block>
-        <block type="control_if">
-            <field name="COND_PREF">optionIs</field>
-        </block>
-        <block type="control_ifelse">
-            <field name="COND_PREF">optionIs</field>
-        </block>
-    </category>
-    <category name="Podmínky" colour="270">
-        <block type="condition_brick"></block>
-        <block type="condition_wall"></block>
-        <block type="condition_mark"></block>
-        <block type="condition_vacant"></block>
-    </category>
-</xml>
+<div id="blocklyToolBox">
+    <xml id="toolbox" style="display: none">
+        <category name="Základ" colour="0">
+            <block type="base_function">
+                <field name="PROG_NAME">nazev</field>
+            </block>
+            <block type="base_condition">
+                <field name="COND_NAME">nazev</field>
+            </block>
+        </category>
+        <category name="Funkce" colour="90">
+            <block type="function_step"></block>
+            <block type="function_right"></block>
+            <block type="function_left"></block>
+            <block type="function_place"></block>
+            <block type="function_pick"></block>
+            <block type="function_placemark"></block>
+            <block type="function_unmark"></block>
+            <block type="function_true"></block>
+            <block type="function_false"></block>
+            <block type="function_faster"></block>
+            <block type="function_slower"></block>
+            <block type="function_beep"></block>
+            <block type="function_userDefined"></block>
+        </category>
+        <category name="Řízení toku" colour="180">
+            <block type="control_repeat">
+                <field name="DO_TIMES">0</field>
+            </block>
+            <block type="control_while">
+                <field name="COND_PREF">optionIs</field>
+            </block>
+            <block type="control_if">
+                <field name="COND_PREF">optionIs</field>
+            </block>
+            <block type="control_ifelse">
+                <field name="COND_PREF">optionIs</field>
+            </block>
+        </category>
+        <category name="Podmínky" colour="270">
+            <block type="condition_brick"></block>
+            <block type="condition_wall"></block>
+            <block type="condition_mark"></block>
+            <block type="condition_vacant"></block>
+            <block type="condition_userdefined"></block>
+        </category>
+      </xml>
+</div>
 
 <script type="module" src="js/main.js"></script>
 

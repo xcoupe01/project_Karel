@@ -120,6 +120,16 @@ Blockly.Karel['function_beep'] = function(block){
     return code;
 }
 
+Blockly.Karel['function_userDefined'] = function(block){
+    var code = block.getFieldValue('FUNC_NAME');
+    if(block.getNextBlock() != null){
+        code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
+    }else {
+        code += "\n";
+    }
+    return code;
+}
+
 Blockly.Karel['control_repeat'] = function(block){
     var code = Blockly.langDictionary["keywords"]["do"] + " " + block.getFieldValue('DO_TIMES') + " " + Blockly.langDictionary["keywords"]["times"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
@@ -159,7 +169,7 @@ Blockly.Karel['control_if'] = function(block){
     } else {
         condPref = Blockly.langDictionary["keywords"]["isNot"]
     }
-    var code = Blockly.langDictionary["keywords"]["if"] + " " + condPref + " " + condVal + "\n";
+    var code = Blockly.langDictionary["keywords"]["if"] + " " + condPref + " " + condVal + "\n" + Blockly.langDictionary["keywords"]["then"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
     code += "*" + Blockly.langDictionary["keywords"]["if"];
     if(block.getNextBlock() != null){
@@ -178,7 +188,7 @@ Blockly.Karel['control_ifelse'] = function(block){
     } else {
         condPref = Blockly.langDictionary["keywords"]["isNot"]
     }
-    var code = Blockly.langDictionary["keywords"]["if"] + " " + condPref + " " + condVal + "\n";
+    var code = Blockly.langDictionary["keywords"]["if"] + " " + condPref + " " + condVal + "\n" + Blockly.langDictionary["keywords"]["then"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE_THEN');
     code += Blockly.langDictionary["keywords"]["else"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE_ELSE')
@@ -205,6 +215,10 @@ Blockly.Karel['condition_mark'] = function(){
 
 Blockly.Karel['condition_vacant'] = function(){
     return [Blockly.langDictionary["keywords"]["vacant"], 0];
+}
+
+Blockly.Karel['condition_userdefined'] = function(block){
+    return [block.getFieldValue('COND_NAME'), 0];
 }
 
 Blockly.Karel['base_function'] = function(block){

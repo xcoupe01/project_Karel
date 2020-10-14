@@ -57,8 +57,8 @@ class interpret{
      * @returns true if the addition was successful, false otherwise
      */
     addCommandToList(name, line){
-        if(name in this.commandList){
-            console.log("ACommaTL error - command redefiniton at line [" + line + "]");
+        if(name in this.commandList || name in this.conditionList){
+            console.log("ACommaTL error - name redefiniton at line [" + line + "]");
             return false;
         } else if(this.reservedWords.includes(name)){
             console.log("ACommaTL error - redefining reserved word at line [" + line + "]");
@@ -76,8 +76,8 @@ class interpret{
      * @returns true if the addition was successful, false otherwise
      */
     addConditionToList(name, line){
-        if(name in this.conditionList){
-            console.log("ACondTL error - condition redefiniton at line [" + line + "]");
+        if(name in this.conditionList || name in this.commandList){
+            console.log("ACondTL error - name redefiniton at line [" + line + "]");
             return false;
         } else if(this.reservedWords.includes(name)){
             console.log("ACommaTL error - redefining reserved word at line [" + line + "]");
@@ -119,11 +119,11 @@ class interpret{
             "condition" : {
                 "token": "condition",
                 "checks": [2, "notInDef"],
-                "action": ["addToConditionList", "setDef"]
+                "action": ["addToConditionList", "setDef", "addExpectedWords"]
             },
             "end" : {
                 "token": "end",
-                "checks": [1, "inDef", "checkActive"],
+                "checks": [1, "inDef", "checkActive", "checkExpectedWords"],
                 "action": ["unsetDef"]
             },
             "do" : {
@@ -176,6 +176,11 @@ class interpret{
                 "token" : "comment",
                 "checks": [],
                 "action": []
+            },
+            "trueOrFalse" : {
+                "token" : "trueOrFalse",
+                "checks": [1, "checkDef"],
+                "action": ["alterExpectedWords"]
             }
         }
     }
@@ -211,6 +216,7 @@ class interpret{
         var activeStructures = []; 
         var rules = this.createNativeRulesTable();
         var currentRule;
+        var expectedWords = {"true" : false, "false" : false};
 
         for(var line = 0; line < this.code.length; line++){
             currentRule = [];
@@ -245,6 +251,10 @@ class interpret{
                     break;
                 case "*" + this.dictionary["keywords"]["if"]:
                     currentRule = rules["if"]["end"];
+                    break;
+                case this.dictionary["keywords"]["true"]:
+                case this.dictionary["keywords"]["false"]:
+                    currentRule = rules["trueOrFalse"];
                     break;
                 default:
                     if(this.code[line][0].startsWith("#")){
@@ -323,6 +333,15 @@ class interpret{
                             console.log("nativeCodeChecker error - checkNextThen check failed at line [" + line + "]");
                             return false;
                         }
+                        break;
+                    case "checkExpectedWords":
+                        for(var key in expectedWords){
+                            if(expectedWords[key] == true){
+                                console.log("nativeCodeChecker error - checkExpectedWords check failed at line [" + line + "]");
+                                return false;
+                            }
+                        }
+                        break;
                 }
             }
 
@@ -349,6 +368,17 @@ class interpret{
                         break;
                     case "popActive":
                         activeStructures.pop();
+                        break;
+                    case "addExpectedWords":
+                        expectedWords["true"] = true;
+                        expectedWords["false"] = true;
+                        break;
+                    case "alterExpectedWords":
+                        if(this.code[line][0] == this.dictionary["keywords"]["true"]){
+                            expectedWords["true"] = false;
+                        } else {
+                            expectedWords["false"] = false;
+                        }
                         break;
                 }
             }
@@ -521,6 +551,9 @@ class interpret{
                 break;
             case this.dictionary["keywords"]["end"]:
                 if(this.programQueue.length == 0){
+                    if(this.lastConditionResult != "undef"){
+                        alert(this.lastConditionResult);
+                    }
                     return true;
                 } else {
                     this.line = this.programQueue[this.programQueue.length - 1]; 
@@ -647,6 +680,24 @@ class interpret{
     }
 
     /**
+     * Searches for name in command list and condition list and sets the line to be executed to start of
+     * command or condition defined by the name
+     * @param {string} name is the name of command or condition we want to run
+     */
+    searchForNameSetLine(name){
+        if(name in this.commandList){
+            this.line = this.commandList[name];
+            return true;
+        }
+        if(name in this.conditionList){
+            this.line = this.conditionList[name];
+            return true;
+        }
+        console.log("searchForNameSetLine error - name [" + name + "] not found")
+        return false;
+    }
+
+    /**
      * Interprets native code from text editor
      */
     nativeCodeInterpretFromEditor(){
@@ -677,14 +728,21 @@ class interpret{
     /**
      *  Interprets native Blockly generated code
      */
-    nativeCodeInterpretFromBlockly(){
+    nativeCodeInterpretFromBlockly(name){
         if(this.running){
             console.log("ITC error - cannot run multiple programs at the same time");
             return;
         }
 
         this.nativeCodeSplitter(document.getElementById('textArea').value);
-        this.line = 0;
+
+        if(!this.nativeCodeChecker()){
+            return;
+        }
+
+        if(!this.searchForNameSetLine(name)){
+            return;
+        }
 
         this.resetNativeCodeInterpret();
         this.running = true;

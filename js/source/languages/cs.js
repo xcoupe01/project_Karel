@@ -30,10 +30,12 @@ export function setLang(){
             "beep"          : "pip"
         },
         "blocklyCategory" : {
-            "base"      : "Základ",
-            "functions" : "Funkce",
-            "progFlow"  : "Řízení toku",
-            "condition" : "Podmínky",
+            "base"            : "Základ",
+            "functions"       : "Funkce",
+            "progFlow"        : "Řízení toku",
+            "condition"       : "Podmínky",
+            "userDefinedFunc" : "Funkce",
+            "userDefinedCond" : "Podmínka"
         }
     };
 }

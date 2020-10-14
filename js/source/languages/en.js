@@ -30,10 +30,12 @@ export function setLang(){
             "beep"          : "beep"
         },
         "blocklyCategory" : {
-            "base"      : "Base",
-            "functions" : "Functions",
-            "progFlow"  : "Flow control",
-            "condition" : "Conditions",
+            "base"              : "Base",
+            "functions"         : "Functions",
+            "progFlow"          : "Flow control",
+            "condition"         : "Conditions",
+            "userDefinedFunc"   : "Function",
+            "userDefinedCond"   : "Condition"
         }
     };
 }

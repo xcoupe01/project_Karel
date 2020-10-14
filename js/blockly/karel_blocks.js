@@ -2,6 +2,11 @@ function blocklySetBlockLang(dictionary){
   Blockly.langDictionary = dictionary;
 }
 
+var runMe;
+function blocklySetRunMe(setToFunc){
+  runMe = setToFunc;
+};
+
 Blockly.Blocks['function_step'] = {
   init: function() {
     this.appendDummyInput()
@@ -146,6 +151,19 @@ Blockly.Blocks['function_beep'] = {
   }
 };
 
+Blockly.Blocks['function_userDefined'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.langDictionary["blocklyCategory"]["userDefinedFunc"])
+        .appendField(new Blockly.FieldTextInput("nazev"), "FUNC_NAME");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(90);
+ this.setTooltip("");
+ this.setHelpUrl("");
+  }
+};
+
 Blockly.Blocks['control_repeat'] = {
   init: function() {
     this.appendDummyInput()
@@ -267,9 +285,22 @@ Blockly.Blocks['condition_vacant'] = {
   }
 };
 
+Blockly.Blocks['condition_userdefined'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.langDictionary["blocklyCategory"]["userDefinedCond"])
+        .appendField(new Blockly.FieldTextInput("nazev"), "COND_NAME");
+    this.setOutput(true, "condition");
+    this.setColour(270);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
 Blockly.Blocks['base_function'] = {
   init: function() {
     this.appendDummyInput()
+        .appendField(new Blockly.FieldImage("../../img/play.png", 25, 25, "*",runMe))
         .appendField(Blockly.langDictionary["keywords"]["function"])
         .appendField(new Blockly.FieldTextInput(""), "PROG_NAME");
     this.appendStatementInput("INNER_CODE")
@@ -285,9 +316,10 @@ Blockly.Blocks['base_function'] = {
 Blockly.Blocks['base_condition'] = {
   init: function() {
     this.appendDummyInput()
+       .appendField(new Blockly.FieldImage("../../img/play.png", 25, 25, "*",runMe))
         .appendField(Blockly.langDictionary["keywords"]["condition"])
         .appendField(new Blockly.FieldTextInput(""), "COND_NAME");
-    this.appendStatementInput("NINNER_CODE")
+    this.appendStatementInput("INNER_CODE")
         .setCheck(null);
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["end"]);

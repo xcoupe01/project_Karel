@@ -136,7 +136,6 @@ function myUpdateFunction(event) {
 workspace.addChangeListener(myUpdateFunction);
 // -----------------------------
 
-
 // setting of language
 var mainInterpret = start();
 import('./source/languages/cs.js')
@@ -145,8 +144,14 @@ import('./source/languages/cs.js')
         blocklySetBlockLang(module.setLang());
 });
 
+// setting the blockly image listeners for play
+var runMeFunc = function (eventpat){
+    mainInterpret.nativeCodeInterpretFromBlockly(eventpat.sourceBlock_.inputList[0].fieldRow[2].value_);
+  return 0;
+};
+blocklySetRunMe(runMeFunc);
+
 document.querySelector('#runCode').onclick = function() {mainInterpret.nativeCodeInterpretFromEditor()};
-document.querySelector('#runBlocks').onclick = function() {mainInterpret.nativeCodeInterpretFromBlockly()};
 document.querySelector('#runDebug').onclick = function() {mainInterpret.nativeCodeDebugInterpretFromEditor();};
 document.querySelector('#stop').onclick = function() {mainInterpret.stopExecuting()};
 document.querySelector('#room').onclick = function(){mainInterpret.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value)};
@@ -168,4 +173,18 @@ document.querySelector('#test').onclick = function() {
         blocklySetBlockLang(module.setLang());
     });
     */
+   /*
+   var newBlock = workspace.newBlock("function_step");
+   newBlock.initSvg();
+   newBlock.render();
+   var newBlock = workspace.newBlock("function_step");
+   newBlock.initSvg();
+   newBlock.render();
+   var newBlock = workspace.newBlock("function_step");
+   newBlock.initSvg();
+   newBlock.render();
+   var newBlock = workspace.newBlock("function_step");
+   newBlock.initSvg();
+   newBlock.render();
+   */
 };

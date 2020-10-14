@@ -3,10 +3,11 @@
 ### Bakalářksá práce za podpory VUT FIT Brno a Gymnasium Šlapanice
 
 [![Foo](https://gympl.gslapanice.cz/themes/slapanice/images/gympls.jpg)](https://gympl.gslapanice.cz/)
+
 [![Foo](https://pbs.twimg.com/media/CSPA_wFWUAAUobu.png)](https://www.fit.vut.cz/.cs)
 
 
-**Last update - 12.10.2020**
+**Last update - 14.10.2020**
 
 **English version below**
 ___
@@ -14,9 +15,9 @@ ___
 Cílem projektu je implementovat pedagogický nástroj, které by hravým způsobem seznámil žáky druhých stupňů a nišších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána [této adrese](http://karel.webz.cz/uvodni-strana), kde je i originální verze dostupná a například pomocí emulátoru `DOSBox` spustitelná. Zkráceně aplikace `Robot Karel 3D` umožnuje převzetí kontroly nad robotem v místnosti, a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na předělání originálu do moderního prostředí a zapojit moderní prvky, které jsou dnes již běžnou součástí při vyučování. Detailnější popis vylepnšení níže.
 
 ## Použité zdroje:
-- ACE code editor (https://ace.c9.io/)
-- Three.js web 3D graphics (https://threejs.org/)
-- Blockly programming (https://developers.google.com/blockly)
+- [ACE code editor](https://ace.c9.io/)
+- [Three.js web 3D graphics](https://threejs.org/)
+- [Blockly programming](https://developers.google.com/blockly)
 
 ## Plán funkcí projektu
 - 3D prostředí
@@ -37,10 +38,9 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
 - syntaktická kontrola textu
     - <span style="color:green"> implementována kontrola s tabulkovým zadáváním kontrol
     - <span style="color:green"> implementován přehledný interpret nativního kódu
-    - možná s využitím ACE
-    - jednoduchý debugger
+    - možná s využitím ACE (kde se budou zobrazovat chyby přímo v editoru)
     - <span style="color:green"> implementována možnost spuštění s krokováním 
-    - (možná breakpointy s ACE)
+    - jednoduchý debugger (možná breakpointy s ACE)
 - uživatelsky dostupné modifikace místnosti
     - <span style="color:green"> implementováno nastavení rozměrů místnosti
     - v plánu ukládání a načítání místosti
@@ -125,7 +125,7 @@ Dále je zapotřebí tvořit vlastní bolky kódu ohraničené těmito způsoby:
 Pokud je při interpretaci jazyka nalezen nějaký problém, aplikace o tom informuje do konzole prohlížeče.
 
 ## Popis blokového programování
-Blokové programování je syntakticky velmi podobné (ne li stejné) jako textové programování. Bloky jsou schovány pod svými kategoriemi a funkčností přímo korespondují na textovou reprezentaci. V momentální implementaci se spustí nejvyše postavená sestava bloků v pracovním poli.
+Blokové programování je syntakticky velmi podobné (ne li stejné) jako textové programování. Bloky jsou schovány pod svými kategoriemi a funkčností přímo korespondují na textovou reprezentaci. Pro spuštění bloku klikněte na tlačítko, u bloku uvozující příkaz. Pokud by bylo zapotřebí spouštět blok v nějakém dalším bloku, využijte blok z nabídky `Funkce`, tedy ze zelené sekce, s popiskem `Funkce` a do textového pole vložte název požadovaného bloku. Podobně funguje i volání uživatelských podmínek, ovšem vyberte podobný blok ze sekce `Podmínky`.
 
 ## Popis UI
 Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku
@@ -143,7 +143,6 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku
 
 Pod těmito prvky se nachází sada tlačítek pro ovládání
 - `run code` - spuštění kódu v textovém editoru na aktuální pozici kurzoru
-- `run blocks` - spuštění blokového programu, který je nejvýše na ploše
 - `run debug` - možnost spuštění s krokováním (po každém kliknutí na tlačítko se provede jeden řádek)
 - `stop` - zastavení probíhajícího kódu
 - `room` - nastavení rozměrů místnosti na hodnoty z následujících polí
@@ -184,7 +183,6 @@ You need to run local server for Karel to function properly. Easiest way is to r
 - mouse to move camera in the room
 
 ## Button description
-- `textarea` - space where generated code from block generator appears
 - `run` - to run currently selected (with cursor) program in text editor
 - `run debug` - simple debug mode, by clicking on this button Karel will do one line of code
 - `stop` - to stop currently running code
@@ -193,9 +191,10 @@ You need to run local server for Karel to function properly. Easiest way is to r
 - `Y value` - y dimension of the room for set
 - `home camera` - resets the camera to the staring position
 - `test` - provisional developer only button
+- `textarea` - space where generated code from block generator appears
 
 ## Used resources
-- ACE code editor (https://ace.c9.io/)
-- Three.js web 3D graphics (https://threejs.org/)
-- Blockly programming (https://developers.google.com/blockly)
+- [ACE code editor](https://ace.c9.io/)
+- [Three.js web 3D graphics](https://threejs.org/)
+- [Blockly programming](https://developers.google.com/blockly)
 
