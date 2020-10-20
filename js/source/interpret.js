@@ -51,40 +51,41 @@ class interpret{
     }
 
     /**
-     * Adds command record to the interprets dictionary to make it callable
+     * Adds command record to the interprets dictionary to make it callable.
+     * If an error occurs (redefinig of some sort), it will be written in the `outputReport`.
+     * The `outputReport` is a javascript dictionary formated in a way where key is line of 
+     * the error and its content is the string of the error. 
+     * There cannot be any command or condition with same name.
      * @param {string} name is the name of the command
      * @param {number} line is the starting line of the command
-     * @returns true if the addition was successful, false otherwise
+     * @param {dictionary} outputReport is a report to save error to
      */
-    addCommandToList(name, line){
+    addCommandToList(name, line, outputReport){
         if(name in this.commandList || name in this.conditionList){
-            console.log("ACommaTL error - name redefiniton at line [" + line + "]");
-            return false;
+            outputReport[line] = "ACommaTL error - name redefiniton";
         } else if(this.reservedWords.includes(name)){
-            console.log("ACommaTL error - redefining reserved word at line [" + line + "]");
-            return false;
+            outputReport[line] = "ACommaTL error - redefining reserved word";
         } else {
             this.commandList[name] = line;
-            return true;
         }
     }
 
     /**
-     * Adds condition record to the interprets dictionary to make it callable
+     * Adds condition record to the interprets dictionary to make it callable.
+     * The `outputReport` is a javascript dictionary formated in a way where key is line of 
+     * the error and its content is the string of the error. 
+     * There cannot be any command or condition with same name.
      * @param {string} name is the name of the condition
      * @param {number} line is the starting line of the condition
-     * @returns true if the addition was successful, false otherwise
+     * @param {dictionary} outputReport is a report to save error to
      */
-    addConditionToList(name, line){
+    addConditionToList(name, line, outputReport){
         if(name in this.conditionList || name in this.commandList){
-            console.log("ACondTL error - name redefiniton at line [" + line + "]");
-            return false;
+            outputReport[line] = "ACondTL error - name redefiniton";
         } else if(this.reservedWords.includes(name)){
-            console.log("ACommaTL error - redefining reserved word at line [" + line + "]");
-            return false;
+            outputReport[line] = "ACommaTL error - redefining reserved word";
         } else {
             this.conditionList[name] = line;
-            return true;
         }
     }
 
@@ -200,13 +201,15 @@ class interpret{
     }
 
     /**
-     * Checks Karel's native code
-     * If an error is found, information is posted in the console
-     * Code thats beeing checked is located in `this.code`
-     * it does not utulize the `this.line` varibale
-     * It also scans for command and condition definitions and stores them in catalogue (`this.commandList` and `this.conditionList`)
-     * Utulizes the rules created by `createNativeRulesTable` function
-     * @returns true if the code is correct, false otherwise
+     * Checks Karel's native code.
+     * If an error is found, it is stored in the local dictionary which is outputed at the end of scanning. 
+     * The output is formated as dictionary in a way where key is line of the code where error happend and the value is
+     * the text information of the error.
+     * Code thats beeing checked is located in `this.code`.
+     * it does not utulize the `this.line` varibale and it uses its own line variable.
+     * It also scans for command and condition definitions and stores them in catalogue (`this.commandList` and `this.conditionList`).
+     * Utulizes the rules created by `createNativeRulesTable` function.
+     * @returns dictionary with saved errors.
      */
     nativeCodeChecker(){
 
@@ -217,6 +220,8 @@ class interpret{
         var rules = this.createNativeRulesTable();
         var currentRule;
         var expectedWords = {"true" : false, "false" : false};
+        var expectDefinition = {};
+        var outputReport = {};
 
         for(var line = 0; line < this.code.length; line++){
             currentRule = [];
@@ -265,80 +270,69 @@ class interpret{
             }
 
             if(currentRule["token"] != "comment" && this.code[line].length != currentRule["checks"][0]){
-                console.log("nativeCodeChecker error - bad number of word on line [" + line + "]");
-                return false;
+                outputReport[line] = "nativeCodeChecker error - bad number of words";
             }
 
             for(var i = 1; i < currentRule["checks"].length; i++){
                 switch(currentRule["checks"][i]){
                     case "notInDef":
                         if(inDefinition){
-                            console.log("nativeCodeChecker error - notInDef check failed at line [" + line + "]");
-                            return false;
+                            outputReport[line] = "nativeCodeChecker error - notInDef check failed";
                         }
                         break;
                     case "inDef":
                         if(!inDefinition){
-                            console.log("nativeCodeChecker error - InDef check failed at line [" + line + "]");
-                            return false;
+                            outputReport[line] = "nativeCodeChecker error - InDef check failed";
                         }
                         break;
                     case "checkActive":
                         if(currentRule["token"] == "end"){
                             if(activeStructures.length > 0){
-                                console.log("nativeCodeChecker error - checkActive check failed at line [" + line + "]");
-                                return false;
+                                outputReport[line] = "nativeCodeChecker error - checkActive check failed";
                             }
+                            activeStructures = [];
                         } else {
                             if(activeStructures[activeStructures.length - 1] != currentRule["token"]){
-                                console.log("nativeCodeChecker error - checkActive check failed at line [" + line + "]");
-                                return false;
+                                outputReport[line] = "nativeCodeChecker error - checkActive check failed";
                             }
                         }
                         break;
                     case "checkKWTimes":
                         if(this.code[line][2] != this.dictionary["keywords"]["times"]){
-                            console.log("nativeCodeChecker error - checkKWTimes check failed at line [" + line + "]");
-                            return false;
+                            outputReport[line] = "nativeCodeChecker error - checkKWTimes check failed";
                         }
                         break;
                     case "checkNumber":
                         if(isNaN(parseInt(this.code[line][1]))){
-                            console.log("nativeCodeChecker error - checkNumber check failed at line [" + line + "]");
-                            return false;
+                            outputReport[line] = "nativeCodeChecker error - checkNumber check failed";
                         }
                         break;
                     case "checkCondPrefix":
                         if(![this.dictionary["keywords"]["is"], this.dictionary["keywords"]["isNot"]].includes(this.code[line][1])){
-                            console.log("nativeCodeChecker error - checkCondPrefix check failed at line [" + line + "]");
-                            return false;
+                            outputReport[line] = "nativeCodeChecker error - checkCondPrefix check failed";
                         }
                         break;
                     case "checkCondition":
                         if(![this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], 
                                 this.dictionary["keywords"]["mark"], this.dictionary["keywords"]["vacant"]].includes(this.code[line][2]) 
-                            && !(this.code[line][2] in this.conditionList)){
-                            console.log("nativeCodeChecker error - checkCondition check failed at line [" + line + "]");
-                            return false;
+                                && !(this.code[line][2] in this.conditionList)){
+                                expectDefinition[line] = this.code[line][2];
                         }
                         break;
                     case "checkDef":
                         if(!this.functions.includes(this.code[line][0]) && !(this.code[line][0] in this.commandList) && this.code[line] != ""){
-                            console.log("nativeCodeChecker error - checkDef check failed at line [" + line + "]");
-                            return false;
+                            expectDefinition[line] = this.code[line][0];
                         }
                         break;
                     case "checkNextThen":
                         if(this.code[line + 1][0] != this.dictionary["keywords"]["then"]){
-                            console.log("nativeCodeChecker error - checkNextThen check failed at line [" + line + "]");
-                            return false;
+                            outputReport[line] = "nativeCodeChecker error - checkNextThen check failed";
                         }
                         break;
                     case "checkExpectedWords":
                         for(var key in expectedWords){
                             if(expectedWords[key] == true){
-                                console.log("nativeCodeChecker error - checkExpectedWords check failed at line [" + line + "]");
-                                return false;
+                                outputReport[line] = "nativeCodeChecker error - checkExpectedWords check failed";
                             }
                         }
                         break;
@@ -348,14 +342,20 @@ class interpret{
             for(var i = 0; i < currentRule["action"].length; i++){
                 switch(currentRule["action"][i]){
                     case "addToCommadnList":
-                        if(!this.addCommandToList(this.code[line][1], line)){
-                            return false;
+                        for(var key in expectDefinition){
+                            if(expectDefinition[key] == this.code[line][1]){
+                                delete expectDefinition[key];
+                            }
                         }
+                        this.addCommandToList(this.code[line][1], line, outputReport);
                         break;
                     case "addToConditionList":
-                        if(!this.addConditionToList(this.code[line][1], line)){
-                            return false;
+                        for(var key in expectDefinition){
+                            if(expectDefinition[key] == this.code[line][1]){
+                                delete expectDefinition[key];
+                            }
                         }
+                        this.addConditionToList(this.code[line][1], line, outputReport);
                         break;
                     case "setDef":
                         inDefinition = true;
@@ -383,7 +383,29 @@ class interpret{
                 }
             }
         }
-        return true;
+        if(Object.keys(expectDefinition).length !== 0){
+            for(var key in expectDefinition){
+                outputReport[line] = "nativeCodeChecker error - checkDef check failed with word " + expectDefinition[key];
+            }
+        }
+        return outputReport;
+    }
+
+    /**
+     * Outputs the `outputReport` dictionary to the console.
+     * The `outputReport` is meant to be the result of `nativeCodeChecker` function.
+     * The format of the dictionary is that key is line of error and the value is the error message.
+     * @param {dictionary} outputReport 
+     */
+    printNativeCodeCheckerOutput(outputReport){
+        if(Object.keys(outputReport).length === 0){
+            return true;
+        } else {
+            for(var line in outputReport){
+                console.log(outputReport[line] + " at line [" + line + "]");
+            }
+            return false;
+        }
     }
 
     /**
@@ -714,7 +736,7 @@ class interpret{
             return;
         }
 
-        if(!this.nativeCodeChecker()){
+        if(!this.printNativeCodeCheckerOutput(this.nativeCodeChecker())){
             return;
         }
 
@@ -736,7 +758,7 @@ class interpret{
 
         this.nativeCodeSplitter(document.getElementById('textArea').value);
 
-        if(!this.nativeCodeChecker()){
+        if(!this.printNativeCodeCheckerOutput(this.nativeCodeChecker())){
             return;
         }
 
@@ -765,7 +787,7 @@ class interpret{
             if(!this.nativeCodeFindStartLine()){
                 return;
             }
-            if(!this.nativeCodeChecker(true)){
+            if(!this.printNativeCodeCheckerOutput(this.nativeCodeChecker())){
                 return;
             }
             this.resetNativeCodeInterpret();
@@ -773,6 +795,264 @@ class interpret{
             this.interpretMode = "debug";
         }
         this.nativeCodeInterpret(true);
+    }
+
+    /**
+     * Creates table for conversion from text code to blockly
+     */
+    createConversionTable(){            
+        var returnTable = {};
+        returnTable[this.dictionary["keywords"]["function"]] = {
+            "create" : ["base_function"],
+            "action" : ["addName", "insertConnection", "setCollapse"],
+        }
+        returnTable[this.dictionary["keywords"]["condition"]] = {
+            "create" : ["base_condition"],
+            "action" : ["addName", "insertConnection", "setCollapse"],
+        }
+        returnTable[this.dictionary["keywords"]["end"]] = {
+            "create" : [],
+            "action" : ["colapseBlock", "popConnectionArray", "collapse"],
+        }
+        returnTable[this.dictionary["keywords"]["forward"]] = {
+            "create" : ["function_step"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["right"]] = {
+            "create" : ["function_right"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["left"]] = {
+            "create" : ["function_left"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["placeBrick"]] = {
+            "create" : ["function_place"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["pickBrick"]] = {
+            "create" : ["function_pick"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["placeMark"]] = {
+            "create" : ["function_placemark"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["pickMark"]] = {
+            "create" : ["function_unmark"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["true"]] = {
+            "create" : ["function_true"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["false"]] = {
+            "create" : ["function_false"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["faster"]] = {
+            "create" : ["function_faster"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["slower"]] = {
+            "create" : ["function_slower"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["beep"]] = {
+            "create" : ["function_beep"],
+            "action" : ["connectBlock"],
+        }
+        returnTable[this.dictionary["keywords"]["do"]] = {
+            "create" : ["control_repeat"],
+            "action" : ["connectBlock", "insertConnection", "manageNumber"],
+        }
+        returnTable["*" + this.dictionary["keywords"]["do"]] = {
+            "create" : [],
+            "action" : ["popConnectionArray"],
+        }
+        returnTable[this.dictionary["keywords"]["while"]] = {
+            "create" : ["control_while"],
+            "action" : ["connectBlock", "insertConnection", "manageCondition"],
+        }
+        returnTable["*" + this.dictionary["keywords"]["while"]] = {
+            "create" : [],
+            "action" : ["popConnectionArray"],
+        }
+        returnTable[this.dictionary["keywords"]["if"]] = {
+            "create" : ["if_creator"],
+            "action" : ["connectBlock", "insertConnection", "manageCondition"],
+        }
+        returnTable[this.dictionary["keywords"]["then"]] = {
+            "create" : [],
+            "action" : [],
+        }
+        returnTable[this.dictionary["keywords"]["else"]] = {
+            "create" : [],
+            "action" : ["popConnectionArray"],
+        }
+        returnTable["*" + this.dictionary["keywords"]["if"]] = {
+            "create" : [],
+            "action" : ["popConnectionArray"],
+        }
+        return returnTable;
+    }
+
+    /**
+     * 
+     * @param {string} word 
+     */
+    tellCondBlockByWord(word){
+        switch(word){
+            case this.dictionary["keywords"]["wall"]:
+                return "condition_wall";
+            case this.dictionary["keywords"]["brick"]:
+                return "condition_brick";
+            case this.dictionary["keywords"]["mark"]:
+                return "condition_mark";
+            case this.dictionary["keywords"]["vacant"]:
+                return "condition_vacant";
+            default:
+                return "condition_userdefined";
+        }
+    }
+    
+    /**
+     * Translates text code to blockly blocks. The text is loaded from `this.code`
+     * and it expects that the code is error free to make meaningfull structures. 
+     * To check this use function `nativeCodeChecker()`.
+     * It can handle errored code but it wont run (properly or simply wont run).
+     * It does not use `this.line` and uses its one `line` variable.
+     * @param workspace is the workspace where the blocks will be created
+     */
+    makeBlocksFromNativeCode(workspace){
+        var connectTo = [];
+        var rules = this.createConversionTable();
+        var currentRule;
+        var toCollapse;
+        var numOfCollapsedBlocks = 0;
+        for(var line = 0; line < this.code.length; line ++){
+            currentRule = {};
+            if(this.code[line][0] == "" || this.code[line][0] == "#"){
+                continue;
+            }
+            if(this.code[line][0] in rules){
+                currentRule = rules[this.code[line][0]];
+                var newBlock;
+                if(currentRule["create"].length > 0){
+                    if(currentRule["create"][0] == "if_creator"){
+                        if(this.ifOrIfElse(line)){
+                            newBlock = workspace.newBlock("control_if");
+                        } else {
+                            newBlock = workspace.newBlock("control_ifelse");
+                        }
+                    } else {
+                        newBlock = workspace.newBlock(currentRule["create"]);
+                    }
+                }
+            } else {
+                newBlock = workspace.newBlock("function_userDefined");
+                currentRule = {"action" : ["connectBlock", "insertName"]}
+            }
+            if(newBlock !== undefined){
+                newBlock.initSvg();
+                newBlock.render();
+            }
+            for(var i = 0; i < currentRule["action"].length; i++){
+                switch(currentRule["action"][i]){
+                    case "addName":
+                        newBlock.setFieldValue(this.code[line][1], "NAME");
+                        break;
+                    case "insertConnection":
+                        if(newBlock.type == "control_if"){
+                            connectTo.push(newBlock.getInput('INNER_CODE_THEN').connection);
+                        } else if (newBlock.type == "control_ifelse"){
+                            connectTo.push(newBlock.getInput('INNER_CODE_ELSE').connection);
+                            connectTo.push(newBlock.getInput('INNER_CODE_THEN').connection); 
+                        } else {
+                            connectTo.push(newBlock.getInput('INNER_CODE').connection);
+                        }
+                        break;
+                    case "connectBlock":
+                        if(connectTo.length > 0){
+                            connectTo[connectTo.length - 1].connect(newBlock.previousConnection);
+                            connectTo.pop();
+                        }
+                        connectTo.push(newBlock.nextConnection);
+                        break;
+                    case "popConnectionArray":
+                        connectTo.pop();
+                        break;
+                    case "manageCondition":
+                        if(this.code[line][1] == this.dictionary["keywords"]["isNot"]){
+                            newBlock.getField('COND_PREF').setValue("optionIsNot");
+                        }
+                        var conditionBlock = workspace.newBlock(this.tellCondBlockByWord(this.code[line][2]));
+                        conditionBlock.initSvg();
+                        conditionBlock.render();
+                        newBlock.getInput('COND').connection.connect(conditionBlock.outputConnection);
+                        if(conditionBlock.type == "condition_userdefined"){
+                            conditionBlock.getField('FC_NAME').setValue(this.code[line][2]);
+                        }
+                        break;
+                    case "manageNumber":
+                        newBlock.getField('DO_TIMES').setValue(this.code[line][1]);
+                        break;
+                    case "insertName":
+                        newBlock.getField('FC_NAME').setValue(this.code[line][0]);
+                        break;
+                    case "setCollapse":
+                        toCollapse = newBlock;
+                        break;
+                    case "collapse":
+                        if(toCollapse !== undefined){
+                            toCollapse.setCollapsed(true);
+                            toCollapse.moveBy(0, 40 * numOfCollapsedBlocks);
+                            numOfCollapsedBlocks ++;
+                            toCollapse = undefined;
+                        }
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Tells if simple if structure of if else structure should be used based on `this.code`
+     * and given line.
+     * returns true if simple `if then` should be generate false for `if then else`
+     * @param {number} line is the line to start scanning from
+     */
+    ifOrIfElse(line){
+        var skipIf = -1;
+        for(; line < this.code.length; line ++){
+            switch(this.code[line][0]){
+                case this.dictionary["keywords"]["if"]:
+                    skipIf ++;
+                    break;
+                case this.dictionary["keywords"]["else"]:
+                    if(skipIf == 0){
+                        return false;
+                    }
+                    break;
+                case "*" + this.dictionary["keywords"]["if"]:
+                    if(skipIf == 0){
+                        return true;
+                    } else {
+                        skipIf --;
+                    }
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Simple code to blockly conversion function.
+     * It loades content from HTML textarea named conversionTest
+     * @param {workspace} workspace is the workspace where the blocks will be created
+     */
+    conversionTest(workspace){
+        this.nativeCodeSplitter(document.getElementById('conversionTest').value);
+        this.makeBlocksFromNativeCode(workspace);
     }
 }
 

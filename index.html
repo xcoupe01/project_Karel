@@ -21,6 +21,10 @@ konec
 prikaz pokus2
     krok
     krok
+    kdyz je zed
+    tak
+        krok
+    *kdyz
     krok
     oznac
 konec
@@ -122,6 +126,8 @@ konec</div>
 <label for="yVal">Y value</label>
 <input type="text" name="yVal" id="yVal">
 <input type="button" value="home camera" id="homeCamera">
+<input type="button" value="Make Blocks" id="makeBlocks">
+<textarea id="conversionTest"></textarea>
 <input type="button" value="test" id="test">
 <br>
 <textarea id="textArea" style="display:none"></textarea>
@@ -139,10 +145,10 @@ konec</div>
     <xml id="toolbox" style="display: none">
         <category name="Základ" colour="0">
             <block type="base_function">
-                <field name="PROG_NAME">nazev</field>
+                <field name="NAME">nazev</field>
             </block>
             <block type="base_condition">
-                <field name="COND_NAME">nazev</field>
+                <field name="NAME">nazev</field>
             </block>
         </category>
         <category name="Funkce" colour="90">

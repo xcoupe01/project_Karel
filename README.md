@@ -7,7 +7,7 @@
 [![Foo](https://pbs.twimg.com/media/CSPA_wFWUAAUobu.png)](https://www.fit.vut.cz/.cs)
 
 
-**Last update - 14.10.2020**
+**Last update - 20.10.2020**
 
 **English version below**
 ___
@@ -37,7 +37,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - v plánu možnost definování vlastních bloků
 - syntaktická kontrola textu
     - <span style="color:green"> implementována kontrola s tabulkovým zadáváním kontrol
-    - <span style="color:green"> implementován přehledný interpret nativního kódu
+    - <span style="color:green"> implementován přehledný interpret nativního kódu zvládající více chyb v kódu najednou
     - možná s využitím ACE (kde se budou zobrazovat chyby přímo v editoru)
     - <span style="color:green"> implementována možnost spuštění s krokováním 
     - jednoduchý debugger (možná breakpointy s ACE)
@@ -149,6 +149,8 @@ Pod těmito prvky se nachází sada tlačítek pro ovládání
 - `X value` - "x-ový" rozměr místnosti pro nastavení
 - `Y value` - "y-ový" rozměr místnosti pro nastavení
 - `home camera` - vrátí kameru místnosti do základní pozice (buď po nastartování aplikace a nebo při změně místnosti)
+- `Make Blocks` - vytvoří v prostoru blokového programování strukturu blokového programování funkčně stejné jako zadanému kódu v následujícím prostoru pro text
+- `textarea` - slouží pro zadání na přepis z kódu do bloků
 - `test` - prozatimní interní testovací tlačítko
 - (`textarea` - prozatimní prostor pro generování kódu z blokového programování)
 
@@ -190,6 +192,8 @@ You need to run local server for Karel to function properly. Easiest way is to r
 - `X value` - x dimension of the room for set
 - `Y value` - y dimension of the room for set
 - `home camera` - resets the camera to the staring position
+- `Make Blocks` - makes in the blockly field a structure that corresponds to code written in the following textarea
+- `textarea` - write code to be conversed to blockly here
 - `test` - provisional developer only button
 - `textarea` - space where generated code from block generator appears
 

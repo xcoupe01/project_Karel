@@ -121,7 +121,7 @@ Blockly.Karel['function_beep'] = function(block){
 }
 
 Blockly.Karel['function_userDefined'] = function(block){
-    var code = block.getFieldValue('FUNC_NAME');
+    var code = block.getFieldValue('FC_NAME');
     if(block.getNextBlock() != null){
         code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
     }else {
@@ -170,7 +170,7 @@ Blockly.Karel['control_if'] = function(block){
         condPref = Blockly.langDictionary["keywords"]["isNot"]
     }
     var code = Blockly.langDictionary["keywords"]["if"] + " " + condPref + " " + condVal + "\n" + Blockly.langDictionary["keywords"]["then"] + "\n";
-    code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
+    code += Blockly.Karel.statementToCode(block, 'INNER_CODE_THEN');
     code += "*" + Blockly.langDictionary["keywords"]["if"];
     if(block.getNextBlock() != null){
         code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
@@ -218,18 +218,18 @@ Blockly.Karel['condition_vacant'] = function(){
 }
 
 Blockly.Karel['condition_userdefined'] = function(block){
-    return [block.getFieldValue('COND_NAME'), 0];
+    return [block.getFieldValue('FC_NAME'), 0];
 }
 
 Blockly.Karel['base_function'] = function(block){
-    var code = Blockly.langDictionary["keywords"]["function"] + " " + block.getFieldValue('PROG_NAME') + "\n";
+    var code = Blockly.langDictionary["keywords"]["function"] + " " + block.getFieldValue('NAME') + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
     code += Blockly.langDictionary["keywords"]["end"] + "\n";
     return code + "\n";
 }
 
 Blockly.Karel['base_condition'] = function(block){
-    var code = Blockly.langDictionary["keywords"]["condition"] + " " + block.getFieldValue('COND_NAME') + "\n";
+    var code = Blockly.langDictionary["keywords"]["condition"] + " " + block.getFieldValue('NAME') + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
     code += Blockly.langDictionary["keywords"]["end"] + "\n";
     return code + "\n";

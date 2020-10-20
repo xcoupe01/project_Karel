@@ -156,15 +156,18 @@ document.querySelector('#runDebug').onclick = function() {mainInterpret.nativeCo
 document.querySelector('#stop').onclick = function() {mainInterpret.stopExecuting()};
 document.querySelector('#room').onclick = function(){mainInterpret.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value)};
 document.querySelector('#homeCamera').onclick = function() {mainInterpret.karel.homeCamera()};
+document.querySelector('#makeBlocks').onclick = function() {mainInterpret.conversionTest(workspace);};
 document.querySelector('#test').onclick = function() { 
     
     // make block text representation disappear
+    
     var x = document.getElementById("textArea");
     if (x.style.display === "none") {
         x.style.display = "block";
     } else {
         x.style.display = "none";
     }
+    
     /*
    //way to change languages 
    import('./source/languages/en.js')
@@ -173,18 +176,19 @@ document.querySelector('#test').onclick = function() {
         blocklySetBlockLang(module.setLang());
     });
     */
-   /*
-   var newBlock = workspace.newBlock("function_step");
-   newBlock.initSvg();
-   newBlock.render();
-   var newBlock = workspace.newBlock("function_step");
-   newBlock.initSvg();
-   newBlock.render();
-   var newBlock = workspace.newBlock("function_step");
-   newBlock.initSvg();
-   newBlock.render();
-   var newBlock = workspace.newBlock("function_step");
-   newBlock.initSvg();
-   newBlock.render();
+
+/*
+    var mainBlock = workspace.newBlock("base_function");
+    mainBlock.initSvg();
+    mainBlock.render();
+    for(var i = 0; i < 3; i++){
+        var newBlock = workspace.newBlock("function_step");
+        newBlock.initSvg();
+        newBlock.render();
+        mainBlock.getInput('INNER_CODE').connection.connect(newBlock.previousConnection);
+    }
    */
+
+   
+    //mainInterpret.conversionTest(workspace);
 };
