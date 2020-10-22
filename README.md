@@ -7,7 +7,7 @@
 [![Foo](https://pbs.twimg.com/media/CSPA_wFWUAAUobu.png)](https://www.fit.vut.cz/.cs)
 
 
-**Last update - 20.10.2020**
+**Last update - 22.10.2020**
 
 **English version below**
 ___
@@ -28,12 +28,13 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> implementováno podbarvování textu
     - <span style="color:green"> implementováno automatické zalamování textu
     - v plánu přidání dalších funkcí z knihovny ACE
-    - v plánu ukaládání a načítání kódu
+    - <span style="color:green"> implementováno ukaládání a načítání kódu ze souboru
 - blokový editor kódu
     - <span style="color:green"> implementováno pomocí Blockly.js
     - <span style="color:green"> implementovány základní bloky
     - <span style="color:green"> implementováno generování přepisu do nativního jazyka
     - <span style="color:green"> implementováno spouštění a propojení s interpretem
+    - <span style="color:green"> implementováno ukládání a načítání bloků ze souboru
     - v plánu možnost definování vlastních bloků
 - syntaktická kontrola textu
     - <span style="color:green"> implementována kontrola s tabulkovým zadáváním kontrol
@@ -43,7 +44,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - jednoduchý debugger (možná breakpointy s ACE)
 - uživatelsky dostupné modifikace místnosti
     - <span style="color:green"> implementováno nastavení rozměrů místnosti
-    - v plánu ukládání a načítání místosti
+    - <span style="color:green"> implementováno ukládání a načítání místosti ze souboru
 - mutace jazyka Karel
     - mutace programovacího jazyka karel do podoby C lang
     - mutace programovacího jazyka karel do podoby Python
@@ -141,16 +142,29 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku
 - Blokový editor
 - Textový editor
 
-Pod těmito prvky se nachází sada tlačítek pro ovládání
-- `run code` - spuštění kódu v textovém editoru na aktuální pozici kurzoru
-- `run debug` - možnost spuštění s krokováním (po každém kliknutí na tlačítko se provede jeden řádek)
-- `stop` - zastavení probíhajícího kódu
-- `room` - nastavení rozměrů místnosti na hodnoty z následujících polí
-- `X value` - "x-ový" rozměr místnosti pro nastavení
-- `Y value` - "y-ový" rozměr místnosti pro nastavení
-- `home camera` - vrátí kameru místnosti do základní pozice (buď po nastartování aplikace a nebo při změně místnosti)
-- `Make Blocks` - vytvoří v prostoru blokového programování strukturu blokového programování funkčně stejné jako zadanému kódu v následujícím prostoru pro text
-- `textarea` - slouží pro zadání na přepis z kódu do bloků
+Pod těmito prvky se nachází sada tlačítek pro ovládání, každý prvek má své specifické
+- Místnost s robotem
+    - `stop` - zastavení jakéhokoliv probíhajícího kódu
+    - `X value` - "x-ový" rozměr místnosti pro nastavení
+    - `Y value` - "y-ový" rozměr místnosti pro nastavení
+    - `room` - nastavení rozměrů místnosti na hodnoty z předchozích polí
+    - `home camera` - vrátí kameru místnosti do základní pozice (buď po nastartování aplikace a nebo při změně místnosti)
+- Blokový editor
+    - `Make Blocks` - vytvoří v prostoru blokového programování strukturu blokového programování funkčně stejné jako zadanému kódu v následujícím prostoru pro text
+    - `textarea` - slouží pro zadání na přepis z kódu do bloků
+- Textový editor
+    - `run code` - spuštění kódu v textovém editoru na aktuální pozici kurzoru
+    - `run debug` - možnost spuštění s krokováním (po každém kliknutí na tlačítko se provede jeden řádek)
+
+Níže se nachází sekce pro ukládání a načítání (+ developper sekce)
+- pomocí selektorů `room`, `blocks` a `code` můžete nastavit, co bude v následujícím vygenerování uložení uloženo
+    - `room` - přidá do souboru uložení aktuální stav místnosti
+    - `blocks` - přidá do souboru uložení aktuální stav blokového editoru
+    - `code` - přidá do souboru uložení aktuálního stavu editoru kódu
+- do pole s výchozím popiskem `file_name` můžete zadat jméno následujícího souboru uložení
+- tlačítkem `save` vygenerujete a stáhnete soubor, který ukládá aktuální stav
+- tlačítko `Vybrat soubor` slouží k vybrání souboru, ze kterého se načte stav aplikace.
+- tlačítko `load` načte předem vybraný soubor (pozor, aplikace se neptá a neupozorňuje že bude stav přepisovat a přepíše vše co jí soubor určí přepsat).
 - `test` - prozatimní interní testovací tlačítko
 - (`textarea` - prozatimní prostor pro generování kódu z blokového programování)
 
@@ -185,17 +199,31 @@ You need to run local server for Karel to function properly. Easiest way is to r
 - mouse to move camera in the room
 
 ## Button description
-- `run` - to run currently selected (with cursor) program in text editor
-- `run debug` - simple debug mode, by clicking on this button Karel will do one line of code
-- `stop` - to stop currently running code
-- `room` - to set the roomsize based on the next two fields
-- `X value` - x dimension of the room for set
-- `Y value` - y dimension of the room for set
-- `home camera` - resets the camera to the staring position
-- `Make Blocks` - makes in the blockly field a structure that corresponds to code written in the following textarea
-- `textarea` - write code to be conversed to blockly here
-- `test` - provisional developer only button
-- `textarea` - space where generated code from block generator appears
+You can find control for each section under it
+- Room with robot
+    - `stop` - stops ecevution of any code
+    - `X value` - x axis dimension setter
+    - `Y value` - y axis dimension setter
+    - `room` - sets the room dimensions to predefined values (the upper two)
+    - `home camera` - sets the camera to basic position
+- Blockly editor
+    - `textarea` - insert a code to be transported to Blockly code
+    - `Make Blocks` - creates blocks described by text form `textarea` above
+- Text editor
+    - `run code` - runs block of code specifed by cursor
+    - `run debug` - runs block of code specified by cursor in debug mode (step by step)
+
+Lower there are options for save and load the state of the application (+ developper section)
+- `room`, `blocks` and `code` - you can use these to specify save file
+    - `room` - save state of the room
+    - `blocks` - save state of Blockly editor
+    - `code` - save state of text editor
+- `file_name` text input - specify the name of savefile
+- `save` generates the save file
+- `Vybrat soubor` makes you choose the file to be loaded from
+- `load` loads the application by the specified file
+- `test` - internal developper button (click to make the next item visible)
+- (`textarea` - invisible blockly code represenation)
 
 ## Used resources
 - [ACE code editor](https://ace.c9.io/)

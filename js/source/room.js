@@ -6,6 +6,7 @@ import * as THREE from '../three/three.module.js';
   */
 export{room};
 class room{
+
     /**
      * Connects the room object to the scene where it should be drawn
      * @param {scene} scene is the scene where we want the room to be drawn
@@ -13,11 +14,14 @@ class room{
     constructor(scene){
         this.scene = scene;
     }
+
     /**
      * Draws the room and sets all its variables and arrays.
      * @param {controls} controls is the controls of the scene which will be altered here to point at the centre of the room
      * @param {number} countX is the count of blocks in the room in X axis
      * @param {number} countY is the count of blocks in the room in Y axis
+     * When you can see the room from starting camera angle, the X axis is to the right top and the Y axis is to the left top,
+     * Point zero is the nearest block to camera (the one Karel is standing on).
      */
     draw(controls, countX, countY){
         this.blockSize = 0.9;
@@ -131,8 +135,8 @@ class room{
     /**
      * Marks a specified position in the room
      * Also handles all graphical objects and saves them into the roomDataArray
-     * @param {*} posX is the X axis coordinate
-     * @param {*} posY is the Y axis coordinate
+     * @param {number} posX is the X axis coordinate
+     * @param {number} posY is the Y axis coordinate
      */
     markPosition(posX, posY){
         if(!this.roomDataArray[posX][posY].mark){
@@ -177,8 +181,8 @@ class room{
 
     /**
      * Makes walls in the room by removing given block. It erases and blocks block on a given position
-     * @param {*} posX is the X coordinate of the block to be removed
-     * @param {*} posY is the Y coordinate of the block to be removed
+     * @param {number} posX is the X coordinate of the block to be removed
+     * @param {number} posY is the Y coordinate of the block to be removed
      */
     removeBlockFromRoomPos(posX, posY){
         if(!this.roomDataArray[posX][posY].inRoom){
@@ -200,8 +204,8 @@ class room{
 
     /**
      * Restores erased block by function `removeBlockFromPos`. It activate given block and draws him back
-     * @param {*} posX is the X coordinate of the block to be activated
-     * @param {*} posY is the Y coordinate of the block to be activated
+     * @param {number} posX is the X coordinate of the block to be activated
+     * @param {number} posY is the Y coordinate of the block to be activated
      */
     putBlockToRoomPos(posX, posY){
         if(this.roomDataArray[posX][posY].inRoom){
@@ -215,14 +219,56 @@ class room{
 
     /**
      * Toggles given block active status
-     * @param {*} posX is the X coordinate of the block to be toggled
-     * @param {*} posY is the Y coordinate of the block to be toggled
+     * @param {number} posX is the X coordinate of the block to be toggled
+     * @param {number} posY is the Y coordinate of the block to be toggled
      */
     toggleRoomBlockPos(posX, posY){
         if(this.roomDataArray[posX][posY].inRoom){
             this.removeBlockFromRoomPos(posX, posY);
         } else {
             this.putBlockToRoomPos(posX, posY);
+        }
+    }
+
+    /**
+     * Saves actual room state to dictionary (JSON) and returns it
+     * @returns save dictionary that corresponds to actual room state
+     */
+    saveRoom(){
+        var saveJson = {};
+        for(var currX = 0; currX < this.roomDataArray.length; currX ++){
+            saveJson[currX] = {};
+            for(var currY = 0; currY < this.roomDataArray[currX].length; currY ++){
+                saveJson[currX][currY] = {};
+                saveJson[currX][currY]["bricks"] = this.roomDataArray[currX][currY].bricks;
+                saveJson[currX][currY]["mark"] = this.roomDataArray[currX][currY].mark;
+                saveJson[currX][currY]["inRoom"] = this.roomDataArray[currX][currY].inRoom;
+            }
+        }
+        return saveJson;
+    }
+
+    /**
+     * Sets the room to correspond to given dictionary (JSON) save
+     * WARNING - Does not expect bugs in the structure and no checks are made
+     * @param {controls} controls are the controls of the window
+     * @param {dictionary} dataJson is the dictionary to set the room state to
+     */
+    loadRoom(controls, dataJson){
+        this.erase();
+        this.draw(controls, Object.keys(dataJson).length, Object.keys(dataJson[0]).length);
+        for(var currX = 0; currX < Object.keys(dataJson).length; currX++){
+            for(var currY = 0; currY < Object.keys(dataJson[currX]).length; currY++){
+                if(!dataJson[currX][currY]["inRoom"]){
+                    this.removeBlockFromRoomPos(currX, currY);
+                }
+                if(dataJson[currX][currY]["mark"]){
+                    this.markPosition(currX, currY);
+                }
+                for(var i = 0; i < dataJson[currX][currY]["bricks"]; i++){
+                    this.addBrickToPos(currX, currY);
+                }
+            }
         }
     }
 }

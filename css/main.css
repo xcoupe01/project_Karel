@@ -6,7 +6,7 @@ html, body {
 #main {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr;
+  grid-template-rows: 5fr 1fr;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
   width: 100%;
@@ -18,10 +18,41 @@ html, body {
   width: 100%;
   height: 100%;
 }
+
 #blocklyDiv {
   grid-area: 1 / 2 / 2 / 3;
   position: absolute;
 }
+
 #textEditor { 
   grid-area: 1 / 3 / 2 / 4;
+}
+
+#roomButton {
+  grid-area: 2 / 1 / 3 / 2;
+}
+
+#blocklyButton {
+  grid-area: 2 / 2 / 3 / 3;
+}
+
+#textButton {
+  grid-area: 2 / 3 / 3 / 4;
+}
+
+
+#saveLoadMenu{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); 
+  grid-template-rows: 1fr;
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+}
+
+#save{
+  grid-area: 1 / 1 / 2 / 2;
+}
+
+#load{
+  grid-area: 1 / 2 / 2 / 3; 
 }

@@ -128,12 +128,14 @@ window.addEventListener('resize', onresize, false);
 onresize();
 Blockly.svgResize(workspace);
 
+
 // setting block listener
 function myUpdateFunction(event) {
     var code = Blockly.Karel.workspaceToCode(workspace);
     document.getElementById('textArea').value = code;
 }
 workspace.addChangeListener(myUpdateFunction);
+
 // -----------------------------
 
 // setting of language
@@ -151,23 +153,30 @@ var runMeFunc = function (eventpat){
 };
 blocklySetRunMe(runMeFunc);
 
-document.querySelector('#runCode').onclick = function() {mainInterpret.nativeCodeInterpretFromEditor()};
-document.querySelector('#runDebug').onclick = function() {mainInterpret.nativeCodeDebugInterpretFromEditor();};
+
+// room menu
 document.querySelector('#stop').onclick = function() {mainInterpret.stopExecuting()};
 document.querySelector('#room').onclick = function(){mainInterpret.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value)};
 document.querySelector('#homeCamera').onclick = function() {mainInterpret.karel.homeCamera()};
-document.querySelector('#makeBlocks').onclick = function() {mainInterpret.conversionTest(workspace);};
+// blockly menu
+document.querySelector('#makeBlocks').onclick = function() {mainInterpret.conversionTest(workspace)};
+// code menu
+document.querySelector('#runCode').onclick = function() {mainInterpret.nativeCodeInterpretFromEditor()};
+document.querySelector('#runDebug').onclick = function() {mainInterpret.nativeCodeDebugInterpretFromEditor()};
+// save/load menu
+document.querySelector('#saveButton').onclick = function() {mainInterpret.saveFile("byChoice", "name", workspace)};
+document.querySelector('#loadButton').onclick = function() {mainInterpret.loadFromFile("byFile", workspace, 'loadFile')};
+
+
 document.querySelector('#test').onclick = function() { 
     
     // make block text representation disappear
-    
     var x = document.getElementById("textArea");
     if (x.style.display === "none") {
         x.style.display = "block";
     } else {
         x.style.display = "none";
     }
-    
     /*
    //way to change languages 
    import('./source/languages/en.js')
@@ -188,7 +197,4 @@ document.querySelector('#test').onclick = function() {
         mainBlock.getInput('INNER_CODE').connection.connect(newBlock.previousConnection);
     }
    */
-
-   
-    //mainInterpret.conversionTest(workspace);
 };

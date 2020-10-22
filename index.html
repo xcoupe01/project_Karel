@@ -113,24 +113,57 @@ prikaz test_volno
         vlevo
     *kdyz
 konec</div>
+
+<div id="roomButton">
+    <input type="button" value="stop" id="stop">
+    <br>
+    <label for="xVal">X value</label>
+    <input type="text" name="xVal" id="xVal">
+    <br>
+    <label for="yVal">Y value</label>
+    <input type="text" name="yVal" id="yVal">
+    <input type="button" value="room" id="room">
+    <br>
+    <input type="button" value="home camera" id="homeCamera">
+</div>
+<div id="blocklyButton">
+    <textarea id="conversionTest"></textarea>
+    <br>
+    <input type="button" value="make blocks" id="makeBlocks">
+</div>
+<div id="textButton">
+    <input type="button" value="run code" id="runCode">
+    <input type="button" value="run debug" id="runDebug">
+</div>
     </div>
 </body>
 
 
-<input type="button" value="run code" id="runCode">
-<input type="button" value="run debug" id="runDebug">
-<input type="button" value="stop" id="stop">
-<input type="button" value="room" id="room">
-<label for="xVal">X value</label>
-<input type="text" name="xVal" id="xVal">
-<label for="yVal">Y value</label>
-<input type="text" name="yVal" id="yVal">
-<input type="button" value="home camera" id="homeCamera">
-<input type="button" value="Make Blocks" id="makeBlocks">
-<textarea id="conversionTest"></textarea>
-<input type="button" value="test" id="test">
-<br>
-<textarea id="textArea" style="display:none"></textarea>
+<!-- save/load menu -->
+<div id="saveLoadMenu">
+    <div id="save">
+        <label>room</label>
+        <input type="checkbox" id="roomSaveCheckbox" checked>
+        <br>
+        <label>blocks</label>
+        <input type="checkbox" id="blocksSaveCheckbox" checked>
+        <br>
+        <label>code</label>
+        <input type="checkbox" id="codeSaveCheckbox" checked>
+        <br>
+        <input type="text" value="file_name" id="saveName">
+        <input type="button" value="save" id="saveButton">
+    </div>
+    <div id="load">
+        <input type="file" id="loadFile">
+        <input type="button" value="load" id="loadButton">
+        <br>
+        <input type="button" value="test" id="test">
+        <br>
+        <textarea id="textArea" style="display:none"></textarea>
+    </div>
+</div>
+
 
 <!-- ace settings - best works here -->
 <script src="js/ace/ace.js" charset="utf-8"></script>

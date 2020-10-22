@@ -539,6 +539,7 @@ class interpret{
     /**
      * Sets the `this.line` to start of a command or condition
      * It can end with an error if end of file is found or "end" in the text is found
+     * @returns true if the line is found, false otherwise
      */
     nativeCodeFindStartLine(){
         while(this.code[this.line][0] != this.dictionary["keywords"]["function"] && this.code[this.line][0] != this.dictionary["keywords"]["condition"]){
@@ -705,6 +706,7 @@ class interpret{
      * Searches for name in command list and condition list and sets the line to be executed to start of
      * command or condition defined by the name
      * @param {string} name is the name of command or condition we want to run
+     * @returns true if the name is found, false otherwise
      */
     searchForNameSetLine(name){
         if(name in this.commandList){
@@ -721,6 +723,8 @@ class interpret{
 
     /**
      * Interprets native code from text editor
+     * Checks the code for bugs
+     * Ends with any kind of error (syntax error in code, nothing found to run ect.)
      */
     nativeCodeInterpretFromEditor(){
 
@@ -748,7 +752,11 @@ class interpret{
     }
 
     /**
-     *  Interprets native Blockly generated code
+     * Interprets native Blockly generated code
+     * Runs command or condition specified by name
+     * Checks the code for bugs
+     * WARNING - Needs a `textarea` element in the source HTML file
+     * @param {string} name is the name of command or condition to be executed
      */
     nativeCodeInterpretFromBlockly(name){
         if(this.running){
@@ -775,6 +783,8 @@ class interpret{
 
     /**
      * Runs debug mode Interpret from text code editor
+     * Checks the code for bugs
+     * Ends with any kind of error (syntax error in code, nothing found to run ect.)
      */
     nativeCodeDebugInterpretFromEditor(){
         if(this.running && this.interpretMode == "standard"){
@@ -898,8 +908,9 @@ class interpret{
     }
 
     /**
-     * 
-     * @param {string} word 
+     * Tells the blockly block name for condition by its string in code
+     * If the word in code is not among the base condition set special block is created
+     * @param {string} word is the string that we create the condition by
      */
     tellCondBlockByWord(word){
         switch(word){
@@ -1019,8 +1030,8 @@ class interpret{
     /**
      * Tells if simple if structure of if else structure should be used based on `this.code`
      * and given line.
-     * returns true if simple `if then` should be generate false for `if then else`
      * @param {number} line is the line to start scanning from
+     * @returns true if simple `if then` should be generate false for `if then else`
      */
     ifOrIfElse(line){
         var skipIf = -1;
@@ -1048,11 +1059,139 @@ class interpret{
     /**
      * Simple code to blockly conversion function.
      * It loades content from HTML textarea named conversionTest
+     * WARNING - Needs `conversionTest` element in the source
      * @param {workspace} workspace is the workspace where the blocks will be created
      */
     conversionTest(workspace){
         this.nativeCodeSplitter(document.getElementById('conversionTest').value);
         this.makeBlocksFromNativeCode(workspace);
+    }
+
+    /**
+     * Creates and downoalds specified save file
+     * This function can run in different modes:
+     *  `room`: makes save file that saves actual room configuration
+     *  `blockly`: makes save file that saves actual blocks in blockly workspace
+     *  `code`: makes save file that saves actual code in code editors
+     *  `all`: makes save containing all aspects of the app (all above)
+     *  `byChoice`: makes save file containing user specified parts (direct connection to HTML checkboxes)
+     * WARNING -  direct connection to HTML checkboxes.
+     * The file is in .txt format and contains JSON structure.
+     * Format of this structure is:
+     *  "karelAndRoom": contains data about room and Karel's position inside
+     *  "blockly": contains data about blockly workspace
+     *  "code": contains data abot code editor
+     * @param {string} mode is the mode the function will execute
+     * @param {workspace} workspace is the blockly workspace
+     * @param {string} name is the name of the file that will be generated
+     */
+    saveFile(mode, name, workspace){
+        var saveJson = {};
+        switch(mode){
+            case "room":
+                saveJson["karelAndRoom"] = this.karel.saveRoomWithKarel();
+                break;
+            case "blockly":
+                saveJson["blockly"] = Blockly.Karel.workspaceToCode(workspace);
+                break;
+            case "code":
+                saveJson["code"] = this.textEditor.getValue();
+                break;
+            case "all":
+                saveJson["karelAndRoom"] = this.karel.saveRoomWithKarel();
+                saveJson["blockly"] = Blockly.Karel.workspaceToCode(workspace);
+                saveJson["code"] = this.textEditor.getValue();
+                this.saveTextAsFile(JSON.stringify(saveJson), "allSaveTest");
+            case "byChoice":
+                if(document.getElementById('roomSaveCheckbox').checked){
+                    saveJson["karelAndRoom"] = this.karel.saveRoomWithKarel();
+                }
+                if(document.getElementById('blocksSaveCheckbox').checked){
+                    saveJson["blockly"] = Blockly.Karel.workspaceToCode(workspace);
+                }
+                if(document.getElementById('codeSaveCheckbox').checked){
+                    saveJson["code"] = this.textEditor.getValue();   
+                }
+                break;
+            default:
+                console.log("saveFile - unsuported mode [" + mode + "]");
+                return; 
+        }
+        saveTextAsFile(JSON.stringify(saveJson), name);
+    }
+
+    /**
+     * Load data from file and sets the app by them
+     * This function can run in a different modes:
+     *  `room`: loads and applyes only data that specifies the room and karel's position in it
+     *  `blockly`: loads and applyes only data that specifies blockly workspace
+     *  `code`: loads and applyes only data that specifies code editor
+     *  `all`: loads and applyes all informations (all above, no contorl) 
+     *  `byFile`: loads and applyes only mentioned data (some of above)
+     * Apart form `byFile` mode there are no checks if the file is correct - TODO
+     * The save format is expected the save as desribed in `saveFile` function
+     * @param {string} mode is the mode which the function will run 
+     * @param {workspace} workspace is the blockly workspace
+     * @param {elementID} fileToLoadID is the ID of HTML element where is the file
+     */
+    loadFromFile(mode, workspace, fileToLoadID){
+        var fileToLoad = document.getElementById(fileToLoadID).files[0];
+    
+        var fileReader = new FileReader();
+        var interpret = this;
+        fileReader.onload = function(fileLoadedEvent) 
+        {
+            switch(mode){
+                case "room":
+                    interpret.karel.loadRoomWithKarel(JSON.parse(fileLoadedEvent.target.result));
+                    break;
+                case "blockly":
+                    workspace.clear();
+                    interpret.nativeCodeSplitter(fileLoadedEvent.target.result);
+                    interpret.makeBlocksFromNativeCode(workspace);
+                    break;
+                case "code":
+                    interpret.textEditor.setValue(fileLoadedEvent.target.result);
+                    break;
+                case "all":
+                    var dataJson = JSON.parse(fileLoadedEvent.target.result);
+                    interpret.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
+                    workspace.clear();
+                    interpret.nativeCodeSplitter(dataJson["blockly"]);
+                    interpret.makeBlocksFromNativeCode(workspace);
+                    interpret.textEditor.setValue(dataJson["code"]);
+                    break;
+                case "byFile":
+                    var dataJson = JSON.parse(fileLoadedEvent.target.result);
+                    for(var key in dataJson){
+                        switch(key){
+                            case "karelAndRoom":
+                                interpret.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
+                                break;
+                            case "blockly":
+                                workspace.clear();
+                                interpret.nativeCodeSplitter(dataJson["blockly"]);
+                                interpret.makeBlocksFromNativeCode(workspace);
+                                break;
+                            case "code":
+                                interpret.textEditor.setValue(dataJson["code"]);
+                                break;
+                            default:
+                                console.log("LoadFromFile warning - unknown save tree [" + key + "]");
+                                break;
+                        }
+                    }
+                    break;
+                default:
+                    console.log("LoadFromFile error - unsuported mode [" + mode + "]");
+                    return;
+            } 
+        };
+        try {
+            fileReader.readAsText(fileToLoad, "UTF-8");
+        } catch(err) {
+            alert('No file to load');
+      };  
     }
 }
 
@@ -1063,4 +1202,35 @@ class interpret{
  */
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Saves a string to a .txt file
+ * @param {string} textToWrite is the string to be saved
+ * @param {string} fileNameToSaveAs is the name of the file that will be downalded
+ */
+function saveTextAsFile(textToWrite,fileNameToSaveAs){
+
+    var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
+    
+    var downloadLink = document.createElement("a");
+    downloadLink.download = fileNameToSaveAs;
+    downloadLink.innerHTML = "Upload File";
+    if (window.webkitURL != null)
+    {
+        // Chrome allows the link to be clicked
+        // without actually adding it to the DOM.
+        downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+    }
+    else
+    {
+        // Firefox requires the link to be added to the DOM
+        // before it can be clicked.
+        downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+        downloadLink.onclick = destroyClickedElement;
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+    }
+    
+    downloadLink.click();
 }

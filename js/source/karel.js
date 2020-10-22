@@ -199,6 +199,25 @@ class karel{
     beep(){
         this.sound.play();
     }
+
+    /**
+     * Teleports Karel to specified position and with specified orientation
+     * @param {number} positionX is the X coordinate
+     * @param {number} positionY is the Y coordinate
+     * @param {number} orientation is the orientation
+     */
+    teleportToLocation(positionX, positionY, orientation){
+        var deltaX = this.positionX - positionX;
+        var deltaY = this.positionY - positionY;
+        this.positionX = positionX;
+        this.positionY = positionY;
+        this.graphicalObject.position.x -= deltaX * (this.room.blockSize + this.room.blockGap);
+        this.graphicalObject.position.z -= deltaY * (this.room.blockSize + this.room.blockGap);
+        this.correctHeight();
+        while(this.orientation != orientation){
+            this.turnRight();
+        }
+    }
     
     /**
      * Tells if the robot looks directly to the wall, also checks for the "holes" in the room
@@ -314,8 +333,8 @@ class karel{
      * The dimensions must be greater then 1 and less or equal the 100 for now
      * The current data before calling this method will be forgotten
      * The program asks the user if he really want to delete the old room
-     * @param {*} valueX is the X dimension of the new room
-     * @param {*} valueY is the Y dimension of the new room
+     * @param {number} valueX is the X dimension of the new room
+     * @param {number} valueY is the Y dimension of the new room
      */
     resizeRoom(valueX, valueY){
         if(typeof valueX != "string" || typeof valueY != "string"){
@@ -350,5 +369,28 @@ class karel{
         this.controls.object.position.set(-10, 10, -10);
         this.controls.target.set(this.room.roomDataArray.length/2 * this.room.blockSize/2, 0, this.room.roomDataArray[0].length/2 * this.room.blockSize/2);
         this.controls.update();
+    }
+
+    /**
+     * Creates save dictionary (JSON) by actual room state with Karel's position
+     * @returns the save dicitionary (JSON)
+     */
+    saveRoomWithKarel(){
+        var saveJson = {};
+        saveJson["room"] = this.room.saveRoom();
+        saveJson["karel"] = {};
+        saveJson["karel"]["position"] = [this.positionX, this.positionY];
+        saveJson["karel"]["orientation"] = this.orientation;
+        return saveJson;
+    }
+
+    /**
+     * Sets the room state adn Karel's position in it to match data from specified dictionary (JSON)
+     * WARNING - Does not expect bugs in the structure and no checks are made
+     * @param {dictionary} dataJson is the state to set the room to
+     */
+    loadRoomWithKarel(dataJson){
+        this.room.loadRoom(this.controls, dataJson["room"]);
+        this.teleportToLocation(dataJson["karel"]["position"][0], dataJson["karel"]["position"][1], dataJson["karel"]["orientation"]);
     }
 }
