@@ -1,38 +1,32 @@
+import {command} from './command.js'
 export {interpret};
 
+/**
+ * This class is used to represent interpret in the structure.
+ * Its main job is manipulate with the users code (like save it, load it, interpret if from many sources ect.)
+ * It does not handle Karel, this is done through command object
+ */
 class interpret{
 
     constructor(textEditor, karel){
         this.dictionary = {};                   // current language dictionary
-        this.karel = karel;                     // given robot karel to operate with
+        this.command = new command(karel)       // comand handlerer module
         this.textEditor = textEditor;           // given text editor to interpret
-        this.commandList = {};                  // user defined commands list dictionary
-        this.conditionList = {};                // user defined condition list dictionary
         this.running = false;                   // tells if Karel is executing code
-        this.speed = 125;                       // tells the time for interpet step
         this.activeCounters = [];               // used for DO loops
         this.programQueue = [];                 // used to jump to other programs and return back (saves position from which was jumped)
-        this.lastConditionResult = "undef";     // used for user defined condition evaluation
         this.interpretMode = "standard";        // tells in which state is the interpret
         this.line = 0;                          // actual interpret line position in the code 
         this.code = [];                         // code formated by function nativeCodeSplitter
     }
     
     /**
-     * Sets Karel to specified language
+     * Sets Karel's interpret to specified language with all its dependent objects
      * @param {dictionary} dictionary is the JS dictionary set of Karel words
      */
     languageSetter(dictionary){
+        this.command.languageSetter(dictionary)
         this.dictionary = dictionary;
-        this.reservedWords = [];
-        this.functions = [];
-        for(const [key, value] of Object.entries(this.dictionary["keywords"])){
-            this.reservedWords.push(value);
-            if(["forward", "right", "left", "placeBrick", "pickBrick", "placeMark", "pickMark", 
-                    "true", "false", "wall", "brick", "mark", "vacant", "faster", "slower", "beep"].includes(key)){
-                this.functions.push(value);
-            }
-        }
     }
 
     /**
@@ -48,45 +42,6 @@ class interpret{
      */
     getRunning(){
         return this.running;
-    }
-
-    /**
-     * Adds command record to the interprets dictionary to make it callable.
-     * If an error occurs (redefinig of some sort), it will be written in the `outputReport`.
-     * The `outputReport` is a javascript dictionary formated in a way where key is line of 
-     * the error and its content is the string of the error. 
-     * There cannot be any command or condition with same name.
-     * @param {string} name is the name of the command
-     * @param {number} line is the starting line of the command
-     * @param {dictionary} outputReport is a report to save error to
-     */
-    addCommandToList(name, line, outputReport){
-        if(name in this.commandList || name in this.conditionList){
-            outputReport[line] = "ACommaTL error - name redefiniton";
-        } else if(this.reservedWords.includes(name)){
-            outputReport[line] = "ACommaTL error - redefining reserved word";
-        } else {
-            this.commandList[name] = line;
-        }
-    }
-
-    /**
-     * Adds condition record to the interprets dictionary to make it callable.
-     * The `outputReport` is a javascript dictionary formated in a way where key is line of 
-     * the error and its content is the string of the error. 
-     * There cannot be any command or condition with same name.
-     * @param {string} name is the name of the condition
-     * @param {number} line is the starting line of the condition
-     * @param {dictionary} outputReport is a report to save error to
-     */
-    addConditionToList(name, line, outputReport){
-        if(name in this.conditionList || name in this.commandList){
-            outputReport[line] = "ACondTL error - name redefiniton";
-        } else if(this.reservedWords.includes(name)){
-            outputReport[line] = "ACommaTL error - redefining reserved word";
-        } else {
-            this.conditionList[name] = line;
-        }
     }
 
     /**
@@ -187,42 +142,24 @@ class interpret{
     }
 
     /**
-     * Sets the speed of the interpret step to 125 miliseconds
-     */
-    speedUpInterpret(){
-        this.speed = 125;
-    }
-
-    /**
-     * Sets the speed of the interpret step to 250 miliseconds
-     */
-    slowDownInterpret(){
-        this.speed = 250;
-    }
-
-    /**
      * Checks Karel's native code.
      * If an error is found, it is stored in the local dictionary which is outputed at the end of scanning. 
      * The output is formated as dictionary in a way where key is line of the code where error happend and the value is
      * the text information of the error.
      * Code thats beeing checked is located in `this.code`.
-     * it does not utulize the `this.line` varibale and it uses its own line variable.
+     * It does not utulize the `this.line` varibale and it uses its own line variable as well as this.command handeler object.
      * It also scans for command and condition definitions and stores them in catalogue (`this.commandList` and `this.conditionList`).
      * Utulizes the rules created by `createNativeRulesTable` function.
      * @returns dictionary with saved errors.
      */
     nativeCodeChecker(){
-
-        this.commandList = {};
-        this.conditionList = {};
+        this.command.prepareCheck();
         var inDefinition = false;
         var activeStructures = []; 
         var rules = this.createNativeRulesTable();
         var currentRule;
         var expectedWords = {"true" : false, "false" : false};
-        var expectDefinition = {};
         var outputReport = {};
-
         for(var line = 0; line < this.code.length; line++){
             currentRule = [];
             switch(this.code[line][0]){
@@ -268,11 +205,9 @@ class interpret{
                         currentRule = rules["def"];
                     }
             }
-
             if(currentRule["token"] != "comment" && this.code[line].length != currentRule["checks"][0]){
                 outputReport[line] = "nativeCodeChecker error - bad number of words";
             }
-
             for(var i = 1; i < currentRule["checks"].length; i++){
                 switch(currentRule["checks"][i]){
                     case "notInDef":
@@ -313,16 +248,10 @@ class interpret{
                         }
                         break;
                     case "checkCondition":
-                        if(![this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], 
-                                this.dictionary["keywords"]["mark"], this.dictionary["keywords"]["vacant"]].includes(this.code[line][2]) 
-                                && !(this.code[line][2] in this.conditionList)){
-                                expectDefinition[line] = this.code[line][2];
-                        }
+                        this.command.checkCondition(this.code[line][2], line)
                         break;
                     case "checkDef":
-                        if(!this.functions.includes(this.code[line][0]) && !(this.code[line][0] in this.commandList) && this.code[line] != ""){
-                            expectDefinition[line] = this.code[line][0];
-                        }
+                        this.command.checkCommand(this.code[line][0], line)
                         break;
                     case "checkNextThen":
                         if(this.code[line + 1][0] != this.dictionary["keywords"]["then"]){
@@ -338,24 +267,13 @@ class interpret{
                         break;
                 }
             }
-
             for(var i = 0; i < currentRule["action"].length; i++){
                 switch(currentRule["action"][i]){
                     case "addToCommadnList":
-                        for(var key in expectDefinition){
-                            if(expectDefinition[key] == this.code[line][1]){
-                                delete expectDefinition[key];
-                            }
-                        }
-                        this.addCommandToList(this.code[line][1], line, outputReport);
+                        this.command.addCommandToList(this.code[line][1], line, outputReport)
                         break;
                     case "addToConditionList":
-                        for(var key in expectDefinition){
-                            if(expectDefinition[key] == this.code[line][1]){
-                                delete expectDefinition[key];
-                            }
-                        }
-                        this.addConditionToList(this.code[line][1], line, outputReport);
+                        this.command.addConditionToList(this.code[line][1], line, outputReport);
                         break;
                     case "setDef":
                         inDefinition = true;
@@ -383,9 +301,9 @@ class interpret{
                 }
             }
         }
-        if(Object.keys(expectDefinition).length !== 0){
-            for(var key in expectDefinition){
-                outputReport[line] = "nativeCodeChecker error - checkDef check failed with word " + expectDefinition[key];
+        if(Object.keys(this.command.expectDefinition).length !== 0){
+            for(var key in this.command.expectDefinition){
+                outputReport[key] = "nativeCodeChecker error - checkDef check failed with word " + this.command.expectDefinition[key];
             }
         }
         return outputReport;
@@ -395,7 +313,9 @@ class interpret{
      * Outputs the `outputReport` dictionary to the console.
      * The `outputReport` is meant to be the result of `nativeCodeChecker` function.
      * The format of the dictionary is that key is line of error and the value is the error message.
+     * Its also tells of there is an error in the report (if there isnt any, it returns true)
      * @param {dictionary} outputReport 
+     * @returns true if the input is empty, false otherwise
      */
     printNativeCodeCheckerOutput(outputReport){
         if(Object.keys(outputReport).length === 0){
@@ -406,68 +326,6 @@ class interpret{
             }
             return false;
         }
-    }
-
-    /**
-     * Evaluates a given basic condition
-     * @param {string} prefix is the Karel prefix of condition (is/isnt)
-     * @param {string} condition is the condition itself
-     * @returns the result of the condition and its prefix
-     */
-    checkBaseCondition(prefix, condition){
-        if(prefix == this.dictionary["keywords"]["is"]){
-            switch(condition){
-                case this.dictionary["keywords"]["wall"]:
-                    return this.karel.isWall();
-                case this.dictionary["keywords"]["brick"]:
-                    return this.karel.isBrick();
-                case this.dictionary["keywords"]["mark"]:
-                    return this.karel.isMark();
-                case this.dictionary["keywords"]["vacant"]:
-                    return this.karel.isVacant();
-            }
-        } else {
-            switch(condition){
-                case this.dictionary["keywords"]["wall"]:
-                    return !this.karel.isWall();
-                case this.dictionary["keywords"]["brick"]:
-                    return !this.karel.isBrick();
-                case this.dictionary["keywords"]["mark"]:
-                    return !this.karel.isMark();
-                case this.dictionary["keywords"]["vacant"]:
-                    return !this.karel.isVacant();
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Evaluates given condition in native code
-     * The function can evaluate Karels base conditions as well as user defined conditions
-     * For base conditions the `checkBaseCondition` function is used
-     * To check user defined conditions the function returns "undef" string and makes jump to desired condition
-     * While evaluating user defined conditon the result is stored and when the condition ends and we jump back to original
-     * code point, the stored value is processed and correct answer is returned
-     * It manipulates with `this.line` and `this.programQueue` variables if needed
-     * Also it takes in mind the Karel's condition prefix
-     * @returns string "true" if the result was true, string "false" if the result was false and "undef" if a jump is needed
-     */
-    nativeCodeConditionEval(){
-        if([this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], 
-                this.dictionary["keywords"]["mark"], this.dictionary["keywords"]["vacant"]].includes(this.code[this.line][2])){
-            this.lastConditionResult = "undef";
-            return (this.checkBaseCondition(this.code[this.line][1], this.code[this.line][2]) === true) ? "true" : "false";
-        }
-        if(this.lastConditionResult != "undef"){
-            if(this.code[this.line][1] == this.dictionary["keywords"]["is"]){
-                return (this.lastConditionResult == "true") ? "true" : "false";
-            } else {
-                return (this.lastConditionResult == "false") ? "true" : "false";
-            }
-        }
-        this.programQueue.push(this.line - 1);
-        this.line = this.conditionList[this.code[this.line][2]];
-        return "undef";
     }
 
     /**
@@ -517,13 +375,12 @@ class interpret{
     }
 
     /**
-     * Resets the important variables for interpret and sets the textEditor to read only mode
+     * Resets the important variables and objects for interpret and sets the textEditor to read only mode
      */
     resetNativeCodeInterpret(){
         this.activeCounters = [];
         this.programQueue = [];
-        this.lastConditionResult = "undef";
-        this.speed = 125;
+        this.command.prepareRun();
         this.textEditor.setReadOnly(true);
     }
 
@@ -553,14 +410,29 @@ class interpret{
     }
 
     /**
+     * Calls fucntion in `this.command` object to evaluate condition on current line.
+     * For more details look in the description of `nativeCodeConditionEval` in `command.js` file.
+     * The output of mentioned function is directly aplyed to current interpretation (line is switched and program queue is pushed)
+     */
+    evalNativeCodeCondition(){
+        var result = this.command.nativeCodeConditionEval(this.code[this.line][2], this.code[this.line][1], this.line);
+        if(result[1] != -1){
+            this.programQueue.push(this.line - 1)
+            this.line = result[1]
+        }
+        return result[0]
+    }
+
+    /**
      * Makes a one step (interpets on line) of Karel's native language.
-     * To run, it needs `this.code` and `this.line` to be initiated properly.
+     * To run, it needs `this.code`, `this.line` and `this.command` to be initiated properly.
      * Its meant to run in a loop, The loop should end when this function returns true.
      * Its highly recomended to use `this.resetNativeCodeInterpret` function before interpret loop.
      * and its also highly recomended to call `turnOffInterpret` to end the interpretation becase these 
-     * functions will set the coreect object variable values.
+     * functions will set the corect object variable values.
      * The code you want to interpret shoul be error free because there are no syntax checks. 
      * To check the syntax of the code use `nativeCodeChecker` function.
+     * The commands are handeled by `this.commad` object.
      * @returns true if the interpretation should end, false otherwise
      */
     nativeCodeInterpretStep(){
@@ -574,8 +446,9 @@ class interpret{
                 break;
             case this.dictionary["keywords"]["end"]:
                 if(this.programQueue.length == 0){
-                    if(this.lastConditionResult != "undef"){
-                        alert(this.lastConditionResult);
+                    if(this.command.lastConditionResult != "undef"){
+                        // TODO - not a good solution, need to be redesigned
+                        alert(this.command.lastConditionResult);
                     }
                     return true;
                 } else {
@@ -583,27 +456,6 @@ class interpret{
                     //in next step the N will be incremented so we need to substract the addition to maintain the correct jump
                     this.programQueue.pop();
                 }
-                break;
-            case this.dictionary["keywords"]["forward"]:
-                this.karel.goForward();
-                break;
-            case this.dictionary["keywords"]["right"]:
-                this.karel.turnRight();
-                break;
-            case this.dictionary["keywords"]["left"]:
-                this.karel.turnLeft();
-                break;
-            case this.dictionary["keywords"]["placeBrick"]:
-                this.karel.placeBrick();
-                break;
-            case this.dictionary["keywords"]["pickBrick"]:
-                this.karel.pickUpBrick();
-                break;
-            case this.dictionary["keywords"]["placeMark"]:
-                this.karel.markOn();
-                break;
-            case this.dictionary["keywords"]["pickMark"]:
-                this.karel.markOff();
                 break;
             case this.dictionary["keywords"]["do"]:
                 if(parseInt(this.code[this.line][1]) == 0){
@@ -621,8 +473,8 @@ class interpret{
                 }
                 break;
             case this.dictionary["keywords"]["while"]:
-                var result = this.nativeCodeConditionEval();
-                this.lastConditionResult = "undef";
+                var result = this.evalNativeCodeCondition();
+                this.command.lastConditionResult = "undef";
                 if(result == "false"){
                     this.nativeCodeJumper(this.dictionary["keywords"]["while"], false);
                 }
@@ -632,8 +484,8 @@ class interpret{
                 this.line --;
                 break;
             case this.dictionary["keywords"]["if"]:
-                var result = this.nativeCodeConditionEval();
-                this.lastConditionResult = "undef";
+                var result = this.evalNativeCodeCondition();
+                this.command.lastConditionResult = "undef";
                 if(result == "false"){
                     this.nativeCodeJumper(this.dictionary["keywords"]["if"], false);
                 }
@@ -644,31 +496,18 @@ class interpret{
             case this.dictionary["keywords"]["then"]:
             case "*" + this.dictionary["keywords"]["if"]:
                 break;
-            case this.dictionary["keywords"]["true"]:
-                this.lastConditionResult = "true";
-                break;
-            case this.dictionary["keywords"]["false"]:
-                this.lastConditionResult = "false";
-                break;
             case "#":
             case "":
                 break;
-            case this.dictionary["keywords"]["faster"]:
-                this.speedUpInterpret();
-                break;
-            case this.dictionary["keywords"]["slower"]:
-                this.slowDownInterpret();
-                break;
-            case this.dictionary["keywords"]["beep"]:
-                this.karel.beep();
-                break;
             default:
-                if(!(this.code[this.line][0] in this.commandList)){
-                    console.log("ITC error - unexpected word - [" + this.code[this.line][0] + "]");
+                result = this.command.nativeCodeCommandEval(this.code[this.line][0])
+                if(result == -2){
                     return true;
+                } else if(result != -1){
+                    this.programQueue.push(this.line);
+                    console.log(result)
+                    this.line = result;
                 }
-                this.programQueue.push(this.line);
-                this.line = this.commandList[this.code[this.line][0]];
         }
         this.line ++;
         return false;
@@ -687,7 +526,6 @@ class interpret{
      * @param {boolean} cursor tells if the cursor will be moved, true means yes, false no
      */
     async nativeCodeInterpret(cursor){
-        this.textEditor.read
         while(this.running){
             if(cursor){
                 this.textEditor.gotoLine(this.line + 1);
@@ -695,7 +533,7 @@ class interpret{
             if(this.nativeCodeInterpretStep(this.code)){
                 this.turnOffInterpret();
             };
-            await sleep(this.speed);
+            await sleep(this.command.speed);
             if(this.interpretMode == "debug"){
                 return;
             }
@@ -703,18 +541,19 @@ class interpret{
     }
 
     /**
+     * TODO - push to command.js
      * Searches for name in command list and condition list and sets the line to be executed to start of
      * command or condition defined by the name
      * @param {string} name is the name of command or condition we want to run
      * @returns true if the name is found, false otherwise
      */
     searchForNameSetLine(name){
-        if(name in this.commandList){
-            this.line = this.commandList[name];
+        if(name in this.command.commandList){
+            this.line = this.command.commandList[name];
             return true;
         }
-        if(name in this.conditionList){
-            this.line = this.conditionList[name];
+        if(name in this.command.conditionList){
+            this.line = this.command.conditionList[name];
             return true;
         }
         console.log("searchForNameSetLine error - name [" + name + "] not found")
@@ -1089,7 +928,7 @@ class interpret{
         var saveJson = {};
         switch(mode){
             case "room":
-                saveJson["karelAndRoom"] = this.karel.saveRoomWithKarel();
+                saveJson["karelAndRoom"] = this.command.karel.saveRoomWithKarel();
                 break;
             case "blockly":
                 saveJson["blockly"] = Blockly.Karel.workspaceToCode(workspace);
@@ -1098,13 +937,13 @@ class interpret{
                 saveJson["code"] = this.textEditor.getValue();
                 break;
             case "all":
-                saveJson["karelAndRoom"] = this.karel.saveRoomWithKarel();
+                saveJson["karelAndRoom"] = this.command.karel.saveRoomWithKarel();
                 saveJson["blockly"] = Blockly.Karel.workspaceToCode(workspace);
                 saveJson["code"] = this.textEditor.getValue();
                 this.saveTextAsFile(JSON.stringify(saveJson), "allSaveTest");
             case "byChoice":
                 if(document.getElementById('roomSaveCheckbox').checked){
-                    saveJson["karelAndRoom"] = this.karel.saveRoomWithKarel();
+                    saveJson["karelAndRoom"] = this.command.karel.saveRoomWithKarel();
                 }
                 if(document.getElementById('blocksSaveCheckbox').checked){
                     saveJson["blockly"] = Blockly.Karel.workspaceToCode(workspace);
@@ -1119,6 +958,34 @@ class interpret{
         }
         saveTextAsFile(JSON.stringify(saveJson), name);
     }
+
+    /**
+     * Checks if save file is correct
+     * @param {dictionary} dataJson parsed save file to JSON dictionary
+     * @returns true if the given save JSON is correct for this app, false otherwise
+     */
+    checkLoadedFile(dataJson){
+        for(var item in dataJson){
+            switch(item){
+                case "karelAndRoom":
+                    if(!this.command.karel.checkLoadFileKarelAndRoom(dataJson[item])){
+                        return false;
+                    }
+                    break;
+                case "code":
+                case "blockly":
+                    this.nativeCodeSplitter(dataJson[item]);
+                    if(!this.printNativeCodeCheckerOutput(this.nativeCodeChecker())){
+                        return false;
+                    }
+                    break;
+                default:
+                    return false;
+            }
+        }
+        return true;
+    }
+
 
     /**
      * Load data from file and sets the app by them
@@ -1136,14 +1003,13 @@ class interpret{
      */
     loadFromFile(mode, workspace, fileToLoadID){
         var fileToLoad = document.getElementById(fileToLoadID).files[0];
-    
         var fileReader = new FileReader();
         var interpret = this;
         fileReader.onload = function(fileLoadedEvent) 
         {
             switch(mode){
                 case "room":
-                    interpret.karel.loadRoomWithKarel(JSON.parse(fileLoadedEvent.target.result));
+                    interpret.command.karel.loadRoomWithKarel(JSON.parse(fileLoadedEvent.target.result));
                     break;
                 case "blockly":
                     workspace.clear();
@@ -1155,18 +1021,27 @@ class interpret{
                     break;
                 case "all":
                     var dataJson = JSON.parse(fileLoadedEvent.target.result);
-                    interpret.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
+                    interpret.command.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
                     workspace.clear();
                     interpret.nativeCodeSplitter(dataJson["blockly"]);
                     interpret.makeBlocksFromNativeCode(workspace);
                     interpret.textEditor.setValue(dataJson["code"]);
                     break;
                 case "byFile":
-                    var dataJson = JSON.parse(fileLoadedEvent.target.result);
+                    try{
+                        var dataJson = JSON.parse(fileLoadedEvent.target.result);
+                        if(!interpret.checkLoadedFile(dataJson)){
+                            throw "Corrupted save file";
+                        }
+                    }
+                    catch(err){
+                        console.log("loadFromFile error - Corupted save file")
+                        return;
+                    }
                     for(var key in dataJson){
                         switch(key){
                             case "karelAndRoom":
-                                interpret.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
+                                interpret.command.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
                                 break;
                             case "blockly":
                                 workspace.clear();

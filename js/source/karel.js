@@ -94,24 +94,21 @@ class karel{
                 case 0:
                     this.positionY--;
                     this.graphicalObject.position.z -= (this.room.blockSize + this.room.blockGap); 
-                    this.correctHeight();
                     break;
                 case 1:
                     this.positionX++;
                     this.graphicalObject.position.x += (this.room.blockSize + this.room.blockGap);
-                    this.correctHeight();
                     break;
                 case 2:
                     this.positionY++;
                     this.graphicalObject.position.z += (this.room.blockSize + this.room.blockGap);
-                    this.correctHeight();
                     break;
                 case 3:
                     this.positionX--;
                     this.graphicalObject.position.x -= (this.room.blockSize + this.room.blockGap);
-                    this.correctHeight();
                     break;
             }
+            this.correctHeight();
         }
     }
 
@@ -392,5 +389,56 @@ class karel{
     loadRoomWithKarel(dataJson){
         this.room.loadRoom(this.controls, dataJson["room"]);
         this.teleportToLocation(dataJson["karel"]["position"][0], dataJson["karel"]["position"][1], dataJson["karel"]["orientation"]);
+    }
+
+    /**
+     * Checks save structure related to Karel and room
+     * @param {dictionary} dataJson class karel part of save structure
+     * @returns true if the structure is fine, false otherwise
+     */
+    checkLoadFileKarelAndRoom(dataJson){
+        for(var key in dataJson){
+            switch(key){
+                case "karel":
+                    for(var karelKey in dataJson[key]){
+                        switch(karelKey){
+                            case "orientation":
+                                if(typeof dataJson[key][karelKey] != 'number' || dataJson[key][karelKey] < 0 || dataJson[key][karelKey] > 3){
+                                    return false;
+                                }
+                                break;
+                            case "position":
+                                if(dataJson[key][karelKey].length > 2){
+                                    return false;
+                                }
+                                try{
+                                    if(typeof dataJson[key][karelKey][0] != 'number' || dataJson[key][karelKey][0] < 0 ||
+                                        dataJson[key][karelKey][0] > Object.keys(dataJson["room"]).length){
+                                        return false;
+                                    }
+                                    if(typeof dataJson[key][karelKey][1] != 'number' || dataJson[key][karelKey][1] < 0 ||
+                                        dataJson[key][karelKey][1] > Object.keys(dataJson["room"][0]).length){
+                                        return false;
+                                    }
+                                }
+                                catch(err){
+                                    return false;
+                                }
+                                break;
+                            default:
+                                return false;
+                        }
+                    }
+                    break;
+                case "room":
+                    if(!this.room.checkLoadFileRoom(dataJson["room"])){
+                        return false;
+                    }
+                    break;
+                default:
+                    return false;
+            }
+        }
+        return true;
     }
 }

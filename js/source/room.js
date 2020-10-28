@@ -271,4 +271,41 @@ class room{
             }
         }
     }
+
+    /**
+     * Checks save structure related to room
+     * @param {dictionary} dataJson is the save part to be checked
+     * @returns true if the structure is fine, false otherwise
+     */
+    checkLoadFileRoom(dataJson){
+        if(Object.keys(dataJson).length < 2 || Object.keys(dataJson[0]).length < 2 || 
+            Object.keys(dataJson).length > 100 || Object.keys(dataJson[0]).length > 100){
+            return false;
+        }
+        var expectedValues = { "bricks" : "number", "mark" : "boolean", "inRoom" : "boolean"};
+        for(var currX = 0; currX < Object.keys(dataJson).length; currX++){
+            for(var currY = 0; currY < Object.keys(dataJson[currX]).length; currY++){
+                for(var key in dataJson[currX][currY]){
+                    if(key in expectedValues){
+                        if(typeof dataJson[currX][currY][key] != expectedValues[key]){
+                            return false;
+                        }
+                        if(expectedValues[key] == "number"){
+                            if(dataJson[currX][currY][key] < 0){
+                                return false;
+                            }
+                        }
+                        if(!dataJson[currX][currY]["inRoom"]){
+                            if(dataJson[currX][currY]["bricks"] > 0 || dataJson[currX][currY]["mark"]){
+                                return false;
+                            }
+                        }
+                    }else{
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 }
