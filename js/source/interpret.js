@@ -1,3 +1,4 @@
+import {math} from './math.js';
 import {command} from './command.js'
 export {interpret};
 
@@ -9,15 +10,16 @@ export {interpret};
 class interpret{
 
     constructor(textEditor, karel){
-        this.dictionary = {};                   // current language dictionary
-        this.command = new command(karel)       // comand handlerer module
-        this.textEditor = textEditor;           // given text editor to interpret
-        this.running = false;                   // tells if Karel is executing code
-        this.activeCounters = [];               // used for DO loops
-        this.programQueue = [];                 // used to jump to other programs and return back (saves position from which was jumped)
-        this.interpretMode = "standard";        // tells in which state is the interpret
-        this.line = 0;                          // actual interpret line position in the code 
-        this.code = [];                         // code formated by function nativeCodeSplitter
+        this.dictionary = {};                               // current language dictionary
+        this.math = new math()                              // math handlerer module
+        this.command = new command(karel, this.math)        // comand handlerer module
+        this.textEditor = textEditor;                       // given text editor to interpret
+        this.running = false;                               // tells if Karel is executing code
+        this.activeCounters = [];                           // used for DO loops
+        this.programQueue = [];                             // used to jump to other programs and return back (saves position from which was jumped)
+        this.interpretMode = "standard";                    // tells in which state is the interpret
+        this.line = 0;                                      // actual interpret line position in the code 
+        this.code = [];                                     // code formated by function nativeCodeSplitter
     }
     
     /**
@@ -27,13 +29,6 @@ class interpret{
     languageSetter(dictionary){
         this.command.languageSetter(dictionary)
         this.dictionary = dictionary;
-    }
-
-    /**
-     * Stops Karel from executing code
-     */
-    stopExecuting(){
-        this.running = false;
     }
 
     /**
@@ -80,7 +75,7 @@ class interpret{
             "end" : {
                 "token": "end",
                 "checks": [1, "inDef", "checkActive", "checkExpectedWords"],
-                "action": ["unsetDef"]
+                "action": ["unsetDef", "resetExpWords"]
             },
             "do" : {
                 "start": {
@@ -125,7 +120,7 @@ class interpret{
             },
             "def" : {
                 "token" : "def",
-                "checks": [1, "checkDef"],
+                "checks": [1, "checkDef", "inDef"],
                 "action": []
             },
             "comment" : {
@@ -199,52 +194,52 @@ class interpret{
                     currentRule = rules["trueOrFalse"];
                     break;
                 default:
-                    if(this.code[line][0].startsWith("#")){
+                    if(this.code[line][0].startsWith("#") || this.code[line] == ""){
                         currentRule = rules["comment"];
                     } else {
                         currentRule = rules["def"];
                     }
             }
             if(currentRule["token"] != "comment" && this.code[line].length != currentRule["checks"][0]){
-                outputReport[line] = "nativeCodeChecker error - bad number of words";
+                outputReport[line] = this.dictionary["checkerErrorMessages"]["numOfWords"];
             }
             for(var i = 1; i < currentRule["checks"].length; i++){
                 switch(currentRule["checks"][i]){
                     case "notInDef":
                         if(inDefinition){
-                            outputReport[line] = "nativeCodeChecker error - notInDef check failed";
+                            outputReport[line] = this.dictionary["checkerErrorMessages"]["notInDef"];
                         }
                         break;
                     case "inDef":
                         if(!inDefinition){
-                            outputReport[line] = "nativeCodeChecker error - InDef check failed";
+                            outputReport[line] = this.dictionary["checkerErrorMessages"]["inDef"];
                         }
                         break;
                     case "checkActive":
                         if(currentRule["token"] == "end"){
                             if(activeStructures.length > 0){
-                                outputReport[line] = "nativeCodeChecker error - checkActive check failed";
+                                outputReport[line] = this.dictionary["checkerErrorMessages"]["checkActive"];
                             }
                             activeStructures = [];
                         } else {
                             if(activeStructures[activeStructures.length - 1] != currentRule["token"]){
-                                outputReport[line] = "nativeCodeChecker error - checkActive check failed";
+                                outputReport[line] = this.dictionary["checkerErrorMessages"]["checkActive"];
                             }
                         }
                         break;
                     case "checkKWTimes":
                         if(this.code[line][2] != this.dictionary["keywords"]["times"]){
-                            outputReport[line] = "nativeCodeChecker error - checkKWTimes check failed";
+                            outputReport[line] = this.dictionary["checkerErrorMessages"]["checkKWTimes"];
                         }
                         break;
                     case "checkNumber":
-                        if(isNaN(parseInt(this.code[line][1]))){
-                            outputReport[line] = "nativeCodeChecker error - checkNumber check failed";
+                        if(this.math.isNumber(this.code[line][1])){
+                            outputReport[line] = this.dictionary["checkerErrorMessages"]["checkNumber"];
                         }
                         break;
                     case "checkCondPrefix":
                         if(![this.dictionary["keywords"]["is"], this.dictionary["keywords"]["isNot"]].includes(this.code[line][1])){
-                            outputReport[line] = "nativeCodeChecker error - checkCondPrefix check failed";
+                            outputReport[line] = this.dictionary["checkerErrorMessages"]["checkCondPref"];
                         }
                         break;
                     case "checkCondition":
@@ -255,13 +250,13 @@ class interpret{
                         break;
                     case "checkNextThen":
                         if(this.code[line + 1][0] != this.dictionary["keywords"]["then"]){
-                            outputReport[line] = "nativeCodeChecker error - checkNextThen check failed";
+                            outputReport[line + 1] = this.dictionary["checkerErrorMessages"]["checkNextThen"];
                         }
                         break;
                     case "checkExpectedWords":
                         for(var key in expectedWords){
                             if(expectedWords[key] == true){
-                                outputReport[line] = "nativeCodeChecker error - checkExpectedWords check failed";
+                                outputReport[line] = this.dictionary["checkerErrorMessages"]["checkExpWords"];
                             }
                         }
                         break;
@@ -298,12 +293,16 @@ class interpret{
                             expectedWords["false"] = false;
                         }
                         break;
+                    case "resetExpWords":
+                        for(var key in expectedWords){
+                            expectedWords[key] = false;
+                        }
                 }
             }
         }
         if(Object.keys(this.command.expectDefinition).length !== 0){
             for(var key in this.command.expectDefinition){
-                outputReport[key] = "nativeCodeChecker error - checkDef check failed with word " + this.command.expectDefinition[key];
+                outputReport[key] = this.dictionary["checkerErrorMessages"]["checkDef"] + " " + this.command.expectDefinition[key];
             }
         }
         return outputReport;
@@ -318,12 +317,21 @@ class interpret{
      * @returns true if the input is empty, false otherwise
      */
     printNativeCodeCheckerOutput(outputReport){
+        this.textEditor.getSession().clearAnnotations()
         if(Object.keys(outputReport).length === 0){
             return true;
         } else {
+            var annotationsToSet = []
             for(var line in outputReport){
                 console.log(outputReport[line] + " at line [" + line + "]");
+                annotationsToSet.push({
+                    row: line,
+                    column: 0,
+                    text: outputReport[line],
+                    type: "error" // also "warning" and "information"
+                  });
             }
+            this.textEditor.getSession().setAnnotations(annotationsToSet);
             return false;
         }
     }
@@ -402,7 +410,7 @@ class interpret{
         while(this.code[this.line][0] != this.dictionary["keywords"]["function"] && this.code[this.line][0] != this.dictionary["keywords"]["condition"]){
             this.line --;
             if(this.line < 0 || this.code[this.line][0] == this.dictionary["keywords"]["end"]){
-                console.log("nativeCodeFindStartLine error - behining of code to be interpreted not found");
+                console.log("nativeCodeFindStartLine error - begining of code to be interpreted not found");
                 return false;
             }
         }
@@ -458,10 +466,10 @@ class interpret{
                 }
                 break;
             case this.dictionary["keywords"]["do"]:
-                if(parseInt(this.code[this.line][1]) == 0){
+                if(this.math.getNumber(this.code[this.line][1]) == 0){
                     this.nativeCodeJumper(this.dictionary["keywords"]["do"], false);
                 } else {
-                    this.activeCounters.push(this.code[this.line][1]); 
+                    this.activeCounters.push(this.math.getNumber(this.code[this.line][1]));
                 }
                 break;
             case "*" + this.dictionary["keywords"]["do"]:
@@ -541,23 +549,19 @@ class interpret{
     }
 
     /**
-     * TODO - push to command.js
      * Searches for name in command list and condition list and sets the line to be executed to start of
      * command or condition defined by the name
      * @param {string} name is the name of command or condition we want to run
      * @returns true if the name is found, false otherwise
      */
     searchForNameSetLine(name){
-        if(name in this.command.commandList){
-            this.line = this.command.commandList[name];
-            return true;
+        var startLine = this.command.searchForNameGetLine(name);
+        if(startLine == -1){
+            console.log("searchForNameSetLine error - name [" + name + "] not found")
+            return false;   
         }
-        if(name in this.command.conditionList){
-            this.line = this.command.conditionList[name];
-            return true;
-        }
-        console.log("searchForNameSetLine error - name [" + name + "] not found")
-        return false;
+        this.line = startLine;
+        return true;
     }
 
     /**
@@ -902,7 +906,7 @@ class interpret{
      * @param {workspace} workspace is the workspace where the blocks will be created
      */
     conversionTest(workspace){
-        this.nativeCodeSplitter(document.getElementById('conversionTest').value);
+        this.nativeCodeSplitter(this.textEditor.getSelectedText());
         this.makeBlocksFromNativeCode(workspace);
     }
 
@@ -995,7 +999,7 @@ class interpret{
      *  `code`: loads and applyes only data that specifies code editor
      *  `all`: loads and applyes all informations (all above, no contorl) 
      *  `byFile`: loads and applyes only mentioned data (some of above)
-     * Apart form `byFile` mode there are no checks if the file is correct - TODO
+     * Use check loader fucntion before loading file to prevent bugs.
      * The save format is expected the save as desribed in `saveFile` function
      * @param {string} mode is the mode which the function will run 
      * @param {workspace} workspace is the blockly workspace

@@ -127,8 +127,6 @@ konec</div>
     <input type="button" value="home camera" id="homeCamera">
 </div>
 <div id="blocklyButton">
-    <textarea id="conversionTest"></textarea>
-    <br>
     <input type="button" value="make blocks" id="makeBlocks">
 </div>
 <div id="textButton">
@@ -158,6 +156,10 @@ konec</div>
         <input type="file" id="loadFile">
         <input type="button" value="load" id="loadButton">
         <br>
+        <br>
+        <input type="button" id="setCzech" value="Čeština">
+        <input type="button" id="setEnglish" value="English">
+        <br>
         <input type="button" value="test" id="test">
         <br>
         <textarea id="textArea" style="display:none"></textarea>
@@ -167,6 +169,7 @@ konec</div>
 
 <!-- ace settings - best works here -->
 <script src="js/ace/ace.js" charset="utf-8"></script>
+<script src="js/ace/ext-language_tools.js"></script>
 
 <!-- blockly settings -->
 <script src="js/blockly/blockly_compressed.js"></script>
@@ -176,49 +179,7 @@ konec</div>
 
 <div id="blocklyToolBox">
     <xml id="toolbox" style="display: none">
-        <category name="Základ" colour="0">
-            <block type="base_function">
-                <field name="NAME">nazev</field>
-            </block>
-            <block type="base_condition">
-                <field name="NAME">nazev</field>
-            </block>
-        </category>
-        <category name="Funkce" colour="90">
-            <block type="function_step"></block>
-            <block type="function_right"></block>
-            <block type="function_left"></block>
-            <block type="function_place"></block>
-            <block type="function_pick"></block>
-            <block type="function_placemark"></block>
-            <block type="function_unmark"></block>
-            <block type="function_true"></block>
-            <block type="function_false"></block>
-            <block type="function_faster"></block>
-            <block type="function_slower"></block>
-            <block type="function_beep"></block>
-            <block type="function_userDefined"></block>
-        </category>
-        <category name="Řízení toku" colour="180">
-            <block type="control_repeat">
-                <field name="DO_TIMES">0</field>
-            </block>
-            <block type="control_while">
-                <field name="COND_PREF">optionIs</field>
-            </block>
-            <block type="control_if">
-                <field name="COND_PREF">optionIs</field>
-            </block>
-            <block type="control_ifelse">
-                <field name="COND_PREF">optionIs</field>
-            </block>
-        </category>
-        <category name="Podmínky" colour="270">
-            <block type="condition_brick"></block>
-            <block type="condition_wall"></block>
-            <block type="condition_mark"></block>
-            <block type="condition_vacant"></block>
-            <block type="condition_userdefined"></block>
+        <category name="NULL">
         </category>
       </xml>
 </div>

@@ -28,7 +28,10 @@ class room{
         this.blockGap = 0.05;
         this.blockThickness = 0.1;
         this.brickThickness = 0.25;
-        controls.target.set(countX/2 * this.blockSize/2, 0, countY/2 * this.blockSize/2);
+        controls.target.set(
+            ((countX - 1) * (this.blockSize + this.blockGap)/2),
+            0, 
+            ((countY - 1) * (this.blockSize + this.blockGap)/2));
         controls.update();
         this.roomDataArray = [];
         for(var currX = 0; currX < countX; currX++){

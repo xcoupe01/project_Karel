@@ -34,8 +34,37 @@ export function setLang(){
             "functions"       : "Funkce",
             "progFlow"        : "Řízení toku",
             "condition"       : "Podmínky",
-            "userDefinedFunc" : "Funkce",
-            "userDefinedCond" : "Podmínka"
+            "name"            : "název",
+            "userDefinedFunc" : "funkce",
+            "userDefinedCond" : "podmínka"
+        },
+        "checkerErrorMessages" : {
+            "numOfWords"    : "numOfWords - špatný počet slov na řádku",
+            "notInDef"      : "notInDef - definice v definici",
+            "inDef"         : "InDef - příkaz mimo definici",
+            "checkActive"   : "checkActive - ",
+            "checkKWTimes"  : "checkKWTimes - chybí klíčové slovo \"krát\"",
+            "checkNumber"   : "checkNumber - špatně zadané číslo",
+            "checkCondPref" : "checkCondPrefix - špatný prefix podmínky",
+            "checkNextThen" : "checkNextThen - nenalezeno klíčové slovo \"tak\"",
+            "checkExpWords" : "checkExpectedWords - chybí očekávaná slova",
+            "checkDef"      : "checkDef - nenalezena definice slova",
+        },
+        "ACE" : {
+            "highlight" : {
+                "keyword" : "prikaz|podminka|konec|kdyz|tak|jinak|\*kdyz|udelej|\*udelej|dokud|\*dokud|krat",
+                "constant.language" : "pravda|nepravda|zed|cihla|znacka|je|neni|volno",
+                "support.function": "krok|vlevo|vpravo|oznac|odznac|poloz|zvedni|rychle|pomalu|pip"
+            },
+            "fold" : {
+                "foldStartMarker": /\b(prikaz|podminka)\b/,
+                "foldStopMarker": /\bkonec\b/,
+                "indentKeywords": {
+                    "prikaz": 1,
+                    "podminka": 1,
+                    "konec": -1,
+                }
+            }
         }
     };
 }

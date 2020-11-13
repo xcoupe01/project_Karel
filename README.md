@@ -6,8 +6,10 @@
 
 [![Foo](https://pbs.twimg.com/media/CSPA_wFWUAAUobu.png)](https://www.fit.vut.cz/.cs)
 
+Projekt je dostupný na http://smallm.cz/karel2/ !!
 
-**Last update - 22.10.2020**
+
+**Last update - 13.11.2020**
 
 **English version below**
 ___
@@ -39,7 +41,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
 - syntaktická kontrola textu
     - <span style="color:green"> implementována kontrola s tabulkovým zadáváním kontrol
     - <span style="color:green"> implementován přehledný interpret nativního kódu zvládající více chyb v kódu najednou
-    - možná s využitím ACE (kde se budou zobrazovat chyby přímo v editoru)
+    - <span style="color:green"> kontrola zobrazuje chyby v ACE
     - <span style="color:green"> implementována možnost spuštění s krokováním 
     - jednoduchý debugger (možná breakpointy s ACE)
 - uživatelsky dostupné modifikace místnosti
@@ -53,7 +55,8 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - v plánu jednoduché operace s čísly
 - jazykové mutace
     - <span style="color:green"> implementováno pomocí js lang file
-    - v plánu mutace do anglického jazyka
+    - <span style="color:green"> v plánu mutace do anglického jazyka
+    - možná překládání kódu do cizího jazyka
 - ukládání na google disku
     - v plánu propojení s google účtem
     - v plánu načítat a ukládat z google disku
@@ -150,13 +153,12 @@ Pod těmito prvky se nachází sada tlačítek pro ovládání, každý prvek m�
     - `room` - nastavení rozměrů místnosti na hodnoty z předchozích polí
     - `home camera` - vrátí kameru místnosti do základní pozice (buď po nastartování aplikace a nebo při změně místnosti)
 - Blokový editor
-    - `Make Blocks` - vytvoří v prostoru blokového programování strukturu blokového programování funkčně stejné jako zadanému kódu v následujícím prostoru pro text
-    - `textarea` - slouží pro zadání na přepis z kódu do bloků
+    - `Make Blocks` - vytvoří v prostoru blokového programování strukturu blokového programování funkčně stejné jako vybraný text v editoru
 - Textový editor
     - `run code` - spuštění kódu v textovém editoru na aktuální pozici kurzoru
     - `run debug` - možnost spuštění s krokováním (po každém kliknutí na tlačítko se provede jeden řádek)
 
-Níže se nachází sekce pro ukládání a načítání (+ developper sekce)
+Níže se nachází sekce pro ukládání a načítání (+ developper sekce a jazyková sekce)
 - pomocí selektorů `room`, `blocks` a `code` můžete nastavit, co bude v následujícím vygenerování uložení uloženo
     - `room` - přidá do souboru uložení aktuální stav místnosti
     - `blocks` - přidá do souboru uložení aktuální stav blokového editoru
@@ -165,13 +167,14 @@ Níže se nachází sekce pro ukládání a načítání (+ developper sekce)
 - tlačítkem `save` vygenerujete a stáhnete soubor, který ukládá aktuální stav
 - tlačítko `Vybrat soubor` slouží k vybrání souboru, ze kterého se načte stav aplikace.
 - tlačítko `load` načte předem vybraný soubor (pozor, aplikace se neptá a neupozorňuje že bude stav přepisovat a přepíše vše co jí soubor určí přepsat).
-- `test` - prozatimní interní testovací tlačítko
+- tlačítko `Čeština` přepne Karla do češtiny
+- tlačítko `English` přepne Karla do angličtiny
+- tlačítko `test` - prozatimní interní testovací tlačítko
 - (`textarea` - prozatimní prostor pro generování kódu z blokového programování)
 
 ## Upozornění
 - Nejedná se o finální produkt a aplikace je pouze v ranné fázi vývoje.
 - Grafika obsahuje placeholder objekty, opravdové modely budou doplněny v budoucnu.
-- Prozatím je dostupná pouze česká lokalizace aplikace, anglická je podporována ale nelze v aktuálním stavu přepnout.
 ___
 
 # English Version - Full english descritpion will be added after English language mutation will be implemented properly
@@ -186,7 +189,6 @@ You need to run local server for Karel to function properly. Easiest way is to r
 ## Disclaimer
 - This is not the final version and future functions will be added
 - Graphics contains placeholder objects for now, real models will be added in the future.
-- English version not supported yet
 
 ## Room controls
 - `W` to go forward
@@ -208,12 +210,12 @@ You can find control for each section under it
     - `home camera` - sets the camera to basic position
 - Blockly editor
     - `textarea` - insert a code to be transported to Blockly code
-    - `Make Blocks` - creates blocks described by text form `textarea` above
+    - `Make Blocks` - creates blocks described by text form the selected text in the text editor
 - Text editor
     - `run code` - runs block of code specifed by cursor
     - `run debug` - runs block of code specified by cursor in debug mode (step by step)
 
-Lower there are options for save and load the state of the application (+ developper section)
+Lower there are options for save and load the state of the application (+ developper and language section)
 - `room`, `blocks` and `code` - you can use these to specify save file
     - `room` - save state of the room
     - `blocks` - save state of Blockly editor
@@ -222,6 +224,8 @@ Lower there are options for save and load the state of the application (+ develo
 - `save` generates the save file
 - `Vybrat soubor` makes you choose the file to be loaded from
 - `load` loads the application by the specified file
+- `Čeština` changes the app to czech language
+- `English` changes the app to english
 - `test` - internal developper button (click to make the next item visible)
 - (`textarea` - invisible blockly code represenation)
 

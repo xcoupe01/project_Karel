@@ -56,3 +56,8 @@ html, body {
 #load{
   grid-area: 1 / 2 / 2 / 3; 
 }
+
+.ace_gutter-cell.ace_breakpoint{ 
+  border-radius: 20px 20px 20px 20px;
+  box-shadow: 0px 0px 1px 1px #1100ff inset; 
+}

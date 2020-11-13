@@ -155,7 +155,7 @@ Blockly.Blocks['function_userDefined'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["blocklyCategory"]["userDefinedFunc"])
-        .appendField(new Blockly.FieldTextInput("nazev"), "FC_NAME");
+        .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["name"]), "FC_NAME");
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(90);
@@ -289,7 +289,7 @@ Blockly.Blocks['condition_userdefined'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["blocklyCategory"]["userDefinedCond"])
-        .appendField(new Blockly.FieldTextInput("nazev"), "FC_NAME");
+        .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["name"]), "FC_NAME");
     this.setOutput(true, "condition");
     this.setColour(270);
     this.setTooltip("");
@@ -302,7 +302,7 @@ Blockly.Blocks['base_function'] = {
     this.appendDummyInput()
         .appendField(new Blockly.FieldImage("../../img/play.png", 25, 25, "*",runMe))
         .appendField(Blockly.langDictionary["keywords"]["function"])
-        .appendField(new Blockly.FieldTextInput(""), "NAME");
+        .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["name"]), "NAME");
     this.appendStatementInput("INNER_CODE")
         .setCheck(null);
     this.appendDummyInput()
@@ -318,7 +318,7 @@ Blockly.Blocks['base_condition'] = {
     this.appendDummyInput()
        .appendField(new Blockly.FieldImage("../../img/play.png", 25, 25, "*",runMe))
         .appendField(Blockly.langDictionary["keywords"]["condition"])
-        .appendField(new Blockly.FieldTextInput(""), "NAME");
+        .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["name"]), "NAME");
     this.appendStatementInput("INNER_CODE")
         .setCheck(null);
     this.appendDummyInput()

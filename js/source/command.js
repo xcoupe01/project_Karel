@@ -245,6 +245,22 @@ class command{
     }
 
     /**
+     * Searches for command or condition by a given name
+     * @param {string} name of the function we want to know the line of
+     * @returns the line number if the function exists, -1 otherwise
+     */
+    searchForNameGetLine(name){
+        if(name in this.commandList){
+            return this.commandList[name];
+        }
+        if(name in this.conditionList){
+            return this.conditionList[name];
+        }
+        console.log("searchForNameSetLine error - name [" + name + "] not found")
+        return -1;
+    }
+
+    /**
      * Sets the speed of the interpret step to 125 miliseconds
      */
     speedUpKarel(){

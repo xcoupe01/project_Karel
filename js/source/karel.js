@@ -364,7 +364,10 @@ class karel{
      */
     homeCamera(){
         this.controls.object.position.set(-10, 10, -10);
-        this.controls.target.set(this.room.roomDataArray.length/2 * this.room.blockSize/2, 0, this.room.roomDataArray[0].length/2 * this.room.blockSize/2);
+        this.controls.target.set(
+            ((this.room.roomDataArray.length - 1) * (this.room.blockSize + this.room.blockGap)/2),
+            0, 
+            ((this.room.roomDataArray[0].length - 1) * (this.room.blockSize + this.room.blockGap)/2));
         this.controls.update();
     }
 

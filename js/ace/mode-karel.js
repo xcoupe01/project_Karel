@@ -1,6 +1,3 @@
-// TODO - add language options
-// TODO - redo completly for karel - if possible move code controller here
-
 define("ace/mode/karel_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
 "use strict";
 
@@ -8,15 +5,15 @@ var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
 var karelHighlightRules = function() {
-    var keywords = ("prikaz|příkaz|podminka|konec|kdyz|tak|jinak|\*kdyz|udelej|udělej|\*udelej|dokud|\*dokud|\*udělej|krat");
-    var builtinConstants = ("pravda|nepravda|zed|cihla|znacka|je|neni|volno");
-    var functions = ("krok|vlevo|vpravo|oznac|odznac|poloz|zvedni|rychle|pomalu|pip");
+    
+    this.setKeywords = function(kwMap) {
+        this.keywordRule.onMatch = this.createKeywordMapper(kwMap, "identifier")
+    }
 
-    var keywordMapper = this.createKeywordMapper({
-        "keyword": keywords,
-        "support.function": functions,
-        "constant.language": builtinConstants,
-    }, "identifier");
+    this.keywordRule = {
+        regex : "\\w+",
+        onMatch : function() {return "text"}
+    }
 
     var decimalInteger = "(?:(?:[1-9]\\d*)|(?:0))";
     var hexInteger = "(?:0[xX][\\dA-Fa-f]+)";
@@ -38,10 +35,9 @@ var karelHighlightRules = function() {
         }, {
             token : "constant.numeric", // integer
             regex : integer + "\\b"
-        }, {
-            token : keywordMapper,      //searching keywords
-            regex : "[\*a-zA-Z_$][a-zA-Z0-9_$]*\\b"
-        }, {
+        }, 
+        this.keywordRule
+        , {
             token : "keyword.operator", //operators
             regex : "\\+|\\-|\\*|\\/|%|\\#|\\^|~|<|>|<=|=>|==|~=|=|\\:|\\.\\.\\.|\\.\\."
         }, {
@@ -73,8 +69,8 @@ oop.inherits(FoldMode, BaseFoldMode);
 
 (function() {
 
-    this.foldingStartMarker = /\b(prikaz|podminka)\b|{\s*$|(\[=*\[)/;
-    this.foldingStopMarker = /\bkonec\b|^\s*}|\]=*\]/;
+    this.foldingStartMarker = /\bnone\b/;
+    this.foldingStopMarker = /\bnone\b/;
 
     this.getFoldWidget = function(session, foldStyle, row) {
         var line = session.getLine(row);
@@ -138,13 +134,10 @@ oop.inherits(FoldMode, BaseFoldMode);
         }
     };
 
+    this.indentKeywords = {};
+
     this.karelBlock = function(session, row, column) {
         var stream = new TokenIterator(session, row, column);
-        var indentKeywords = {
-            "prikaz": 1,
-            "podminka": 1,
-            "konec": -1,
-        };
 
         var token = stream.getCurrentToken();
         if (!token || token.type != "keyword")
@@ -152,7 +145,7 @@ oop.inherits(FoldMode, BaseFoldMode);
 
         var val = token.value;
         var stack = [val];
-        var dir = indentKeywords[val];
+        var dir = this.indentKeywords[val];
 
         if (!dir)
             return;
@@ -164,7 +157,7 @@ oop.inherits(FoldMode, BaseFoldMode);
         while(token = stream.step()) {
             if (token.type !== "keyword")
                 continue;
-            var level = dir * indentKeywords[token.value];
+            var level = dir * this.indentKeywords[token.value];
 
             if (level > 0) {
                 stack.unshift(token.value);
@@ -185,7 +178,6 @@ oop.inherits(FoldMode, BaseFoldMode);
     };
 
 }).call(FoldMode.prototype);
-
 });
 
 define("ace/mode/karel",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/karel_highlight_rules","ace/mode/folding/karel","ace/range","ace/worker/worker_client"], function(require, exports, module) {
@@ -193,15 +185,14 @@ define("ace/mode/karel",["require","exports","module","ace/lib/oop","ace/mode/te
 
 var oop = require("../lib/oop");
 var TextMode = require("./text").Mode;
-var LuaHighlightRules = require("./karel_highlight_rules").karelHighlightRules;
-var LuaFoldMode = require("./folding/karel").FoldMode;
+var KarelHighlightRules = require("./karel_highlight_rules").karelHighlightRules;
+var KarelFoldMode = require("./folding/karel").FoldMode;
 var Range = require("../range").Range;
 //var WorkerClient = require("../worker/worker_client").WorkerClient;
 
 var Mode = function() {
-    this.HighlightRules = LuaHighlightRules;
-    
-    this.foldingRules = new LuaFoldMode();
+    this.HighlightRules = KarelHighlightRules;
+    this.foldingRules = new KarelFoldMode();
 };
 oop.inherits(Mode, TextMode);
 
@@ -209,7 +200,6 @@ oop.inherits(Mode, TextMode);
    
     this.lineCommentStart = "#";
     //this.blockComment = {start: "--[", end: "]--"};
-    
     // tells when the editor should automaticaly indent and dedent
     var indentKeywords = {
         "prikaz": 1,

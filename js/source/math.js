@@ -5,4 +5,19 @@ export {math}
  */
 class math{
 
+    constructor(){
+
+    }
+
+    isNumber(word){
+        if(isNaN(parseInt(word))){
+            return true;
+        }
+        return false;
+    }
+
+    getNumber(word){
+       return parseInt(word);
+    }
+
 }

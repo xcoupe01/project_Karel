@@ -34,8 +34,37 @@ export function setLang(){
             "functions"         : "Functions",
             "progFlow"          : "Flow control",
             "condition"         : "Conditions",
+            "name"              : "name",
             "userDefinedFunc"   : "Function",
             "userDefinedCond"   : "Condition"
+        },
+        "checkerErrorMessages" : {
+            "numOfWords"    : "bad number of words",
+            "notInDef"      : "notInDef check failed",
+            "inDef"         : "InDef check failed",
+            "checkActive"   : "checkActive check failed",
+            "checkKWTimes"  : "checkKWTimes check failed",
+            "checkNumber"   : "checkNumber check failed",
+            "checkCondPref" : "checkCondPrefix check failed",
+            "checkNextThen" : "checkNextThen check failed",
+            "checkExpWords" : "checkExpectedWords check failed",
+            "checkDef"      : "checkDef check failed with word",
+        },
+        "ACE" : {
+            "highlight" : {
+                "keyword" : "function|condition|end|if|then|else|\*if|do|\*do|while|\*while|times",
+                "constant.language" : "true|false|wall|brick|marked|is|not|vacant",
+                "support.function": "forward|left|right|mark|unmark|place|pick|faster|slower|beep"
+            },
+            "fold" : {
+                "foldStartMarker": /\b(function|condition)\b/,
+                "foldStopMarker": /\bend\b/,
+                "indentKeywords": {
+                    "function": 1,
+                    "condition": 1,
+                    "end": -1,
+                }
+            }
         }
     };
 }
