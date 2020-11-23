@@ -300,7 +300,7 @@ Blockly.Blocks['condition_userdefined'] = {
 Blockly.Blocks['base_function'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField(new Blockly.FieldImage("../../img/play.png", 25, 25, "*",runMe))
+        .appendField(new Blockly.FieldImage("/img/play.png", 25, 25, "*",runMe))
         .appendField(Blockly.langDictionary["keywords"]["function"])
         .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["name"]), "NAME");
     this.appendStatementInput("INNER_CODE")
@@ -316,7 +316,7 @@ Blockly.Blocks['base_function'] = {
 Blockly.Blocks['base_condition'] = {
   init: function() {
     this.appendDummyInput()
-       .appendField(new Blockly.FieldImage("../../img/play.png", 25, 25, "*",runMe))
+       .appendField(new Blockly.FieldImage("/img/play.png", 25, 25, "*",runMe))
         .appendField(Blockly.langDictionary["keywords"]["condition"])
         .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["name"]), "NAME");
     this.appendStatementInput("INNER_CODE")

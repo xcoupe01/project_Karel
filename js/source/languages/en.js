@@ -52,8 +52,10 @@ export function setLang(){
         },
         "ACE" : {
             "highlight" : {
-                "keyword" : "function|condition|end|if|then|else|\*if|do|\*do|while|\*while|times",
-                "constant.language" : "true|false|wall|brick|marked|is|not|vacant",
+                "entity.name.function" : "function|condition|end",
+                "keyword.control" : "if|then|else|\*if|do|\*do|while|\*while|times",
+                "variable.parameter" : "wall|brick|marked|is|not|vacant",
+                "constant.language" : "true|false",
                 "support.function": "forward|left|right|mark|unmark|place|pick|faster|slower|beep"
             },
             "fold" : {

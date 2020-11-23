@@ -7,7 +7,7 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var karelHighlightRules = function() {
     
     this.setKeywords = function(kwMap) {
-        this.keywordRule.onMatch = this.createKeywordMapper(kwMap, "identifier")
+        this.keywordRule.onMatch = this.createKeywordMapper(kwMap, "identifier");
     }
 
     this.keywordRule = {
@@ -286,8 +286,9 @@ oop.inherits(Mode, TextMode);
         session.outdentRows(new Range(row, 0, row + 2, 0));
     };
 
-   /* this.createWorker = function(session) {
-        var worker = new WorkerClient(["ace"], "ace/mode/lua_worker", "Worker");
+    /*
+    this.createWorker = function(session) {
+        var worker = new WorkerClient(["ace"], "ace/mode/json_worker", "Worker");
         worker.attachToDocument(session.getDocument());
         
         worker.on("annotate", function(e) {

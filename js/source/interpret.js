@@ -1,5 +1,5 @@
 import {math} from './math.js';
-import {command} from './command.js'
+import {command} from './command.js';
 export {interpret};
 
 /**
@@ -27,7 +27,7 @@ class interpret{
      * @param {dictionary} dictionary is the JS dictionary set of Karel words
      */
     languageSetter(dictionary){
-        this.command.languageSetter(dictionary)
+        this.command.languageSetter(dictionary);
         this.dictionary = dictionary;
     }
 
@@ -513,7 +513,6 @@ class interpret{
                     return true;
                 } else if(result != -1){
                     this.programQueue.push(this.line);
-                    console.log(result)
                     this.line = result;
                 }
         }

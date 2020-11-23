@@ -9,7 +9,7 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 13.11.2020**
+**Last update - 23.11.2020**
 
 **English version below**
 ___
@@ -29,7 +29,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> implementováno pomocí ACE.js, 
     - <span style="color:green"> implementováno podbarvování textu
     - <span style="color:green"> implementováno automatické zalamování textu
-    - v plánu přidání dalších funkcí z knihovny ACE
+    - v plánu přidání dalších funkcí z knihovny ACE (momentálně se pracuje na realtime syntax checkeru)
     - <span style="color:green"> implementováno ukaládání a načítání kódu ze souboru
 - blokový editor kódu
     - <span style="color:green"> implementováno pomocí Blockly.js

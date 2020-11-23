@@ -201,7 +201,6 @@ editor.on("guttermousedown", function(e) {
     e.stop();
 })
 
-
 // ------------------------------------------------
 
 // Blockly settings
@@ -265,6 +264,9 @@ document.querySelector('#loadButton').onclick = function() {mainInterpret.loadFr
 document.querySelector('#setCzech').onclick = function() {changeLanguage('./source/languages/cs.js')};
 document.querySelector('#setEnglish').onclick = function() {changeLanguage('./source/languages/en.js')}
 
+var TokenIterator = require("ace/token_iterator").TokenIterator;
+var tokenizer = new TokenIterator(editor.session, 0, 0);
+
 document.querySelector('#test').onclick = function() { 
     /*
     // make block text representation disappear
@@ -274,8 +276,15 @@ document.querySelector('#test').onclick = function() {
     } else {
         x.style.display = "none";
     }
-    //console.log(editor.session.getBreakpoints());
     */
+    while(tokenizer.getCurrentToken() !== undefined){
+        console.log(tokenizer.getCurrentToken());
+        tokenizer.stepForward();
+    }
+    tokenizer.stepBackward();
+    while(tokenizer.getCurrentToken() !== undefined){
+        tokenizer.stepBackward();
+    }
+    tokenizer.stepForward();
+    //console.log(editor.session.getBreakpoints());
 };
-//console.log(editor.session.$foldMode.foldingStartMarker);
-//console.log(editor.session.$foldMode.foldingStopMarker);

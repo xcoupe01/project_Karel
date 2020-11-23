@@ -52,8 +52,10 @@ export function setLang(){
         },
         "ACE" : {
             "highlight" : {
-                "keyword" : "prikaz|podminka|konec|kdyz|tak|jinak|\*kdyz|udelej|\*udelej|dokud|\*dokud|krat",
-                "constant.language" : "pravda|nepravda|zed|cihla|znacka|je|neni|volno",
+                "entity.name.function" : "prikaz|podminka|konec",
+                "keyword.control" : "kdyz|tak|jinak|\*kdyz|udelej|\*udelej|dokud|\*dokud|krat",
+                "variable.parameter" : "zed|cihla|znacka|je|neni|volno",
+                "constant.language" : "pravda|nepravda",
                 "support.function": "krok|vlevo|vpravo|oznac|odznac|poloz|zvedni|rychle|pomalu|pip"
             },
             "fold" : {
