@@ -285,23 +285,23 @@ oop.inherits(Mode, TextMode);
         }
         session.outdentRows(new Range(row, 0, row + 2, 0));
     };
-
-    /*
+    
+    var WorkerClient = require('ace/worker/worker_client').WorkerClient;
     this.createWorker = function(session) {
-        var worker = new WorkerClient(["ace"], "ace/mode/json_worker", "Worker");
+        var worker = new WorkerClient(["ace"], "ace/mode/javascript_worker", "JavaScriptWorker");
         worker.attachToDocument(session.getDocument());
-        
-        worker.on("annotate", function(e) {
-            session.setAnnotations(e.data);
+
+        worker.on("annotate", function(results) {
+            console.log(results.data)
+            //session.setAnnotations(results.data);
         });
-        
+
         worker.on("terminate", function() {
-            session.clearAnnotations();
+            //session.clearAnnotations();
         });
-        
+
         return worker;
     };
-    */
     this.$id = "ace/mode/karel";
 }).call(Mode.prototype);
 
