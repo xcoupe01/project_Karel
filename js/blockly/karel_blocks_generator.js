@@ -133,7 +133,7 @@ Blockly.Karel['function_userDefined'] = function(block){
 Blockly.Karel['control_repeat'] = function(block){
     var code = Blockly.langDictionary["keywords"]["do"] + " " + block.getFieldValue('DO_TIMES') + " " + Blockly.langDictionary["keywords"]["times"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
-    code += "*" + Blockly.langDictionary["keywords"]["do"];
+    code += Blockly.closer + Blockly.langDictionary["keywords"]["do"];
     if(block.getNextBlock() != null){
         code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
     }else {
@@ -152,7 +152,7 @@ Blockly.Karel['control_while'] = function(block){
     }
     var code = Blockly.langDictionary["keywords"]["while"] + " " + condPref + " " + condVal + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
-    code += "*" + Blockly.langDictionary["keywords"]["while"];
+    code += Blockly.closer + Blockly.langDictionary["keywords"]["while"];
     if(block.getNextBlock() != null){
         code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
     }else {
@@ -171,7 +171,7 @@ Blockly.Karel['control_if'] = function(block){
     }
     var code = Blockly.langDictionary["keywords"]["if"] + " " + condPref + " " + condVal + "\n" + Blockly.langDictionary["keywords"]["then"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE_THEN');
-    code += "*" + Blockly.langDictionary["keywords"]["if"];
+    code += Blockly.closer + Blockly.langDictionary["keywords"]["if"];
     if(block.getNextBlock() != null){
         code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
     }else {
@@ -192,7 +192,7 @@ Blockly.Karel['control_ifelse'] = function(block){
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE_THEN');
     code += Blockly.langDictionary["keywords"]["else"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE_ELSE')
-    code += "*" + Blockly.langDictionary["keywords"]["if"];
+    code += Blockly.closer + Blockly.langDictionary["keywords"]["if"];
     if(block.getNextBlock() != null){
         code += "\n" + Blockly.Karel.blockToCode(block.getNextBlock())
     }else {

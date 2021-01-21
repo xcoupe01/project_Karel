@@ -10,7 +10,7 @@
     <div id="row1" class="split"> 
         <div id="a" class="split split-horizontal">
             <div class="content">
-                <canvas id="roomCanvas" style="height:100%; width:100%"></canvas>
+                <canvas id="roomCanvas" style="height:100%; width:100%;"></canvas>
             </div>
         </div>
     
@@ -23,7 +23,7 @@
         </div>
         <div id="c" class="split split-horizontal">
             <div class="content">
-                <div id="textEditor" style="height:100%">#code space :)</div>
+                <div id="textEditor" style="height:100%"><?php include('saves/initial_test_save.txt'); ?></object></div>
             </div>
         </div>  
     </div>

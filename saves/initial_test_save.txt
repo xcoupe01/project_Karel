@@ -1,0 +1,104 @@
+prikaz pokus1
+    vpravo
+    krok
+    krok
+    poloz
+konec
+
+
+prikaz pokus2
+    krok
+    krok
+    kdyz je zed
+    tak    
+        krok
+    *kdyz
+    krok
+    oznac
+konec
+
+
+prikaz udelej_pokus
+    udelej 3 krat
+        krok
+        udelej 2 krat
+            poloz
+        *udelej
+        vlevo
+    *udelej
+    oznac
+konec
+
+
+prikaz while_test
+    vpravo
+    dokud neni zed
+        krok
+    *dokud
+konec
+
+
+prikaz test_IF
+    dokud neni cihla
+            kdyz je zed
+            tak
+                vlevo
+            jinak
+                krok
+            *kdyz
+    *dokud
+    pokus2
+konec
+
+
+podminka podminka1
+    krok
+    kdyz je cihla
+    tak
+        pravda
+    jinak
+        nepravda
+    *kdyz
+    vlevo
+    vlevo
+    krok
+    vlevo
+    vlevo
+konec
+
+
+prikaz pokus_podminka
+    dokud neni podminka1
+        krok
+    *dokud
+    kdyz je podminka1
+    tak
+        oznac
+    jinak
+        poloz
+    *kdyz
+konec
+
+
+prikaz rekurze_test
+    krok
+    krok
+    kdyz je zed
+    tak
+        vlevo
+        vlevo
+    jinak
+        rekurze_test
+    *kdyz
+    krok
+konec
+
+
+prikaz test_volno
+    kdyz je volno
+        tak
+        krok
+    jinak
+        vlevo
+    *kdyz
+konec

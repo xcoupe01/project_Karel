@@ -18,7 +18,7 @@ function start() {
     const fov = 45;
     const aspect = 2;  // the canvas default
     const near = 0.1;
-    const far = 100;
+    const far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
     const controls = new OrbitControls(camera, canvas);
@@ -57,7 +57,6 @@ function start() {
         }
     });
 
-
     function resizeRendererToDisplaySize(renderer) {
         const canvas = renderer.domElement;
         const width = canvas.clientWidth;
@@ -83,6 +82,11 @@ function start() {
   return mainInterpret;
 }
 
+/**
+ * Creates basic tool box in blockly environment while using given language pack assigned to interpret
+ * @param {*} Interpret is the interpret which language pack will be used
+ * @returns Json ready for blocky toolbox
+ */
 function createBasicToolboxByLang(Interpret){
     var template = {
         "base" : [
@@ -153,6 +157,10 @@ function createBasicToolboxByLang(Interpret){
     return returnJson;
 }
 
+/**
+ * Changes language of the application by given language file
+ * @param {*} langFile is the server path to language file (for example js/source/languages/en.js)
+ */
 function changeLanguage(langFile){
     import(langFile)
     .then((module) => {
@@ -167,6 +175,15 @@ function changeLanguage(langFile){
 });
 }
 
+/**
+ * Sets Karel's syntax closer (eg.: *while)
+ * @param {*} closer is the closer character
+ */
+function changeSyntaxCloser(closer){
+    mainInterpret.closer = closer;
+    blocklySetCloser(closer);
+}
+
 // ACE settings
 ace.require("ace/ext/language_tools");
 var editor = ace.edit("textEditor");
@@ -175,6 +192,7 @@ editor.setOptions({
     enableSnippets: true,
     enableLiveAutocompletion: false,
     mode: 'ace/mode/karel',
+    scrollPastEnd: 0.5,
 });
 editor.setTheme('ace/theme/chrome');
 editor.commands.on("afterExec", function (event) {
@@ -206,7 +224,16 @@ editor.on("guttermousedown", function(e) {
 // Blockly settings
 var blocklyArea = document.getElementById('blocklyArea');
 var blocklyDiv = document.getElementById('blocklyDiv');
-var workspace = Blockly.inject(blocklyDiv, {toolbox: document.getElementById('toolbox')});
+var workspace = Blockly.inject(blocklyDiv, {toolbox: document.getElementById('toolbox'),
+                                            zoom:{
+                                                controls: true,
+                                                wheel: true,
+                                                startScale: 1.0,
+                                                maxScale: 3,
+                                                minScale: 0.3,
+                                                scaleSpeed: 1.2
+                                            },
+                                            trashcan: true});
 var onresize = function(e) {
     // Compute the absolute coordinates and dimensions of blocklyArea.
     var element = blocklyArea;
@@ -225,8 +252,10 @@ var onresize = function(e) {
     Blockly.svgResize(workspace);
 };
 window.addEventListener('resize', onresize, false);
+document.getElementById('blocklyArea').addEventListener('resize', onresize, false);
 onresize();
 Blockly.svgResize(workspace);
+Blockly.onresize=onresize;
 
 // setting block listener
 function myUpdateFunction(event) {
@@ -246,6 +275,7 @@ var runMeFunc = function (eventpat){
 };
 blocklySetRunMe(runMeFunc);
 
+changeSyntaxCloser('*');
 // -----------------------------
 
 
@@ -266,6 +296,7 @@ document.querySelector('#setEnglish').onclick = function() {changeLanguage('./so
 
 var TokenIterator = require("ace/token_iterator").TokenIterator;
 var tokenizer = new TokenIterator(editor.session, 0, 0);
+var firstRun = true;
 
 document.querySelector('#test').onclick = function() { 
     /*
@@ -277,8 +308,19 @@ document.querySelector('#test').onclick = function() {
         x.style.display = "none";
     }
     */
+    /*
+    if(firstRun){
+        firstRun = false;
+        tokenizer.stepForward();
+        while(tokenizer.getCurrentToken() !== undefined){
+            tokenizer.stepBackward();
+        }
+        tokenizer.stepForward();
+    }
     while(tokenizer.getCurrentToken() !== undefined){
-        console.log(tokenizer.getCurrentToken());
+        if(!(/^\s+$/).test(tokenizer.getCurrentToken().value)){
+            console.log(tokenizer.getCurrentToken());
+        }
         tokenizer.stepForward();
     }
     tokenizer.stepBackward();
@@ -286,5 +328,7 @@ document.querySelector('#test').onclick = function() {
         tokenizer.stepBackward();
     }
     tokenizer.stepForward();
+    */
     //console.log(editor.session.getBreakpoints());
+    mainInterpret.command.karel.test();
 };

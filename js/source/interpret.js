@@ -20,6 +20,7 @@ class interpret{
         this.interpretMode = "standard";                    // tells in which state is the interpret
         this.line = 0;                                      // actual interpret line position in the code 
         this.code = [];                                     // code formated by function nativeCodeSplitter
+        this.closer = "*";                                  // tells the ending character (default is '*')
     }
     
     /**
@@ -170,13 +171,13 @@ class interpret{
                 case this.dictionary["keywords"]["do"]:
                     currentRule = rules["do"]["start"];
                     break;
-                case "*" + this.dictionary["keywords"]["do"]:
+                case this.closer + this.dictionary["keywords"]["do"]:
                     currentRule = rules["do"]["end"];
                     break;
                 case this.dictionary["keywords"]["while"]:
                     currentRule = rules["while"]["start"];
                     break;
-                case "*" + this.dictionary["keywords"]["while"]:
+                case this.closer + this.dictionary["keywords"]["while"]:
                     currentRule = rules["while"]["end"];
                     break;
                 case this.dictionary["keywords"]["if"]:
@@ -186,7 +187,7 @@ class interpret{
                 case this.dictionary["keywords"]["else"]:
                     currentRule = rules["if"]["in"];
                     break;
-                case "*" + this.dictionary["keywords"]["if"]:
+                case this.closer + this.dictionary["keywords"]["if"]:
                     currentRule = rules["if"]["end"];
                     break;
                 case this.dictionary["keywords"]["true"]:
@@ -349,10 +350,10 @@ class interpret{
                 this.line ++;
                 if(this.code[this.line][0] == command){
                     numSkip ++;
-                } else if(this.code[this.line][0] == "*" + command && numSkip > 0){
+                } else if(this.code[this.line][0] == this.closer + command && numSkip > 0){
                     numSkip--;
                 } else if((this.code[this.line][0] == this.dictionary["keywords"]["else"] && numSkip == 0) || 
-                            (this.code[this.line][0] == "*" + command && numSkip == 0)){
+                            (this.code[this.line][0] == this.closer + command && numSkip == 0)){
                     return;
                 }
             }
@@ -360,7 +361,7 @@ class interpret{
         if(up){
             while(true){
                 this.line --;
-                if(this.code[this.line][0] == "*" + command){
+                if(this.code[this.line][0] == this.closer + command){
                     numSkip++;
                 } else if(this.code[this.line][0] == command && numSkip > 0){
                     numSkip--;
@@ -373,9 +374,9 @@ class interpret{
                 this.line ++;
                 if(this.code[this.line][0] == command){
                     numSkip++;
-                } else if(this.code[this.line][0] == "*" + command && numSkip > 0){
+                } else if(this.code[this.line][0] == this.closer + command && numSkip > 0){
                     numSkip--;
-                } else if(this.code[this.line][0] == "*" + command && numSkip == 0){
+                } else if(this.code[this.line][0] == this.closer + command && numSkip == 0){
                     return;
                 }
             }
@@ -472,7 +473,7 @@ class interpret{
                     this.activeCounters.push(this.math.getNumber(this.code[this.line][1]));
                 }
                 break;
-            case "*" + this.dictionary["keywords"]["do"]:
+            case this.closer + this.dictionary["keywords"]["do"]:
                 this.activeCounters[this.activeCounters.length - 1] --;
                 if(this.activeCounters[this.activeCounters.length - 1] > 0){
                     this.nativeCodeJumper(this.dictionary["keywords"]["do"], true);
@@ -487,7 +488,7 @@ class interpret{
                     this.nativeCodeJumper(this.dictionary["keywords"]["while"], false);
                 }
                 break;
-            case "*" + this.dictionary["keywords"]["while"]:
+            case this.closer + this.dictionary["keywords"]["while"]:
                 this.nativeCodeJumper(this.dictionary["keywords"]["while"], true);
                 this.line --;
                 break;
@@ -502,7 +503,7 @@ class interpret{
                 this.nativeCodeJumper(this.dictionary["keywords"]["if"], false);
                 break;
             case this.dictionary["keywords"]["then"]:
-            case "*" + this.dictionary["keywords"]["if"]:
+            case this.closer + this.dictionary["keywords"]["if"]:
                 break;
             case "#":
             case "":
@@ -629,11 +630,13 @@ class interpret{
      * Ends with any kind of error (syntax error in code, nothing found to run ect.)
      */
     nativeCodeDebugInterpretFromEditor(){
-        if(this.running && this.interpretMode == "standard"){
+        if(this.running && this.interpretMode != "debug"){
             console.log("nativeCodeInterpretFromEditor error - cannot run multiple programs at the same time");
             return;
         }
         if(!this.running){
+            console.log(this.textEditor.session.getBreakpoints().length);
+            console.log(this.textEditor.session.getBreakpoints())
             this.line = this.textEditor.selection.getCursor().row;
             this.nativeCodeSplitter(this.textEditor.getValue());
             if(!this.nativeCodeFindStartLine()){
@@ -718,7 +721,7 @@ class interpret{
             "create" : ["control_repeat"],
             "action" : ["connectBlock", "insertConnection", "manageNumber"],
         }
-        returnTable["*" + this.dictionary["keywords"]["do"]] = {
+        returnTable[this.closer + this.dictionary["keywords"]["do"]] = {
             "create" : [],
             "action" : ["popConnectionArray"],
         }
@@ -726,7 +729,7 @@ class interpret{
             "create" : ["control_while"],
             "action" : ["connectBlock", "insertConnection", "manageCondition"],
         }
-        returnTable["*" + this.dictionary["keywords"]["while"]] = {
+        returnTable[this.closer + this.dictionary["keywords"]["while"]] = {
             "create" : [],
             "action" : ["popConnectionArray"],
         }
@@ -742,7 +745,7 @@ class interpret{
             "create" : [],
             "action" : ["popConnectionArray"],
         }
-        returnTable["*" + this.dictionary["keywords"]["if"]] = {
+        returnTable[this.closer + this.dictionary["keywords"]["if"]] = {
             "create" : [],
             "action" : ["popConnectionArray"],
         }
@@ -887,7 +890,7 @@ class interpret{
                         return false;
                     }
                     break;
-                case "*" + this.dictionary["keywords"]["if"]:
+                case this.closer + this.dictionary["keywords"]["if"]:
                     if(skipIf == 0){
                         return true;
                     } else {

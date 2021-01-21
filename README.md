@@ -9,7 +9,7 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 23.11.2020**
+**Last update - 21.1.2021**
 
 **English version below**
 ___
@@ -20,6 +20,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
 - [ACE code editor](https://ace.c9.io/)
 - [Three.js web 3D graphics](https://threejs.org/)
 - [Blockly programming](https://developers.google.com/blockly)
+- [Split.js](https://split.js.org/)
 
 ## Plán funkcí projektu
 - 3D prostředí
@@ -66,11 +67,12 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
 - vlastní grafické modely pro místnost
     - v plánu vlastní grafické modely pro objekty v místnosti
 - přehledné GUI
+    - <span style="color:green"> implementovaná možnost změny velikosti oken - split.js
     - v plánu vlastní lehce modifikovatelné prostředí
     - v plánu různé témata
 
 ## Spuštění
-Je potřeba spouštět přes lokální server, nejlépe v adresáři projektu spustit server pomocí PHP například přes command `php -S 127.0.0.1:8080` a prozatím je potřeba mít dostupný internet pro stuštění.
+Je potřeba spouštět přes lokální server, nejlépe v adresáři projektu spustit server pomocí PHP například přes command `php -S 127.0.0.1:8080` a prozatím je potřeba mít dostupný internet pro stuštění. Je možno spouštět buď `index.html`, který poskytuje kompletně funkční aplikaci, nebo `index.php`, kde se do aplikace navíc automaticky donačtou jednoduché testovací příkazy z `saves/initial_test_save.txt`.
 
 ## Popis kódového programování
 Kód pište do nejpravějšího ze tří zobrazených oken - `Editor kódu`. Dostupné kódové programování obsahuje všechny originální příkazy z aplikace `Robot Karel 3D`, jmenovitě to jsou příkazy:
@@ -145,7 +147,7 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku
 - Blokový editor
 - Textový editor
 
-Pod těmito prvky se nachází sada tlačítek pro ovládání, každý prvek má své specifické
+Pod těmito prvky se nachází sada tlačítek pro ovládání, každý prvek má své specifické (v momentální verzi jsou tlačítka rozházená, brzy bude opraveno)
 - Místnost s robotem
     - `stop` - zastavení jakéhokoliv probíhajícího kódu
     - `X value` - "x-ový" rozměr místnosti pro nastavení
@@ -233,4 +235,5 @@ Lower there are options for save and load the state of the application (+ develo
 - [ACE code editor](https://ace.c9.io/)
 - [Three.js web 3D graphics](https://threejs.org/)
 - [Blockly programming](https://developers.google.com/blockly)
+- [Split.js](https://split.js.org/)
 

@@ -2,6 +2,10 @@ function blocklySetBlockLang(dictionary){
   Blockly.langDictionary = dictionary;
 }
 
+function blocklySetCloser(closer){
+  Blockly.closer = closer;
+}
+
 var runMe;
 function blocklySetRunMe(setToFunc){
   runMe = setToFunc;
@@ -173,7 +177,7 @@ Blockly.Blocks['control_repeat'] = {
     this.appendStatementInput("INNER_CODE")
         .setCheck(null);
     this.appendDummyInput()
-        .appendField("*"+Blockly.langDictionary["keywords"]["do"]);
+        .appendField(Blockly.closer+Blockly.langDictionary["keywords"]["do"]);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(180);
@@ -191,7 +195,7 @@ Blockly.Blocks['control_while'] = {
     this.appendStatementInput("INNER_CODE")
         .setCheck(null);
     this.appendDummyInput()
-        .appendField("*"+Blockly.langDictionary["keywords"]["while"]);
+        .appendField(Blockly.closer+Blockly.langDictionary["keywords"]["while"]);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(180);
@@ -210,7 +214,7 @@ Blockly.Blocks['control_if'] = {
         .setCheck(null)
         .appendField(Blockly.langDictionary["keywords"]["then"]);
     this.appendDummyInput()
-        .appendField("*"+Blockly.langDictionary["keywords"]["if"]);
+        .appendField(Blockly.closer+Blockly.langDictionary["keywords"]["if"]);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(180);
@@ -232,7 +236,7 @@ Blockly.Blocks['control_ifelse'] = {
         .setCheck(null)
         .appendField(Blockly.langDictionary["keywords"]["else"]);
     this.appendDummyInput()
-        .appendField("*"+Blockly.langDictionary["keywords"]["if"]);
+        .appendField(Blockly.closer+Blockly.langDictionary["keywords"]["if"]);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(180);

@@ -286,9 +286,13 @@ oop.inherits(Mode, TextMode);
         session.outdentRows(new Range(row, 0, row + 2, 0));
     };
     
+    /*
     var WorkerClient = require('ace/worker/worker_client').WorkerClient;
     this.createWorker = function(session) {
-        var worker = new WorkerClient(["ace"], "ace/mode/javascript_worker", "JavaScriptWorker");
+        var worker = new WorkerClient(
+            ["ace"], 
+            "ace/mode/javascript_worker", 
+            "JavaScriptWorker");
         worker.attachToDocument(session.getDocument());
 
         worker.on("annotate", function(results) {
@@ -302,6 +306,7 @@ oop.inherits(Mode, TextMode);
 
         return worker;
     };
+    */
     this.$id = "ace/mode/karel";
 }).call(Mode.prototype);
 

@@ -1447,6 +1447,7 @@ function outer(modules, cache, entry) {
 }
 return outer;
 })()
+
 ({"/../../jshint/data/ascii-identifier-data.js":[function(_dereq_,module,exports){
 var identifierStartTable = [];
 
@@ -14869,12 +14870,12 @@ define("ace/mode/javascript_worker",[], function(require, exports, module) {
 
 var oop = require("../lib/oop");
 var Mirror = require("../worker/mirror").Mirror;
-var lint = require("./javascript/jshint").JSHINT;
+var lint = require("./javascript/jshint").JSHINT;          // checker define
 
 function startRegex(arr) {
     return RegExp("^(" + arr.join("|") + ")");
 }
-
+// some settings for error parsing
 var disabledWarningsRe = startRegex([
     "Bad for in variable '(.+)'.",
     'Missing "use strict"'
@@ -14901,7 +14902,7 @@ var infoRe = startRegex([
     "\\['{a}'\\] is better written in dot notation.",
     "'{a}' used out of scope"
 ]);
-
+// settings of the worker
 var JavaScriptWorker = exports.JavaScriptWorker = function(sender) {
     Mirror.call(this, sender);
     this.setTimeout(500);
@@ -14948,17 +14949,19 @@ oop.inherits(JavaScriptWorker, Mirror);
 
     this.onUpdate = function() {
         var value = this.doc.getValue();
-        value = value.replace(/^#!.*\n/, "\n");
+        value = value.replace(/^#!.*\n/, "\n");                                 // kills commentaries
+
         if (!value)
-            return this.sender.emit("annotate", []);
+            return this.sender.emit("annotate", []);                            // skip if nothing is written
 
         var errors = [];
         var maxErrorLevel = this.isValidJS(value) ? "warning" : "error";
-        lint(value, this.options, this.options.globals);
-        var results = lint.errors;
+
+        lint(value, this.options, this.options.globals);                         // this function searches for the 
+        var results = lint.errors;                                               // loads the errors found
 
         var errorAdded = false;
-        for (var i = 0; i < results.length; i++) {
+        for (var i = 0; i < results.length; i++) {                                // some error processing
             var error = results[i];
             if (!error)
                 continue;

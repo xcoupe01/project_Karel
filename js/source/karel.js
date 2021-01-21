@@ -1,4 +1,5 @@
 import * as THREE from '../three/three.module.js';
+import {GLTFLoader} from '../three/GLTFLoader.js';
 import {room} from './room.js';
 
 /**
@@ -56,12 +57,32 @@ class karel{
         this.scene.remove(this.graphicalObject);
     }
     
-     /**
+    /**
      * Corrects the height of the graphical object of the robot
      */
     correctHeight(){
         this.graphicalObject.position.y = 0.55 + this.room.brickThickness * this.room.roomDataArray[this.positionX][this.positionY].bricks;
-     }
+    }
+
+    tellPositionInFrontX(){
+        switch(this.orientation){
+            case 1:
+                return this.positionX + 1;
+            case 3:
+                return this.positionX - 1;
+        }
+        return this.positionX;
+    }
+
+    tellPosotionInFrontY(){
+        switch(this.orientation){
+            case 0:
+                return this.positionY - 1;
+            case 2:
+                return this.positionY + 1;
+        }
+        return this.positionY;
+    }
 
     /**
      * Turns robot to the right
@@ -118,20 +139,7 @@ class karel{
      */
     placeBrick(){
         if(!this.isWall()){
-            switch(this.orientation){
-                case 0:
-                    this.room.addBrickToPos(this.positionX, this.positionY - 1);
-                    break;
-                case 1:
-                    this.room.addBrickToPos(this.positionX + 1, this.positionY);
-                    break;
-                case 2:
-                    this.room.addBrickToPos(this.positionX, this.positionY + 1);
-                    break;
-                case 3:
-                    this.room.addBrickToPos(this.positionX - 1, this.positionY);
-                    break;
-            }
+            this.room.addBrickToPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
         } else {
             console.log("PlB error - cannot place brick to wall")
         }
@@ -144,20 +152,7 @@ class karel{
      */
     pickUpBrick(){
         if(!this.isWall()){
-            switch(this.orientation){
-                case 0:
-                    this.room.removeBrickFromPos(this.positionX, this.positionY - 1);
-                    break;
-                case 1:
-                    this.room.removeBrickFromPos(this.positionX + 1, this.positionY);
-                    break;
-                case 2:
-                    this.room.removeBrickFromPos(this.positionX, this.positionY + 1);
-                    break;
-                case 3:
-                    this.room.removeBrickFromPos(this.positionX - 1, this.positionY);
-                    break;
-            }
+            this.room.removeBrickFromPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
         } else {
             console.log("PiB error - cannot pic up outside the room");
         }
@@ -241,16 +236,7 @@ class karel{
         if(this.isWall()){
             return false;
         }
-        switch(this.orientation){
-            case 0:
-                return this.room.roomDataArray[this.positionX][this.positionY - 1].bricks > 0;
-            case 1:
-                return this.room.roomDataArray[this.positionX + 1][this.positionY].bricks > 0;
-            case 2:
-                return this.room.roomDataArray[this.positionX][this.positionY + 1].bricks > 0;
-            case 3:
-                return this.room.roomDataArray[this.positionX - 1][this.positionY].bricks > 0;
-        }
+        return this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks > 0;
     }
 
     /**
@@ -267,31 +253,9 @@ class karel{
      */
     isVacant(){
         if(!this.isWall()){
-            switch(this.orientation){
-                case 0:
-                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
-                        this.room.roomDataArray[this.positionX][this.positionY - 1].bricks){
-                       return true;
-                    }
-                    break;
-                case 1:
-                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
-                        this.room.roomDataArray[this.positionX + 1][this.positionY].bricks){
-                        return true;
-                    }
-                    break;
-                case 2:
-                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
-                        this.room.roomDataArray[this.positionX][this.positionY + 1].bricks){
-                        return true;
-                    }
-                    break;
-                case 3:
-                    if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
-                        this.room.roomDataArray[this.positionX - 1][this.positionY].bricks){
-                        return true;
-                    }
-                    break;
+            if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
+                this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks){
+               return true;
             }
         }
         return false;
@@ -301,27 +265,10 @@ class karel{
      * Toggles room block activity (aka places wall) in front of Karel
      */
     toggleRoomBlock(){
-        switch(this.orientation){
-            case 0:
-                if(this.positionY != 0){
-                    this.room.toggleRoomBlockPos(this.positionX, this.positionY - 1);
-                }
-                break;
-            case 1:
-                if(this.positionX != this.room.roomDataArray.length - 1){
-                    this.room.toggleRoomBlockPos(this.positionX + 1, this.positionY);
-                }
-                break;
-            case 2:
-                if(this.positionY != this.room.roomDataArray[this.positionX].length - 1){
-                    this.room.toggleRoomBlockPos(this.positionX, this.positionY + 1);
-                }
-                break;
-            case 3:
-                if(this.positionX != 0){
-                    this.room.toggleRoomBlockPos(this.positionX - 1, this.positionY);
-                }
-                break;
+        if(!this.isWall()){
+            this.room.toggleRoomBlockPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+        } else {
+            console.log("TRB error - cannot toggle block outside of the room at [" + this.tellPositionInFrontX() + "," + this.tellPosotionInFrontY() + "]");
         }
     }
 
@@ -443,5 +390,27 @@ class karel{
             }
         }
         return true;
+    }
+
+    /**
+     * Loads 3D model from file
+     */
+    test(){
+        console.log("hello test")
+        var loader = new GLTFLoader();
+        loader.load('objects/test.glb', handle_load);
+        var mesh;
+        var scene = this.scene;
+
+        function handle_load(gltf){
+            console.log(gltf);
+            mesh = gltf.scene;
+            console.log(mesh.children[0]);
+            mesh.children[0].material = new THREE.MeshLambertMaterial();
+            mesh.scale.set(0.01, 0.01, 0.01);
+            mesh.position.set(0, 0, 0);
+		    scene.add( mesh );
+            mesh.position.z = -10;
+        }
     }
 }
