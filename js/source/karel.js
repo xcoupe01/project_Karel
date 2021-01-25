@@ -23,6 +23,7 @@ class karel{
         this.sound = new Audio();                   // audio handle
         this.sound.src = "sounds/karelBeep.mp3";    // connecting file to the handle
         this.maxStepUp = 1;                         // number of bricks that Karel can climb
+        this.heightModifier = -0.3;                 // graphical model height modifier
     }
 
     /**
@@ -36,18 +37,19 @@ class karel{
         this.positionX = 0;
         this.positionY = 0;
         // graphical object of Karel
-        const geometry = new THREE.BoxGeometry(this.room.blockSize, this.room.blockSize, this.room.blockSize); 
-        const material = [
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //right side
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //left side
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //top side
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //bottom side
-            new THREE.MeshBasicMaterial({color : 0x94a8ff}), //front side
-            new THREE.MeshBasicMaterial({color : 0x0073ff})  //back side
-        ]
-        this.graphicalObject = new THREE.Mesh(geometry, material);
-        this.scene.add(this.graphicalObject);
-        this.correctHeight();
+        var karel = this;
+        var loader = new GLTFLoader();
+        loader.load('objects/karel.glb', function (gltf){
+            karel.graphicalObject = gltf.scene;
+            karel.graphicalObject.scale.set(0.35, 0.35, 0.35);
+            karel.graphicalObject.rotateY(Math.PI);
+            karel.graphicalObject.position.y = karel.heightModifier;
+            karel.scene.add(karel.graphicalObject);
+            karel.correctHeight()
+        }, undefined, function (error){
+            console.log(error);
+        });
+        
     }
 
     /**
@@ -61,7 +63,7 @@ class karel{
      * Corrects the height of the graphical object of the robot
      */
     correctHeight(){
-        this.graphicalObject.position.y = 0.55 + this.room.brickThickness * this.room.roomDataArray[this.positionX][this.positionY].bricks;
+        this.graphicalObject.position.y = this.heightModifier + this.room.brickThickness * this.room.roomDataArray[this.positionX][this.positionY].bricks;
     }
 
     tellPositionInFrontX(){
@@ -396,21 +398,15 @@ class karel{
      * Loads 3D model from file
      */
     test(){
-        console.log("hello test")
-        var loader = new GLTFLoader();
-        loader.load('objects/test.glb', handle_load);
-        var mesh;
         var scene = this.scene;
-
-        function handle_load(gltf){
-            console.log(gltf);
-            mesh = gltf.scene;
-            console.log(mesh.children[0]);
-            mesh.children[0].material = new THREE.MeshLambertMaterial();
-            mesh.scale.set(0.01, 0.01, 0.01);
-            mesh.position.set(0, 0, 0);
-		    scene.add( mesh );
-            mesh.position.z = -10;
-        }
+        var loader = new GLTFLoader();
+        loader.load('objects/karel.glb', function (gltf){
+            gltf.scene.scale.set(0.35, 0.35, 0.35);
+            gltf.scene.rotateY(Math.PI);
+            gltf.scene.position.y = -0.3;
+            scene.add(gltf.scene);
+        }, undefined, function (error){
+            console.log(error);
+        });
     }
 }
