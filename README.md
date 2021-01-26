@@ -9,7 +9,7 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 21.1.2021**
+**Last update - 26.1.2021**
 
 **English version below**
 ___
@@ -21,6 +21,8 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
 - [Three.js web 3D graphics](https://threejs.org/)
 - [Blockly programming](https://developers.google.com/blockly)
 - [Split.js](https://split.js.org/)
+- [JQuery](https://jquery.com/)
+- [JQuery-UI](https://jqueryui.com/)
 
 ## Plán funkcí projektu
 - 3D prostředí
@@ -65,11 +67,13 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - v plánu kampaň s popisem funkcí Karla a základních myšlenek programování
     - v plánu seznam a kontrola příkladů
 - vlastní grafické modely pro místnost
+    - <span style="color:green"> implementován vlastní model pro robota Karla
     - v plánu vlastní grafické modely pro objekty v místnosti
 - přehledné GUI
     - <span style="color:green"> implementovaná možnost změny velikosti oken - split.js
+    - <span style="color:green"> implementována první verze uživatelského prostředí
     - v plánu vlastní lehce modifikovatelné prostředí
-    - v plánu různé témata
+    - v plánu různá témata
 
 ## Spuštění
 Je potřeba spouštět přes lokální server, nejlépe v adresáři projektu spustit server pomocí PHP například přes command `php -S 127.0.0.1:8080` a prozatím je potřeba mít dostupný internet pro stuštění. Je možno spouštět buď `index.html`, který poskytuje kompletně funkční aplikaci, nebo `index.php`, kde se do aplikace navíc automaticky donačtou jednoduché testovací příkazy z `saves/initial_test_save.txt`.
@@ -131,11 +135,14 @@ Dále je zapotřebí tvořit vlastní bolky kódu ohraničené těmito způsoby:
 Pokud je při interpretaci jazyka nalezen nějaký problém, aplikace o tom informuje do konzole prohlížeče.
 
 ## Popis blokového programování
-Blokové programování je syntakticky velmi podobné (ne li stejné) jako textové programování. Bloky jsou schovány pod svými kategoriemi a funkčností přímo korespondují na textovou reprezentaci. Pro spuštění bloku klikněte na tlačítko, u bloku uvozující příkaz. Pokud by bylo zapotřebí spouštět blok v nějakém dalším bloku, využijte blok z nabídky `Funkce`, tedy ze zelené sekce, s popiskem `Funkce` a do textového pole vložte název požadovaného bloku. Podobně funguje i volání uživatelských podmínek, ovšem vyberte podobný blok ze sekce `Podmínky`.
+Blokové programování je syntakticky velmi podobné (ne-li stejné) jako textové programování. Bloky jsou schovány pod svými kategoriemi a funkčností přímo korespondují na textovou reprezentaci. Pro spuštění bloku klikněte na tlačítko, u bloku uvozující příkaz (tlačítko run). Pokud by bylo zapotřebí spouštět blok v nějakém dalším bloku, využijte blok z nabídky `Funkce`, tedy ze zelené sekce, s popiskem `Funkce` a do textového pole vložte název požadovaného bloku. Tím se ze jmenovaného bloku stane podprogram aktuálního bloku. Podobně funguje i volání uživatelských podmínek, ovšem vyberte podobný blok ze sekce `Podmínky`. 
 
 ## Popis UI
-Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku
-- Místnost s robotem - ovládání
+Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku. Aplikace umožňuje horizontálně přizpůsobovat, kolik který prvek na ploše zabírá pomocí táhel mezi prvky.
+
+- **Místnost s robotem**
+
+    Slouží pro přímou interkaci užvivatele s robotem pomocí následujících kláves:
     - `W` pro krok vpřed 
     - `A` pro otočení vlevo 
     - `D` pro otočení vpravo
@@ -144,35 +151,28 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku
     - `Z` pro zvednutí cihly 
     - `I` pro odebrání nebo vrácení políčka před Karlem
     - myší a šipkami lze pohybovat kamerou v místnosti. 
-- Blokový editor
-- Textový editor
+- **Blokový editor**
 
-Pod těmito prvky se nachází sada tlačítek pro ovládání, každý prvek má své specifické (v momentální verzi jsou tlačítka rozházená, brzy bude opraveno)
-- Místnost s robotem
-    - `stop` - zastavení jakéhokoliv probíhajícího kódu
-    - `X value` - "x-ový" rozměr místnosti pro nastavení
-    - `Y value` - "y-ový" rozměr místnosti pro nastavení
-    - `room` - nastavení rozměrů místnosti na hodnoty z předchozích polí
-    - `home camera` - vrátí kameru místnosti do základní pozice (buď po nastartování aplikace a nebo při změně místnosti)
-- Blokový editor
-    - `Make Blocks` - vytvoří v prostoru blokového programování strukturu blokového programování funkčně stejné jako vybraný text v editoru
-- Textový editor
-    - `run code` - spuštění kódu v textovém editoru na aktuální pozici kurzoru
-    - `run debug` - možnost spuštění s krokováním (po každém kliknutí na tlačítko se provede jeden řádek)
+    Slouží k vytváření kódu pomocí blokového přístupu programování. Pohyb po ploše je možná pomocí myši, včetně přibližování a oddalování, které je dále dostupné pomocí tlačítek v pravém spodním rohu. Tlačítko terče slouží k vystředění blokové pracovní plochy. Pod těmito tlačítky se nachází ikona koše, která zpřístupňuje smazané struktury. Struktury se mažou uchopením a buďto přetažením do toolboxu a nebo právě na tuto ikonu koše.
+- **Textový editor**
 
-Níže se nachází sekce pro ukládání a načítání (+ developper sekce a jazyková sekce)
-- pomocí selektorů `room`, `blocks` a `code` můžete nastavit, co bude v následujícím vygenerování uložení uloženo
-    - `room` - přidá do souboru uložení aktuální stav místnosti
-    - `blocks` - přidá do souboru uložení aktuální stav blokového editoru
-    - `code` - přidá do souboru uložení aktuálního stavu editoru kódu
-- do pole s výchozím popiskem `file_name` můžete zadat jméno následujícího souboru uložení
-- tlačítkem `save` vygenerujete a stáhnete soubor, který ukládá aktuální stav
-- tlačítko `Vybrat soubor` slouží k vybrání souboru, ze kterého se načte stav aplikace.
-- tlačítko `load` načte předem vybraný soubor (pozor, aplikace se neptá a neupozorňuje že bude stav přepisovat a přepíše vše co jí soubor určí přepsat).
-- tlačítko `Čeština` přepne Karla do češtiny
-- tlačítko `English` přepne Karla do angličtiny
-- tlačítko `test` - prozatimní interní testovací tlačítko
-- (`textarea` - prozatimní prostor pro generování kódu z blokového programování)
+    Umožnujě programování robota textovou formou v nativním jazyce Karel. Disponuje jednoduchým autocompletem, který pomáhá při programování a obarvuje syntax jazyka. Spustit kód je možné nakliknutím do prostoru programu, který uživatel chce spustit a kliknutím na tlačítko `Spusť`. Dostupný je také režim krokování, který se spouští podobým způsobem, akorát pomocí tlačítka `Krokuj`. V režimu krokování se vykoná pouze jeden krok programu při každém stisknutí tlačítka krokuj.
+
+
+V horním panelu jsou dostupná následující nástroje aplikace:
+- **Menu**
+
+    Hlavní menu aplikace, obsahuje následující položky:
+    - `Změň místnost` - Umožňuje pomocí dialogu změnit rozměry místnosti.
+    - `Resetuj kameru` - Vrátí kameru do výchozího stavu.
+    - `Vytvoř bloky` - Z označeného kódu v textovém editoru vytvoří blokové schéma v blokovém editoru.
+    - `Ulož` - Umožnujě uložit stav aplikace pomocí dialogu.
+    - `Načti` - Umožňuje načíst stav aplikace pomocí dialogu.
+    - `Test` - Interní testovací tlačítko.
+- **Jazyky** - umoňuje změnu jazyků z nabídky.
+- **Spusť** - spustí vybraný program v textovém editoru v běžném režimu.
+- **Krokuj** - spustí vybraný program v textovém editoru v krokovacím režimu.
+- **Zastav** - zastaví jakýkoliv probíhající program.
 
 ## Upozornění
 - Nejedná se o finální produkt a aplikace je pouze v ranné fázi vývoje.
@@ -183,57 +183,53 @@ ___
 
 ## Subject of this project
 
-Subject of this project is to recreate application `Robot Karel 3D` which is used to teach kids to code. Sadly the english version of my project is not ready yet but it will be up soon. 
+Subject of this project is to recreate application `Robot Karel 3D` which is used to teach kids how to code. Its based on Czechoslovakian project on MS-DOS. 
 
 ## How to run 
-You need to run local server for Karel to function properly. Easiest way is to run PHP server with command `php -S 127.0.0.1:8080` in the project folder and you need internet connection for it to load properly.
+You need to run local server for Karel to function properly. Easiest way is to run PHP server with command `php -S 127.0.0.1:8080` in the project folder and you need internet connection for it to load properly. There are two versions. One is avalible in `index.html` which is the base application. There is also `index.php` version which loads some basic examples how the robot can operate in the text code editor.
 
 ## Disclaimer
 - This is not the final version and future functions will be added
 - Graphics contains placeholder objects for now, real models will be added in the future.
 
-## Room controls
-- `W` to go forward
-- `A` to rotate left
-- `D` to rotate right
-- `O` to mark current Karel's position
-- `P` to place brick
-- `Z` to pick up brick
-- `I` to remove or return block in front of Karel
-- mouse to move camera in the room
-
-## Button description
+## UI description
+- **Room**
+    - Visualizes the robot in his room, you can directly control him by clicking in the room and using folowing controls.
+    - controls:
+        - `W` to go forward
+        - `A` to rotate left
+        - `D` to rotate right
+        - `O` to mark current Karel's position
+        - `P` to place brick
+        - `Z` to pick up brick
+        - `I` to remove or return block in front of Karel
+        - mouse to move camera in the room
+- **Blockly editor**
+    - Used to program robot by blocks.
+- **Text code editor**
+    - Used to program robot by code.
+## Nav bar description
 You can find control for each section under it
-- Room with robot
-    - `stop` - stops ecevution of any code
-    - `X value` - x axis dimension setter
-    - `Y value` - y axis dimension setter
-    - `room` - sets the room dimensions to predefined values (the upper two)
-    - `home camera` - sets the camera to basic position
-- Blockly editor
-    - `textarea` - insert a code to be transported to Blockly code
+- **Menu**
+    - `Change room` - 
+    - `Home camera` - resets the camera
     - `Make Blocks` - creates blocks described by text form the selected text in the text editor
-- Text editor
-    - `run code` - runs block of code specifed by cursor
-    - `run debug` - runs block of code specified by cursor in debug mode (step by step)
-
-Lower there are options for save and load the state of the application (+ developper and language section)
-- `room`, `blocks` and `code` - you can use these to specify save file
-    - `room` - save state of the room
-    - `blocks` - save state of Blockly editor
-    - `code` - save state of text editor
-- `file_name` text input - specify the name of savefile
-- `save` generates the save file
-- `Vybrat soubor` makes you choose the file to be loaded from
-- `load` loads the application by the specified file
-- `Čeština` changes the app to czech language
-- `English` changes the app to english
-- `test` - internal developper button (click to make the next item visible)
-- (`textarea` - invisible blockly code represenation)
-
+    - `Save` - opens dialog to generate save file
+    - `Load` - opens dialog to load application by the specified file
+    - `Test` - internal developper button
+- **Languages**
+    - insert a code to be transported to Blockly code
+- **Run**
+    - runs block of code specifed by cursor
+- **Debug**
+    - runs block of code specified by cursor in debug mode (step by step)   
+- **Stop**
+    - stops ecevution of any code
 ## Used resources
 - [ACE code editor](https://ace.c9.io/)
 - [Three.js web 3D graphics](https://threejs.org/)
 - [Blockly programming](https://developers.google.com/blockly)
 - [Split.js](https://split.js.org/)
+- [JQuery](https://jquery.com/)
+- [JQuery-UI](https://jqueryui.com/)
 

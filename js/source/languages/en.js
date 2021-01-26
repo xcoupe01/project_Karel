@@ -67,6 +67,39 @@ export function setLang(){
                     "end": -1,
                 }
             }
+        },
+        "UI" : {
+            "menu": "Menu",
+            "languages": "Languages",
+            "run": "Run",
+            "debug": "Debug",
+            "stop": "Stop",
+            "changeRoom": "Change Room",
+            "homeCamera": "Home camera",
+            "makeBlocks": "Make blocks",
+            "save": "Save",
+            "load": "Load",
+            "changeRoomDialog": {
+                "dialogTitle": "Change room dimensions",
+                "dialogText": "Changes room dimensions in X and Y axis. The currenct room will be erased and replaced with the new one with the specified dimensions.",
+                "xAxisLabel": "X axis",
+                "yAxisLabel": "Y axis",
+                "button": "Change"
+            },
+            "saveDialog": {
+                "dialogTitle": "Save work",
+                "dialogText": "Creates and downloads save of the app state. Lower you can select what will be saved.",
+                "roomLabel": "Room",
+                "blocksLabel": "Blocks",
+                "codeLabel": "Code",
+                "fileName": "karel_save",
+                "button": "Save"
+            },
+            "loadDialog": {
+                "dialogTitle": "Load work",
+                "dialogText": "Loads given file with save position.",
+                "button": "Load"
+            }
         }
     };
 }

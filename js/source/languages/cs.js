@@ -67,6 +67,39 @@ export function setLang(){
                     "konec": -1,
                 }
             }
+        },
+        "UI" : {
+            "menu": "Menu",
+            "languages": "Jazyky",
+            "run": "Spusť",
+            "debug": "Krokuj",
+            "stop": "Zastav",
+            "changeRoom": "Změň místnost",
+            "homeCamera": "Resetuj kameru",
+            "makeBlocks": "Vytvoř bloky",
+            "save": "Ulož",
+            "load": "Načti",
+            "changeRoomDialog": {
+                "dialogTitle": "Změň rozměry místnosti",
+                "dialogText": "Umožňuje změnu rozměrů místnosti. Níže zadejte požadované rozměry místnosti v ose X a ose Y, Tlačítkem 'Změň' bude současná místnost smazána a vytvořena nová se zadanými rozměry.",
+                "xAxisLabel": "Osa X",
+                "yAxisLabel": "Osa Y",
+                "button": "Změň"
+            },
+            "saveDialog": {
+                "dialogTitle": "Ulož práci",
+                "dialogText": "Uloží současný stav aplikace. Níže můžete zvolit, co vše bude uloženo a vybrat název souboru. Po kliknutí na tlačítko 'Ulož' bude tento sobor uložen do počítače.",
+                "roomLabel": "Místnost",
+                "blocksLabel": "Bloky",
+                "codeLabel": "Kód",
+                "fileName": "karel_save",
+                "button": "Ulož"
+            },
+            "loadDialog": {
+                "dialogTitle": "Načti práci",
+                "dialogText": "Provede načtení zadaného souboru pro načtení uložené pozice.",
+                "button": "Načti"
+            }
         }
     };
 }

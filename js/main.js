@@ -1,7 +1,3 @@
-// Karel core for Karel project for VUT FIT university and Gymnasium Šlapanice
-// Three.js - Load .OBJ - ?
-// from https://threejsfundamentals.org/threejs/threejs-load-obj-wat.html
-
 import {karel} from './source/karel.js';
 import * as THREE from './three/three.module.js';
 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r119/examples/jsm/controls/OrbitControls.js';
@@ -176,7 +172,34 @@ function changeLanguage(langFile){
         editor.session.$foldMode.__proto__.foldingStopMarker = mainInterpret.dictionary["ACE"]["fold"]["foldStopMarker"];
         editor.session.$foldMode.indentKeywords = mainInterpret.dictionary["ACE"]["fold"]["indentKeywords"];
         editor.session.bgTokenizer.start(0);
-});
+
+        // UI set
+        document.querySelector('#mainMenuIcon').title = mainInterpret.dictionary["UI"]["menu"];
+        document.querySelector('#languagesIcon').title = mainInterpret.dictionary["UI"]["languages"];
+        document.querySelector('#runCode').title = mainInterpret.dictionary["UI"]["run"];
+        document.querySelector('#runDebug').title = mainInterpret.dictionary["UI"]["debug"];
+        document.querySelector('#stop').title = mainInterpret.dictionary["UI"]["stop"];
+        document.querySelector('#openChangeRoomDialog').text = mainInterpret.dictionary["UI"]["changeRoom"];
+        document.querySelector('#homeCamera').text = mainInterpret.dictionary["UI"]["homeCamera"];
+        document.querySelector('#makeBlocks').text = mainInterpret.dictionary["UI"]["makeBlocks"];
+        document.querySelector('#openSaveDialog').text = mainInterpret.dictionary["UI"]["save"];
+        document.querySelector('#openLoadDialog').text = mainInterpret.dictionary["UI"]["load"];
+        document.querySelector('#resizeRoomDialog').title = mainInterpret.dictionary["UI"]["changeRoomDialog"]["dialogTitle"];
+        document.querySelector('#resizeRoomText').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["dialogText"];
+        document.querySelector('#xAxisLabel').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["xAxisLabel"]; 
+        document.querySelector('#yAxisLabel').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["yAxisLabel"];
+        document.querySelector('#room').value = mainInterpret.dictionary["UI"]["changeRoomDialog"]["button"];
+        document.querySelector('#saveDialog').title = mainInterpret.dictionary["UI"]["saveDialog"]["dialogTitle"];
+        document.querySelector('#saveText').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["dialogText"];
+        document.querySelector('#roomSaveLabel').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["roomLabel"];
+        document.querySelector('#blocksSaveLabel').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["blocksLabel"];
+        document.querySelector('#codeSaveLabel').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["codeLabel"];
+        document.querySelector('#saveName').value = mainInterpret.dictionary["UI"]["saveDialog"]["fileName"];
+        document.querySelector('#saveButton').value = mainInterpret.dictionary["UI"]["saveDialog"]["button"];
+        document.querySelector('#LoadDialog').title = mainInterpret.dictionary["UI"]["loadDialog"]["dialogTitle"];
+        document.querySelector('#loadText').textContent = mainInterpret.dictionary["UI"]["loadDialog"]["dialogText"];
+        document.querySelector('#loadButton').value = mainInterpret.dictionary["UI"]["loadDialog"]["button"];
+    });
 }
 
 /**
@@ -285,7 +308,10 @@ changeSyntaxCloser('*');
 
 // room menu
 document.querySelector('#stop').onclick = function() {mainInterpret.turnOffInterpret()};
-document.querySelector('#room').onclick = function(){mainInterpret.command.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value)};
+document.querySelector('#room').onclick = function(){
+    mainInterpret.command.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value);
+    $('#resizeRoomDialog').dialog('close');
+};
 document.querySelector('#homeCamera').onclick = function() {mainInterpret.command.karel.homeCamera()};
 // blockly menu
 document.querySelector('#makeBlocks').onclick = function() {mainInterpret.conversionTest(workspace)};
@@ -293,10 +319,24 @@ document.querySelector('#makeBlocks').onclick = function() {mainInterpret.conver
 document.querySelector('#runCode').onclick = function() {mainInterpret.nativeCodeInterpretFromEditor()};
 document.querySelector('#runDebug').onclick = function() {mainInterpret.nativeCodeDebugInterpretFromEditor()};
 // save/load menu
-document.querySelector('#saveButton').onclick = function() {mainInterpret.saveFile("byChoice", document.getElementById('saveName').value, workspace)};
-document.querySelector('#loadButton').onclick = function() {mainInterpret.loadFromFile("byFile", workspace, 'loadFile')};
+document.querySelector('#saveButton').onclick = function() {
+    mainInterpret.saveFile("byChoice", document.getElementById('saveName').value, workspace);
+    $('#SaveDialog').dialog('close');
+};
+document.querySelector('#loadButton').onclick = function() {
+    mainInterpret.loadFromFile("byFile", workspace, 'loadFile');
+    $('#LoadDialog').dialog('close');
+};
 document.querySelector('#setCzech').onclick = function() {changeLanguage('./source/languages/cs.js')};
-document.querySelector('#setEnglish').onclick = function() {changeLanguage('./source/languages/en.js')}
+document.querySelector('#setEnglish').onclick = function() {changeLanguage('./source/languages/en.js')};
+// main menu items
+document.querySelector('#openChangeRoomDialog').onclick = function() {
+    $('#resizeRoomDialog').dialog({width: 400});
+    document.getElementById('xVal').value = mainInterpret.command.karel.room.roomDataArray.length;
+    document.getElementById('yVal').value = mainInterpret.command.karel.room.roomDataArray[0].length;
+};
+document.querySelector('#openSaveDialog').onclick = function() {$('#SaveDialog').dialog({width: 400});};
+document.querySelector('#openLoadDialog').onclick = function() {$('#LoadDialog').dialog({width: 400});};
 
 var TokenIterator = require("ace/token_iterator").TokenIterator;
 var tokenizer = new TokenIterator(editor.session, 0, 0);

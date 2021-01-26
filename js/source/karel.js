@@ -66,6 +66,10 @@ class karel{
         this.graphicalObject.position.y = this.heightModifier + this.room.brickThickness * this.room.roomDataArray[this.positionX][this.positionY].bricks;
     }
 
+    /**
+     * Tells the X axis value of position in front of the robot
+     * @returns the X axis value of position in front of the robot
+     */
     tellPositionInFrontX(){
         switch(this.orientation){
             case 1:
@@ -76,6 +80,10 @@ class karel{
         return this.positionX;
     }
 
+    /**
+     * Tells the Y axis value of position in front of the robot
+     * @returns the Y axis value of position in front of the robot
+     */
     tellPosotionInFrontY(){
         switch(this.orientation){
             case 0:
@@ -270,7 +278,14 @@ class karel{
         if(!this.isWall()){
             this.room.toggleRoomBlockPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
         } else {
-            console.log("TRB error - cannot toggle block outside of the room at [" + this.tellPositionInFrontX() + "," + this.tellPosotionInFrontY() + "]");
+            if(this.tellPositionInFrontX() < 0 | 
+                this.tellPosotionInFrontY() < 0 | 
+                this.tellPositionInFrontX >= this.room.roomDataArray.length | 
+                this.tellPosotionInFrontY >= this.room.roomDataArray[this.positionX].length){
+                console.log("TRB error - cannot toggle block outside of the room at [" + this.tellPositionInFrontX() + "," + this.tellPosotionInFrontY() + "]");
+            } else {
+                this.room.toggleRoomBlockPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+            } 
         }
     }
 
@@ -299,13 +314,10 @@ class karel{
             console.log("RR error - bad values to resize");
             return;
         }
-        var alert = window.confirm("To resize the room I need to remove all stuff present in the room. Is it OK ?");
-        if(alert){
-            this.room.erase();
-            this.room.draw(this.controls, valueX, valueY);
-            this.erase();
-            this.draw();
-        }
+        this.room.erase();
+        this.room.draw(this.controls, valueX, valueY);
+        this.erase();
+        this.draw();
     }
 
     /**
