@@ -93,12 +93,18 @@
             </ul>
         </nav>
 
-        <main>
-            <div id="row1" class="split"> 
+       <main style="height:90vh;">
                 <!-- Room canvas -->
                 <div id="a" class="split split-horizontal">
-                    <div class="content">
-                        <canvas id="roomCanvas" style="height:100%; width:100%"></canvas>
+                    <div id="row1" class="split-hidden"> 
+                        <div class="content">
+                            <canvas id="roomCanvas" style="height:100%; width:100%;"></canvas>
+                        </div>
+                    </div>  
+                    <div id="row2" class="split">
+                        <div class="content">
+                            Lorem Ipsum
+                        </div>
                     </div>
                 </div>
                 <!-- Blockly editor -->
@@ -115,91 +121,88 @@
                         <div id="textEditor" style="height:100%"><?php include('saves/initial_test_save.txt'); ?></div>
                     </div>
                 </div>  
-            </div>
-            <div id="row2" class="split"></div>
-
-            <!-- ace startup -->
-            <script src="js/ace/ace.js" charset="utf-8"></script>
-            <script src="js/ace/ext-language_tools.js"></script>
-
-            <!-- blockly startup -->
-            <textarea id="textArea" style="display:none"></textarea>
-            <script src="js/blockly/blockly_compressed.js"></script>
-            <script src="js/blockly/karel_blocks.js"></script>
-            <script src="js/blockly/karel_blocks_generator.js"></script>
-            <script src="js/blockly/msg/js/cs.js"></script>
-
-            <div id="blocklyToolBox">
-                <xml id="toolbox" style="display: none">
-                    <category name="NULL">
-                    </category>
-                </xml>
-            </div>
-
-            <!-- JQuery startup -->
-            <script src="js/jquery/jquery-3.5.1.min.js"></script>
-            <script src="js/jquery/jquery-ui.js"></script>
-
-            <script type="module" src="js/main.js"></script>
-
-            <script type="text/javascript">
-                Split(['#a','#b','#c'], {
-                /*elementStyle: function (dimension, size, gutterSize) { 
-                    $(window).trigger('resize'); // Optional
-                    return {'flex-basis': 'calc(' + size + '% - ' + gutterSize + 'px)'}
-                },
-                gutterStyle: function (dimension, gutterSize) { return {'flex-basis':  gutterSize + 'px'} },
-                */
-                    gutterSize: 8,
-                    cursor: 'col-resize',
-                    minSize: [1, 1, 1],
-                    sizes:[25,50,25],
-                    onDrag: function(){Blockly.onresize();}
-                });
-
-                Split(['#row1', '#row2'], {
-                    gutterSize: 8,
-                    cursor: 'row-resize',
-                    direction: 'vertical',
-                    sizes: [90, 10],
-                    minSize: [1, 1],
-                    onDrag: function(){Blockly.onresize();}
-                });
-            </script>
-
-            <div id="resizeRoomDialog" title="" style="display: none;">
-                <p id="resizeRoomText"></p>
-                <label for="xVal" id="xAxisLabel">X value</label>
-                <input type="text" name="xVal" id="xVal">
-                <br>
-                <label for="yVal" id="yAxisLabel">Y value</label>
-                <input type="text" name="yVal" id="yVal">
-                <br>
-                <input type="button" value="room" id="room">
-            </div>
-
-            <div id="SaveDialog" title="" style="display: none;">
-                <p id="saveText"></p>
-                <label for="roomSaveCheckbox" id="roomSaveLabel">room</label>
-                <input type="checkbox" id="roomSaveCheckbox" checked>
-                <br>
-                <label for="blocksSaveCheckbox" id="blocksSaveLabel">blocks</label>
-                <input type="checkbox" id="blocksSaveCheckbox" checked>
-                <br>
-                <label for="blocksSaveCheckbox" id="codeSaveLabel">code</label>
-                <input type="checkbox" id="codeSaveCheckbox" checked>
-                <br>
-                <input type="text" id="saveName">
-                <input type="button" value="save" id="saveButton">
-            </div>
-
-            <div id="LoadDialog" title="" style="display: none;">
-                <p id="loadText"></p>
-                <input type="file" id="loadFile">
-                <input type="button" value="load" id="loadButton">
-                <br>
-            </div>
-
         </main>
+
+        <!-- ace startup -->
+        <script src="js/ace/ace.js" charset="utf-8"></script>
+        <script src="js/ace/ext-language_tools.js"></script>
+
+        <!-- blockly startup -->
+        <textarea id="textArea" style="display:none"></textarea>
+        <script src="js/blockly/blockly_compressed.js"></script>
+        <script src="js/blockly/karel_blocks.js"></script>
+        <script src="js/blockly/karel_blocks_generator.js"></script>
+        <script src="js/blockly/msg/js/cs.js"></script>
+
+        <div id="blocklyToolBox">
+            <xml id="toolbox" style="display: none">
+                <category name="NULL">
+                </category>
+            </xml>
+        </div>
+
+        <!-- JQuery startup -->
+        <script src="js/jquery/jquery-3.5.1.min.js"></script>
+        <script src="js/jquery/jquery-ui.js"></script>
+
+        <script type="module" src="js/main.js"></script>
+
+        <script type="text/javascript">
+            Split(['#a','#b','#c'], {
+            /*elementStyle: function (dimension, size, gutterSize) { 
+                $(window).trigger('resize'); // Optional
+                return {'flex-basis': 'calc(' + size + '% - ' + gutterSize + 'px)'}
+            },
+            gutterStyle: function (dimension, gutterSize) { return {'flex-basis':  gutterSize + 'px'} },
+            */
+                gutterSize: 8,
+                cursor: 'col-resize',
+                minSize: [1, 1, 1],
+                sizes:[25,50,25],
+                onDrag: function(){Blockly.onresize();}
+            });
+
+            Split(['#row1', '#row2'], {
+                gutterSize: 8,
+                cursor: 'row-resize',
+                direction: 'vertical',
+                sizes: [90, 10],
+                minSize: [500, 0 ],
+            });
+        </script>
+
+        <div id="resizeRoomDialog" title="" style="display: none;">
+            <p id="resizeRoomText"></p>
+            <label for="xVal" id="xAxisLabel">X value</label>
+            <input type="text" name="xVal" id="xVal">
+            <br>
+            <label for="yVal" id="yAxisLabel">Y value</label>
+            <input type="text" name="yVal" id="yVal">
+            <br>
+            <input type="button" value="room" id="room">
+        </div>
+
+        <div id="SaveDialog" title="" style="display: none;">
+            <p id="saveText"></p>
+            <label for="roomSaveCheckbox" id="roomSaveLabel">room</label>
+            <input type="checkbox" id="roomSaveCheckbox" checked>
+            <br>
+            <label for="blocksSaveCheckbox" id="blocksSaveLabel">blocks</label>
+            <input type="checkbox" id="blocksSaveCheckbox" checked>
+            <br>
+            <label for="blocksSaveCheckbox" id="codeSaveLabel">code</label>
+            <input type="checkbox" id="codeSaveCheckbox" checked>
+            <br>
+            <input type="text" id="saveName">
+            <input type="button" value="save" id="saveButton">
+        </div>
+
+        <div id="LoadDialog" title="" style="display: none;">
+            <p id="loadText"></p>
+            <input type="file" id="loadFile">
+            <input type="button" value="load" id="loadButton">
+            <br>
+        </div>
+        
     </body>
 </html>
