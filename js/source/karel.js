@@ -24,6 +24,8 @@ class karel{
         this.sound.src = "sounds/karelBeep.mp3";    // connecting file to the handle
         this.maxStepUp = 1;                         // number of bricks that Karel can climb
         this.heightModifier = -0.3;                 // graphical model height modifier
+        this.placeConstraintDown = -1;              // maximal difference between current block and the block in front to place brick lower
+        this.placeConstraintUp = 9;                 // maximal difference between current block and the block in front to place brick up
     }
 
     /**
@@ -149,7 +151,14 @@ class karel{
      */
     placeBrick(){
         if(!this.isWall()){
-            this.room.addBrickToPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+            if(this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks -
+                this.room.roomDataArray[this.positionX][this.positionY].bricks < -1 ||
+                this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks -
+                this.room.roomDataArray[this.positionX][this.positionY].bricks > 9){
+                console.log("PlB error - cannot place brick due to height difference")
+            } else {
+                this.room.addBrickToPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+            }    
         } else {
             console.log("PlB error - cannot place brick to wall")
         }

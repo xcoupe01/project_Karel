@@ -22,6 +22,7 @@ class room{
      * @param {number} countY is the count of blocks in the room in Y axis
      * When you can see the room from starting camera angle, the X axis is to the right top and the Y axis is to the left top,
      * Point zero is the nearest block to camera (the one Karel is standing on).
+     * Also adds light to all four corners of the room.
      */
     draw(controls, countX, countY){
         this.blockSize = 0.9;
@@ -58,6 +59,28 @@ class room{
                 this.roomDataArray[currX][currY].inRoom = true;
             }
         }
+        
+        this.light = [];
+        const offset = 2;
+        for(var i = 0; i < 4; i++){
+            this.light[i] = new THREE.PointLight( 0xffffff, 1, 100 );
+            switch(i){
+                case 0:
+                    this.light[i].position.set(-offset, 4, -offset);
+                    break;
+                case 1:
+                    this.light[i].position.set(parseInt(countX) + offset, 4, -offset);
+                    break;
+                case 2:
+                    this.light[i].position.set(-2, 4, parseInt(countY) + offset);
+                    break;
+                case 3:
+                    this.light[i].position.set(parseInt(countX) + offset, 4, parseInt(countY) + offset);
+                    break;
+            }
+            this.scene.add(this.light[i]);
+        }
+        console.log(this.light);
     }
 
     /**
@@ -76,6 +99,9 @@ class room{
                 this.scene.remove(this.roomDataArray[currX][currY].blockObject.cube);
                 this.scene.remove(this.roomDataArray[currX][currY].blockObject.line);
             }
+        }
+        for(var i = 0; i < this.light.length; i++){
+            this.scene.remove(this.light[i]);
         }
     }
 
