@@ -1,4 +1,5 @@
 Blockly.Karel = new Blockly.Generator('Karel');
+Blockly.Karel.INDENT = "    ";
 
 Blockly.Karel['function_step'] = function(block) {
     var code = Blockly.langDictionary["keywords"]["forward"];

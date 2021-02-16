@@ -39,16 +39,9 @@ export function setLang(){
             "userDefinedCond"   : "Condition"
         },
         "checkerErrorMessages" : {
-            "numOfWords"    : "bad number of words",
-            "notInDef"      : "notInDef check failed",
-            "inDef"         : "InDef check failed",
-            "checkActive"   : "checkActive check failed",
-            "checkKWTimes"  : "checkKWTimes check failed",
-            "checkNumber"   : "checkNumber check failed",
-            "checkCondPref" : "checkCondPrefix check failed",
-            "checkNextThen" : "checkNextThen check failed",
-            "checkExpWords" : "checkExpectedWords check failed",
-            "checkDef"      : "checkDef check failed with word",
+            "unexpectedWord": ["Unexpected expression: i got: ", " but i expected: "],
+            "missing": "Missing in definition: ",
+            "missingDef": "Missing definition of type "
         },
         "ACE" : {
             "highlight" : {
@@ -75,7 +68,10 @@ export function setLang(){
             "debug": "Debug",
             "stop": "Stop",
             "changeRoom": "Change Room",
-            "homeCamera": "Home camera",
+            "homeCameraButton": "Home camera",
+            "roomFocusIndicator": "Room focus",
+            "runningIndicator": "Running",
+            "ACEeditorToggle": "Toggle ACE",
             "makeBlocks": "Make blocks",
             "save": "Save",
             "load": "Load",

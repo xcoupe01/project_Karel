@@ -1,6 +1,7 @@
 <html>
     <head>
         <title>Karel 3D</title>
+        <link rel="shortcut icon" href="favicon.ico"/>
         <script type="text/javascript" src="js/split/split.min.js"></script>
         <link rel="stylesheet" href="css/style.css"/>
         <link rel="stylesheet" href="css/jquery-ui.css">
@@ -24,11 +25,9 @@
                     </a>
                     <div class="nav-dropdown-content">
                         <a href="javascript:void(0)" id="openChangeRoomDialog">Change room</a>
-                        <a href="javascript:void(0)" id="homeCamera">Home camera</a>
                         <a href="javascript:void(0)" id="makeBlocks">Make blocks</a>
                         <a href="javascript:void(0)" id="openSaveDialog">Save</a>
                         <a href="javascript:void(0)" id="openLoadDialog">Load</a>
-                        <a href="javascript:void(0)" id="test">Test</a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -93,34 +92,45 @@
             </ul>
         </nav>
 
-       <main style="height:90vh;">
-                <!-- Room canvas -->
-                <div id="a" class="split split-horizontal">
-                    <div id="row1" class="split-hidden"> 
-                        <div class="content">
-                            <canvas id="roomCanvas" style="height:100%; width:100%;"></canvas>
-                        </div>
-                    </div>  
-                    <div id="row2" class="split">
-                        <div class="content">
-                            Lorem Ipsum
-                        </div>
-                    </div>
-                </div>
-                <!-- Blockly editor -->
-                <div id="b" class="split split-horizontal"> 
-                    <div class="content" >
-                        <div id="blocklyArea" style="position: relative;  width: 100%; height:100%; ">
-                            <div id="blocklyDiv" style="width:100%;"></div>
-                        </div>  
-                    </div> 
-                </div>
-                <!-- ACE code editor -->
-                <div id="c" class="split split-horizontal">
+       <main>
+            <!-- Room canvas -->
+            <div id="a" class="split split-horizontal">
+                <div id="row1" class="split-hidden"> 
                     <div class="content">
-                        <div id="textEditor" style="height:100%"><?php include('saves/initial_test_save.txt'); ?></div>
+                        <canvas id="roomCanvas" style="height:100%; width:100%;" onfocus="roomFocus()" onblur="roomUnfocus()"></canvas>
                     </div>
                 </div>  
+                <div id="row2" class="split">
+                    <div class="content">
+                        <div class="flex-container">
+                            <div id='counterDisplay' style='cursor:pointer;'></div>
+                            <div id='runningIndicator'></div>
+                            <div id='roomFocusIndicator' style='cursor:pointer;' onclick="document.querySelector('#roomCanvas').focus();"></div>
+                            <div id='homeCameraButton' style='cursor:pointer;'></div>
+                            <div id='ACEeditorToggle' style='cursor:pointer;'></div>
+                            <div id='test' style='cursor:pointer;'>Test</div>
+                            <div id='fullScreenButton'></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Blockly editor -->
+            <div id="b" class="split split-horizontal"> 
+                <div class="content" >
+                    <div id="blocklyArea" style="position: relative;  width: 100%; height:100%; ">
+                        <div id="blocklyDiv" style="width:100%;"></div>
+                    </div>  
+                </div> 
+            </div>
+            <!-- ACE code editor -->
+            <div id="c" class="split split-horizontal">
+                <div class="content">
+                    <div id="textEditor" style="height:100%"><?php include('saves/error_save.txt'); ?></div>
+                    <div id="blocklyReader" style="height:100%; display:none;"></div>
+                </div>
+            </div>  
         </main>
 
         <!-- ace startup -->
@@ -145,20 +155,15 @@
         <script src="js/jquery/jquery-3.5.1.min.js"></script>
         <script src="js/jquery/jquery-ui.js"></script>
 
+        <!-- app startup -->
         <script type="module" src="js/main.js"></script>
 
         <script type="text/javascript">
             Split(['#a','#b','#c'], {
-            /*elementStyle: function (dimension, size, gutterSize) { 
-                $(window).trigger('resize'); // Optional
-                return {'flex-basis': 'calc(' + size + '% - ' + gutterSize + 'px)'}
-            },
-            gutterStyle: function (dimension, gutterSize) { return {'flex-basis':  gutterSize + 'px'} },
-            */
                 gutterSize: 8,
                 cursor: 'col-resize',
                 minSize: [1, 1, 1],
-                sizes:[25,50,25],
+                sizes:[30,40,30],
                 onDrag: function(){Blockly.onresize();}
             });
 
@@ -166,11 +171,24 @@
                 gutterSize: 8,
                 cursor: 'row-resize',
                 direction: 'vertical',
-                sizes: [90, 10],
-                minSize: [500, 0 ],
+                sizes: [87, 13],
+                minSize: [500, 0],
             });
+
+            var startColor;
+
+            function roomFocus(){
+                startColor = document.querySelector('#roomFocusIndicator').style.backgroundColor;
+                document.querySelector('#roomFocusIndicator').style.backgroundColor = "red";
+                document.querySelector('#roomCanvas').focus();
+            }
+
+            function roomUnfocus(){
+                document.querySelector('#roomFocusIndicator').style.backgroundColor = startColor;
+            }
         </script>
 
+        <!-- dialogs -->
         <div id="resizeRoomDialog" title="" style="display: none;">
             <p id="resizeRoomText"></p>
             <label for="xVal" id="xAxisLabel">X value</label>

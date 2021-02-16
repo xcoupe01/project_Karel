@@ -9,763 +9,773 @@ export {interpret};
  */
 class interpret{
 
-    constructor(textEditor, karel){
+    constructor(textEditor, blocklyTextRep, karel){
         this.dictionary = {};                               // current language dictionary
         this.math = new math()                              // math handlerer module
         this.command = new command(karel, this.math)        // comand handlerer module
         this.textEditor = textEditor;                       // given text editor to interpret
+        this.blocklyTextRepresentation = blocklyTextRep;    // read only blockly text representaton editor
         this.running = false;                               // tells if Karel is executing code
         this.activeCounters = [];                           // used for DO loops
         this.programQueue = [];                             // used to jump to other programs and return back (saves position from which was jumped)
-        this.interpretMode = "standard";                    // tells in which state is the interpret
-        this.line = 0;                                      // actual interpret line position in the code 
-        this.code = [];                                     // code formated by function nativeCodeSplitter
+        this.debug = {codePointer: {}, active: false};      // saves codePointer during debug and if debug is active
         this.closer = "*";                                  // tells the ending character (default is '*')
+        this.closerRegex = new RegExp(/^\*/);               // Regular expression of closer
+        this.commentary = new RegExp(/^#/);                 // Regular expression of comments (default is '#')
+        this.lockBlocklyTextEditor = false;                 // Blocks Blockly from writing to blockly text representation editor if true
+        this.counter = -1;                                  // Step counter
+        this.updateCounter();
     }
     
     /**
-     * Sets Karel's interpret to specified language with all its dependent objects
-     * @param {dictionary} dictionary is the JS dictionary set of Karel words
+     * Sets Karel's interpret to specified language with all its dependent objects.
+     * @param {dictionary} dictionary is the JS dictionary set of Karel words.
      */
     languageSetter(dictionary){
-        this.command.languageSetter(dictionary);
         this.dictionary = dictionary;
     }
 
     /**
-     * Tells if Karel is executing code
-     * @returns the running status of Karel's interpret
+     * Tells if Karel is executing code.
+     * @returns the running status of Karel's interpret.
      */
     getRunning(){
         return this.running;
     }
 
     /**
-     * Splits the native code to array, Its use as a basic interpret format here
-     * The result is stored in `this.code` variable
-     * @param {string} codeString is the string to be splitted
+     * Sets interpret to running state and swithces the indicator in the UI.
+     * Needs div in the html vith `runningIndicator` id !!!
      */
-    nativeCodeSplitter(codeString){
-        this.code = [];
-        var splitCode = codeString.split(/\r?\n/);
-        for(var i = 0; i < splitCode.length; i++){
-            splitCode[i] = splitCode[i].trim();
-            this.code[i] = splitCode[i].split(/\ +/);
-        }
+    setRunningTrue(){
+        this.running = true;
+        this.originalIndicatorColor = document.querySelector('#runningIndicator').style.backgroundColor;
+        document.querySelector('#runningIndicator').style.backgroundColor = "red";
     }
 
     /**
-     * Returns Rule dictionary for the native syntax checker function
-     * Rules are related to the words of the language
-     * Its format requires that every end node contains string `token`, array `checks` and array `action`
-     * The checker will control the `checks` section and trigger the `action` section
-     * @returns the rules dictionary
+     * Sets interpret to not running state and swithces off the indicator in the UI.
+     * Needs div in the html vith `runningIndicator` id !!! 
      */
-    createNativeRulesTable(){
-        return {
-            "function" : {
-                "token": "function",
-                "checks": [2, "notInDef"],
-                "action": ["addToCommadnList", "setDef"]
-            },
-            "condition" : {
-                "token": "condition",
-                "checks": [2, "notInDef"],
-                "action": ["addToConditionList", "setDef", "addExpectedWords"]
-            },
-            "end" : {
-                "token": "end",
-                "checks": [1, "inDef", "checkActive", "checkExpectedWords"],
-                "action": ["unsetDef", "resetExpWords"]
-            },
-            "do" : {
-                "start": {
-                    "token" : "do",
-                    "checks": [3, "checkKWTimes", "checkNumber", "inDef"],
-                    "action": ["pushActive"]
-                },
-                "end":{
-                    "token" : "do",
-                    "checks":[1, "checkActive" ,"inDef"],
-                    "action":["popActive"]
-                }
-            },
-            "while" : {
-                "start": {
-                    "token" : "while",
-                    "checks": [3, "checkCondPrefix", "checkCondition", "inDef"],
-                    "action": ["pushActive"]
-                },
-                "end" : {
-                    "token" : "while",
-                    "checks": [1, "checkActive", "inDef"],
-                    "action": ["popActive"]
-                }
-            },
-            "if" : {
-                "start": {
-                    "token" : "if",
-                    "checks": [3, "checkCondPrefix", "checkCondition", "inDef", "checkNextThen"],
-                    "action": ["pushActive"]
-                },
-                "in": {
-                    "token" : "if",
-                    "checks": [1, "checkActive", "inDef"],
-                    "action": []
-                },
-                "end" : {
-                    "token" : "if",
-                    "checks": [1, "checkActive", "inDef"],
-                    "action": ["popActive"]
-                }
-            },
-            "def" : {
-                "token" : "def",
-                "checks": [1, "checkDef", "inDef"],
-                "action": []
-            },
-            "comment" : {
-                "token" : "comment",
-                "checks": [],
-                "action": []
-            },
-            "trueOrFalse" : {
-                "token" : "trueOrFalse",
-                "checks": [1, "checkDef"],
-                "action": ["alterExpectedWords"]
-            }
-        }
+    setRunningFalse(){
+        this.running = false;
+        document.querySelector('#runningIndicator').style.backgroundColor = this.originalIndicatorColor;
     }
 
     /**
-     * Checks Karel's native code.
-     * If an error is found, it is stored in the local dictionary which is outputed at the end of scanning. 
-     * The output is formated as dictionary in a way where key is line of the code where error happend and the value is
-     * the text information of the error.
-     * Code thats beeing checked is located in `this.code`.
-     * It does not utulize the `this.line` varibale and it uses its own line variable as well as this.command handeler object.
-     * It also scans for command and condition definitions and stores them in catalogue (`this.commandList` and `this.conditionList`).
-     * Utulizes the rules created by `createNativeRulesTable` function.
-     * @returns dictionary with saved errors.
+     * Resets the important variables and objects for interpret and sets the textEditor to read only mode.
      */
-    nativeCodeChecker(){
-        this.command.prepareCheck();
-        var inDefinition = false;
-        var activeStructures = []; 
-        var rules = this.createNativeRulesTable();
-        var currentRule;
-        var expectedWords = {"true" : false, "false" : false};
-        var outputReport = {};
-        for(var line = 0; line < this.code.length; line++){
-            currentRule = [];
-            switch(this.code[line][0]){
-                case this.dictionary["keywords"]["function"]:
-                    currentRule = rules["function"];
-                    break;
-                case this.dictionary["keywords"]["condition"]:
-                    currentRule = rules["condition"];
-                    break;
-                case this.dictionary["keywords"]["end"]:
-                    currentRule = rules["end"];
-                    break;
-                case this.dictionary["keywords"]["do"]:
-                    currentRule = rules["do"]["start"];
-                    break;
-                case this.closer + this.dictionary["keywords"]["do"]:
-                    currentRule = rules["do"]["end"];
-                    break;
-                case this.dictionary["keywords"]["while"]:
-                    currentRule = rules["while"]["start"];
-                    break;
-                case this.closer + this.dictionary["keywords"]["while"]:
-                    currentRule = rules["while"]["end"];
-                    break;
-                case this.dictionary["keywords"]["if"]:
-                    currentRule = rules["if"]["start"];
-                    break;
-                case this.dictionary["keywords"]["then"]:
-                case this.dictionary["keywords"]["else"]:
-                    currentRule = rules["if"]["in"];
-                    break;
-                case this.closer + this.dictionary["keywords"]["if"]:
-                    currentRule = rules["if"]["end"];
-                    break;
-                case this.dictionary["keywords"]["true"]:
-                case this.dictionary["keywords"]["false"]:
-                    currentRule = rules["trueOrFalse"];
-                    break;
-                default:
-                    if(this.code[line][0].startsWith("#") || this.code[line] == ""){
-                        currentRule = rules["comment"];
-                    } else {
-                        currentRule = rules["def"];
-                    }
-            }
-            if(currentRule["token"] != "comment" && this.code[line].length != currentRule["checks"][0]){
-                outputReport[line] = this.dictionary["checkerErrorMessages"]["numOfWords"];
-            }
-            for(var i = 1; i < currentRule["checks"].length; i++){
-                switch(currentRule["checks"][i]){
-                    case "notInDef":
-                        if(inDefinition){
-                            outputReport[line] = this.dictionary["checkerErrorMessages"]["notInDef"];
-                        }
-                        break;
-                    case "inDef":
-                        if(!inDefinition){
-                            outputReport[line] = this.dictionary["checkerErrorMessages"]["inDef"];
-                        }
-                        break;
-                    case "checkActive":
-                        if(currentRule["token"] == "end"){
-                            if(activeStructures.length > 0){
-                                outputReport[line] = this.dictionary["checkerErrorMessages"]["checkActive"];
-                            }
-                            activeStructures = [];
-                        } else {
-                            if(activeStructures[activeStructures.length - 1] != currentRule["token"]){
-                                outputReport[line] = this.dictionary["checkerErrorMessages"]["checkActive"];
-                            }
-                        }
-                        break;
-                    case "checkKWTimes":
-                        if(this.code[line][2] != this.dictionary["keywords"]["times"]){
-                            outputReport[line] = this.dictionary["checkerErrorMessages"]["checkKWTimes"];
-                        }
-                        break;
-                    case "checkNumber":
-                        if(this.math.isNumber(this.code[line][1])){
-                            outputReport[line] = this.dictionary["checkerErrorMessages"]["checkNumber"];
-                        }
-                        break;
-                    case "checkCondPrefix":
-                        if(![this.dictionary["keywords"]["is"], this.dictionary["keywords"]["isNot"]].includes(this.code[line][1])){
-                            outputReport[line] = this.dictionary["checkerErrorMessages"]["checkCondPref"];
-                        }
-                        break;
-                    case "checkCondition":
-                        this.command.checkCondition(this.code[line][2], line)
-                        break;
-                    case "checkDef":
-                        this.command.checkCommand(this.code[line][0], line)
-                        break;
-                    case "checkNextThen":
-                        if(this.code[line + 1][0] != this.dictionary["keywords"]["then"]){
-                            outputReport[line + 1] = this.dictionary["checkerErrorMessages"]["checkNextThen"];
-                        }
-                        break;
-                    case "checkExpectedWords":
-                        for(var key in expectedWords){
-                            if(expectedWords[key] == true){
-                                outputReport[line] = this.dictionary["checkerErrorMessages"]["checkExpWords"];
-                            }
-                        }
-                        break;
-                }
-            }
-            for(var i = 0; i < currentRule["action"].length; i++){
-                switch(currentRule["action"][i]){
-                    case "addToCommadnList":
-                        this.command.addCommandToList(this.code[line][1], line, outputReport)
-                        break;
-                    case "addToConditionList":
-                        this.command.addConditionToList(this.code[line][1], line, outputReport);
-                        break;
-                    case "setDef":
-                        inDefinition = true;
-                        break;
-                    case "unsetDef":
-                        inDefinition = false;
-                        break;
-                    case "pushActive":
-                        activeStructures.push(currentRule["token"]);
-                        break;
-                    case "popActive":
-                        activeStructures.pop();
-                        break;
-                    case "addExpectedWords":
-                        expectedWords["true"] = true;
-                        expectedWords["false"] = true;
-                        break;
-                    case "alterExpectedWords":
-                        if(this.code[line][0] == this.dictionary["keywords"]["true"]){
-                            expectedWords["true"] = false;
-                        } else {
-                            expectedWords["false"] = false;
-                        }
-                        break;
-                    case "resetExpWords":
-                        for(var key in expectedWords){
-                            expectedWords[key] = false;
-                        }
-                }
-            }
-        }
-        if(Object.keys(this.command.expectDefinition).length !== 0){
-            for(var key in this.command.expectDefinition){
-                outputReport[key] = this.dictionary["checkerErrorMessages"]["checkDef"] + " " + this.command.expectDefinition[key];
-            }
-        }
-        return outputReport;
-    }
-
-    /**
-     * Outputs the `outputReport` dictionary to the console.
-     * The `outputReport` is meant to be the result of `nativeCodeChecker` function.
-     * The format of the dictionary is that key is line of error and the value is the error message.
-     * Its also tells of there is an error in the report (if there isnt any, it returns true)
-     * @param {dictionary} outputReport 
-     * @returns true if the input is empty, false otherwise
-     */
-    printNativeCodeCheckerOutput(outputReport){
-        this.textEditor.getSession().clearAnnotations()
-        if(Object.keys(outputReport).length === 0){
-            return true;
-        } else {
-            var annotationsToSet = []
-            for(var line in outputReport){
-                console.log(outputReport[line] + " at line [" + line + "]");
-                annotationsToSet.push({
-                    row: line,
-                    column: 0,
-                    text: outputReport[line],
-                    type: "error" // also "warning" and "information"
-                  });
-            }
-            this.textEditor.getSession().setAnnotations(annotationsToSet);
-            return false;
-        }
-    }
-
-    /**
-     * Computes where to jump in code based on given values
-     * The computed jump is then directly stored in `this.line`
-     * @param {string} command is the command which requires jump
-     * @param {boolean} up if true, the jump is upwards in the code, downwards otherwise
-     */
-    nativeCodeJumper(command, up){
-        var numSkip = 0;
-        if(command == this.dictionary["keywords"]["if"]){
-            while(true){
-                this.line ++;
-                if(this.code[this.line][0] == command){
-                    numSkip ++;
-                } else if(this.code[this.line][0] == this.closer + command && numSkip > 0){
-                    numSkip--;
-                } else if((this.code[this.line][0] == this.dictionary["keywords"]["else"] && numSkip == 0) || 
-                            (this.code[this.line][0] == this.closer + command && numSkip == 0)){
-                    return;
-                }
-            }
-        }
-        if(up){
-            while(true){
-                this.line --;
-                if(this.code[this.line][0] == this.closer + command){
-                    numSkip++;
-                } else if(this.code[this.line][0] == command && numSkip > 0){
-                    numSkip--;
-                } else if(this.code[this.line][0] == command && numSkip == 0){
-                    return;
-                }
-            }
-        } else {
-            while(true){
-                this.line ++;
-                if(this.code[this.line][0] == command){
-                    numSkip++;
-                } else if(this.code[this.line][0] == this.closer + command && numSkip > 0){
-                    numSkip--;
-                } else if(this.code[this.line][0] == this.closer + command && numSkip == 0){
-                    return;
-                }
-            }
-        }
-    }
-
-    /**
-     * Resets the important variables and objects for interpret and sets the textEditor to read only mode
-     */
-    resetNativeCodeInterpret(){
+    resetNativeCodeInterpret(editor){
         this.activeCounters = [];
         this.programQueue = [];
         this.command.prepareRun();
-        this.textEditor.setReadOnly(true);
+        if(editor !== undefined){
+            editor.setReadOnly(true);
+        }
     }
 
     /**
-     * Makes the interpret stop and unsets the text's editor read only mode
+     * Makes the interpret stop and unsets the given editor read only mode.
+     * If the editor is the blockly representation editor, it wont switch the read only mode.
+     * @param editor is the editor to be set to read only mode 
      */
-    turnOffInterpret(){
-        this.interpretMode = "none";
-        this.running = false;
-        this.textEditor.setReadOnly(false);
+    turnOffInterpret(editor){
+        this.debug.active = false;
+        this.debug.codePointer = {};
+        this.setRunningFalse();
+        if(editor !== undefined && editor != this.blocklyTextRepresentation){
+            editor.setReadOnly(false);
+        }
     }
 
     /**
-     * Sets the `this.line` to start of a command or condition
-     * It can end with an error if end of file is found or "end" in the text is found
-     * @returns true if the line is found, false otherwise
+     * Inccrements the step counter and updates its display.
+     * Needs div in the html vith `counterDisplay` id !!!
      */
-    nativeCodeFindStartLine(){
-        while(this.code[this.line][0] != this.dictionary["keywords"]["function"] && this.code[this.line][0] != this.dictionary["keywords"]["condition"]){
-            this.line --;
-            if(this.line < 0 || this.code[this.line][0] == this.dictionary["keywords"]["end"]){
-                console.log("nativeCodeFindStartLine error - begining of code to be interpreted not found");
-                return false;
+    updateCounter(){
+        this.counter ++;
+        document.getElementById('counterDisplay').textContent = this.counter;
+    }
+
+    /**
+     * Sets the step counter to zero adn updtaes its display.
+     * Needs div in the html vith `counterDisplay` id !!!
+     */
+    resetCounter(){
+        this.counter = 0;
+        document.getElementById('counterDisplay').textContent = this.counter;
+    }
+
+    /**
+     * Tokenizes input from given ACE editor. Uses TokenIterator avalible from ACE library.
+     * Designed to process Karel's native programming language, does not matter on world language if the current dictionary is set correctly.
+     * Goes through the code and parses it to tokens which are returned in a javascript dictionary.
+     * The code is separated in the dictionary like the folowing example:
+     * {"function name" : [tokens of that function]} 
+     * There are all tokens that corresponds to this function (even name and defining words).
+     * Token consist of these values:
+     *  - value: is the actual word that was read from the editor
+     *  - meaning: is the syntactical meaning of the word (terminal)
+     *  - dictKey: is the key to the dictionary for this word (if the key is avalible)
+     *  - row: is the row where the token was found
+     *  - column: is the column where the token was found
+     * There are these possible meaning (terminals):
+     *  - function-def, condition-def, end, command, condition, identifier, output, number, do-start, do-end,
+     *     times, while-start, while-end, if-start, if-end, then, else, condition-prefix
+     * @param {ACE editor} editor is the editor we want to be tokenized from 
+     * @returns dictionary of functions that contains its tokens.  
+     */
+    nativeCodeTokenizer(editor){
+        var TokenIterator = require("ace/token_iterator").TokenIterator;
+        var tokenizer = new TokenIterator(editor.session, 0, 0);
+    
+        // addresses some issues with the first run of the ACE tokenizer
+        tokenizer.stepForward();
+        while(tokenizer.getCurrentToken() !== undefined){
+            tokenizer.stepBackward();
+        }
+        tokenizer.stepForward();
+        
+        let commands = [this.dictionary["keywords"]["forward"], this.dictionary["keywords"]["left"], this.dictionary["keywords"]["right"],
+            this.dictionary["keywords"]["placeBrick"], this.dictionary["keywords"]["pickBrick"], this.dictionary["keywords"]["placeMark"],
+            this.dictionary["keywords"]["pickMark"], this.dictionary["keywords"]["faster"], this.dictionary["keywords"]["slower"],
+            this.dictionary["keywords"]["beep"]];
+        
+        let conditions = [this.dictionary["keywords"]["wall"], this.dictionary["keywords"]["brick"], 
+            this.dictionary["keywords"]["mark"], this.dictionary["keywords"]["vacant"]];
+
+        let outputs = [this.dictionary["keywords"]["true"], this.dictionary["keywords"]["false"]];
+
+        var codeArray = [[]];
+        var iterator = 0;
+        var closerLast = false;
+        while(tokenizer.getCurrentToken() !== undefined){
+            if(!(/^\s+$/).test(tokenizer.getCurrentToken().value) && !this.commentary.test(tokenizer.getCurrentToken().value)){
+                var token = {
+                    value: tokenizer.getCurrentToken().value,
+                    meaning: 'identifier',
+                    dictKey: "",
+                    row: tokenizer.getCurrentTokenRow(),
+                    column: tokenizer.getCurrentTokenColumn(),
+                }
+                for(var key in this.dictionary["keywords"]){
+                    if(token.value == this.dictionary["keywords"][key]){
+                        token.dictKey = key;
+                        break;
+                    }
+                }
+                if(commands.includes(token.value)){
+                    token.meaning = "command";
+                } else if(conditions.includes(token.value)){
+                    token.meaning = "condition";
+                } else if(outputs.includes(token.value)){
+                    token.meaning = "output";
+                } else if(Number.isInteger(parseInt(token.value))){
+                    token.meaning = "number";
+                } else {
+                    switch(token.dictKey){
+                        case "function":
+                            token.meaning = "function-def";
+                            break;
+                        case "condition":
+                            token.meaning = "condition-def";
+                            break;
+                        case "end":
+                            token.meaning = "end";
+                            break;
+                        case "do":
+                            if(closerLast){
+                                codeArray[iterator].pop();
+                                token.meaning = "do-end";
+                                token.column -= this.closer.length;
+                                token.value = this.closer + token.value;
+                            } else {
+                                token.meaning = "do-start";
+                            }
+                            break;
+                        case "times":
+                            token.meaning = "times";
+                            break;
+                        case "do":
+                            token.meaning = "do-end";
+                            token.column -= this.closer.length;
+                            break;
+                        case "while":
+                            if(closerLast){
+                                codeArray[iterator].pop();
+                                token.meaning = "while-end";
+                                token.column -= this.closer.length;
+                                token.value = this.closer + token.value;
+                            } else {
+                                token.meaning = "while-start";
+                            }
+                            break;
+                        case "while":
+                            token.meaning = "while-end";
+                            token.column -= this.closer.length;
+                            break;
+                        case "if":
+                            if(closerLast){
+                                codeArray[iterator].pop();
+                                token.meaning = "if-end";
+                                token.column -= this.closer.length;
+                                token.value = this.closer + token.value;
+                            } else {
+                                token.meaning = "if-start";
+                            }
+                            break;
+                        case "then":
+                            token.meaning = "then";
+                            break;
+                        case "else":
+                            token.meaning = "else";
+                            break;
+                        case "if":
+                            token.meaning = "if-end"
+                            token.column -= this.closer.length;
+                            break;
+                        case "is":
+                        case "isNot":
+                            token.meaning = "condition-prefix";
+                            break;
+                    }
+                }
+                codeArray[iterator].push(token);
+                if(token.meaning == "end"){
+                    iterator ++;
+                    codeArray.push([]);
+                }
+                if(token.value == this.closer){
+                    closerLast = true;
+                } else {
+                    closerLast = false;
+                }
+            }
+            tokenizer.stepForward();
+        }
+        return codeArray;
+    }
+
+    /**
+     * Provides sytax checking based on LL1 table. The table is defined on the begining of the functinon.
+     * For more informations about the table and the rules visit folowing URL:
+     * https://docs.google.com/spreadsheets/d/1ZHOjsJgSekrjLMMdATj4ccAKeb4HEqrpOBlI2Gh33ko/edit?usp=sharing
+     * For more infotmations about the LL1 grammar checking visit folowing URL:
+     * https://en.wikipedia.org/wiki/LL_parser
+     * Apart from checking the syntax, the function prepares the code to be interpreted. For this purpouse,
+     * it creates list of user defined commands and conditions in the command object in a similar fashion,
+     * as the nativeCodeTokenizer created its output. The tokens are stored there in arrays and you can get to them
+     * by the function name (for example this.command.commandList["test"].code tells you the array of tokens for command "test").
+     * The userdefined commands are avalible in commandList property and the userdefined conditions are stored in conditionList.
+     * In the records of commands and condtions there are properties:
+     *  - code: the array of all tokens that belongs to specific function
+     *  - definingToken: is the token that gave the specific function a name
+     *  - result: only for condition! array of results which is used when called.
+     * It processes each function by itself, when an error is found, the analysis ends and an error is recorded.
+     * At the end all the errors are returned in an array with their labels and tokens that caused them.
+     * @param {ACE editor} editor is the editor which will be checked and processed
+     * @returns array of errors 
+     */
+    syntaxCheck(editor){
+        this.command.prepareCheck();
+        var codeArray = this.nativeCodeTokenizer(editor);
+        let rules = [
+            /* 0 */     [
+                            {item: "function-def",      checks: []}, 
+                            {item: "identifier",        checks: ["define-command"]}, 
+                            {item: "<command-block>",   checks: []}, 
+                            {item: "end",               checks: []}
+                        ],
+            /* 1 */     [
+                            {item: "condition-def",     checks: ["condition-expected"]}, 
+                            {item: "identifier",        checks: ["define-condition"]}, 
+                            {item: "<command-block>",   checks: []}, 
+                            {item: "end",               checks: []}
+                        ],
+            /* 2 */     [
+                            {item: "command",           checks: []}, 
+                            {item: "<command-block>",   checks: []}],
+            /* 3 */     [
+                            {item: "identifier",        checks: ["reachable"]}, 
+                            {item: "<command-block>",   checks: []}
+                        ],
+            /* 4 */     [
+                            {item: "if-start",          checks: []}, 
+                            {item: "condition-prefix",  checks: []}, 
+                            {item: "<condition-core>",  checks: []}, 
+                            {item: "then",              checks: []}, 
+                            {item: "<command-block>",   checks: []}, 
+                            {item: "<end-if>",          checks: []}
+                        ],
+            /* 5 */     [
+                            {item: "if-end",            checks: []}, 
+                            {item: "<command-block>",   checks: []}
+                        ],
+            /* 6 */     [
+                            {item: "else",              checks: []}, 
+                            {item: "<command-block>",   checks: []}, 
+                            {item: "if-end",            checks: []}, 
+                            {item: "<command-block>",   checks: []}
+                        ],
+            /* 7 */     [   
+                            {item: "while-start",       checks: []}, 
+                            {item: "condition-prefix",  checks: []}, 
+                            {item: "<condition-core>",  checks: []}, 
+                            {item: "<command-block>",   checks: []}, 
+                            {item: "while-end",         checks: []}, 
+                            {item: "<command-block>",   checks: []}
+                        ],
+            /* 8 */     [
+                            {item: "do-start",          checks: []}, 
+                            {item: "number",            checks: []}, 
+                            {item: "times",             checks: []}, 
+                            {item: "<command-block>",   checks: []}, 
+                            {item: "do-end",            checks: []}, 
+                            {item: "<command-block>",   checks: []}
+                        ],
+            /* 9 */     [],
+            /* 10 */    [
+                            {item: "identifier",        checks: ["reachable-condition"]}
+                        ],
+            /* 11 */    [
+                            {item: "condition",         checks: []}
+                        ],
+            /* 12 */    [
+                            {item: "output",            checks: ["remove-expected"]},
+                            {item: "<command-block>",   checks: []}
+                        ]
+        ];
+        let xAxisTable = ["function-def", "condition-def", "end", "identifier", "command", "condition", "do-start", "times", 
+            "do-end", "while-start", "while-end", "if-start", "then", "else", "if-end", "condition-prefix", "number", "output"]; // all terminals
+        let yAxisTable = ["<start>", "<command-block>", "<end-if>", "<condition-core>"]; // all neterminals
+        let table = [
+                        //    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17
+                        //   fud cod end ide com con dos tim doe whs whe ifs the els ife cop num out
+            /* start */     [ 0,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+            /* com-block */ [-1, -1,  9,  3,  2, -1,  8, -1,  9,  7,  9,  4, -1,  9,  9, -1, -1, 12],
+            /* end-if */    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  6,  5, -1, -1, -1],
+            /* cond-core */ [-1, -1, -1, 10, -1, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+        ]   // LL1 table
+
+        var errors = [];
+
+        for(var i = 0; i < codeArray.length; i++){
+            if(codeArray[i].length <= 0){
+                break;
+            }
+            var stack = [{item: "<start>"}];
+            var expected = [];
+            var buffer = [];
+            while(stack.length > 0){
+                var noError = true;
+                while(stack.length > 0 && stack[0].item == codeArray[i][0].meaning){
+                    for(var j = 0; j < stack[0].checks.length; j++){
+                        switch(stack[0].checks[j]){
+                            case "define-command":
+                                noError = this.command.defineCommand(codeArray[i][0], buffer, errors)
+                                break;
+                            case "define-condition":
+                                noError = this.command.defineCondition(codeArray[i][0], buffer, errors)
+                                break;
+                            case "condition-expected":
+                                expected.push(this.dictionary["keywords"]["true"], this.dictionary["keywords"]["false"]);
+                                break;
+                            case "reachable":
+                                this.command.checkReachable(codeArray[i][0]);
+                                break;
+                            case "reachable-condition":
+                                this.command.checkReachableCondition(codeArray[i][0]);
+                                break;
+                            case "remove-expected":
+                                if(expected.includes(codeArray[i][0].value)){
+                                    expected.splice(expected.indexOf(codeArray[i][0].value), 1);
+                                }
+                                break;
+                        }
+                    }
+                    if(!noError){
+                        break;
+                    }
+                    stack.shift();
+                    buffer.push(codeArray[i].shift());
+                }
+                if(!noError){
+                    break;
+                }
+                if(stack.length <= 0){
+                    break;
+                }
+                if(xAxisTable.includes(stack[0].item)){
+                    errors.push({
+                        error: this.dictionary["checkerErrorMessages"]["unexpectedWord"][0] + 
+                        codeArray[i][0].value + 
+                        this.dictionary["checkerErrorMessages"]["unexpectedWord"][1] + 
+                        stack[0].item, 
+                        token: codeArray[i][0]});
+                    break;
+                }
+                let searchX = xAxisTable.indexOf(codeArray[i][0].meaning);
+                let searchY = yAxisTable.indexOf(stack[0].item);
+                if(searchX == -1 || searchY == -1){
+                    console.log("X: ",searchX, " Y: ",searchY);
+                    console.log("stack: ",stack);
+                    console.log("testedCommand: ",codeArray[i]);
+                    throw "Table error - bad index";
+                }
+                if(table[searchY][searchX] != -1){
+                    stack.shift()
+                    stack = rules[table[searchY][searchX]].concat(stack);
+                } else {
+                    errors.push({
+                        error: this.dictionary["checkerErrorMessages"]["unexpectedWord"][0] + 
+                        codeArray[i][0].value + 
+                        this.dictionary["checkerErrorMessages"]["unexpectedWord"][1] + 
+                        stack[0].item, 
+                        token: codeArray[i][0]});
+                    break;
+                }
+            }
+            if(expected.length > 0){
+                errors.push({error: this.dictionary["checkerErrorMessages"]["missing"] + expected , token: this.command.getDefiningToken(this.command.getFunctionByToken(buffer[0]))})
             }
         }
-        return true;
-    }
-
-    /**
-     * Calls fucntion in `this.command` object to evaluate condition on current line.
-     * For more details look in the description of `nativeCodeConditionEval` in `command.js` file.
-     * The output of mentioned function is directly aplyed to current interpretation (line is switched and program queue is pushed)
-     */
-    evalNativeCodeCondition(){
-        var result = this.command.nativeCodeConditionEval(this.code[this.line][2], this.code[this.line][1], this.line);
-        if(result[1] != -1){
-            this.programQueue.push(this.line - 1)
-            this.line = result[1]
+        for(var key in this.command.expectDefinition){
+            for(var i = 0; i < this.command.expectDefinition[key].tokens.length; i++){
+                errors.push({error: this.dictionary["checkerErrorMessages"]["missingDef"] + this.command.expectDefinition[key].type, token: this.command.expectDefinition[key].tokens[i]})
+            }
         }
-        return result[0]
+        return errors;
     }
 
     /**
-     * Makes a one step (interpets on line) of Karel's native language.
-     * To run, it needs `this.code`, `this.line` and `this.command` to be initiated properly.
-     * Its meant to run in a loop, The loop should end when this function returns true.
-     * Its highly recomended to use `this.resetNativeCodeInterpret` function before interpret loop.
-     * and its also highly recomended to call `turnOffInterpret` to end the interpretation becase these 
-     * functions will set the corect object variable values.
-     * The code you want to interpret shoul be error free because there are no syntax checks. 
-     * To check the syntax of the code use `nativeCodeChecker` function.
-     * The commands are handeled by `this.commad` object.
-     * @returns true if the interpretation should end, false otherwise
+     * Processes error aray whitch is generated by syntaxCheck functon.
+     * Sets markers with descriptions at the editor gutter and underlines the words,
+     * which caused these errors.
+     * @param {array} errors is the array of errors which creates syntaxCheck function.
+     * @param {ACE edtor} editor is the editor where the errors will be visualized.
      */
-    nativeCodeInterpretStep(){
-        if(this.line >= this.code.length){
-            console.log("nativeCodeInterpret warning - end not found but EOF emerged, shutting down");
+    processErrors(errors, editor){
+        editor.getSession().clearAnnotations();
+        for(var key in editor.getSession().$backMarkers){
+            if(editor.getSession().$backMarkers[key].clazz == "errorMarker"){
+                editor.getSession().removeMarker(editor.getSession().$backMarkers[key].id);
+            }
+        }
+        if(errors.length > 0){
+            var annotationsToSet = [];
+            var Range = ace.require('ace/range').Range;
+            for(var i = 0; i < errors.length; i++){
+                editor.session.addMarker(
+                    new Range(errors[i].token.row, 
+                        errors[i].token.column, 
+                        errors[i].token.row, 
+                        errors[i].token.column + errors[i].token.value.length), 
+                    "errorMarker", 
+                    "text"
+                );
+                annotationsToSet.push({
+                    row: errors[i].token.row,
+                    colum: errors[i].token.column,
+                    text: errors[i].error,
+                    type: "error" // also "warning" and "information"
+                })
+            }
+            editor.getSession().setAnnotations(annotationsToSet);
+            editor.getSession().on('change', function(){
+                for(var key in editor.getSession().$backMarkers){
+                    if(editor.getSession().$backMarkers[key].clazz == "errorMarker"){
+                        editor.getSession().removeMarker(editor.getSession().$backMarkers[key].id);
+                    }
+                }
+            })
             return true;
         }
-        switch(this.code[this.line][0]){
-            case this.dictionary["keywords"]["function"]:
-            case this.dictionary["keywords"]["condition"]:
-                break;
-            case this.dictionary["keywords"]["end"]:
-                if(this.programQueue.length == 0){
-                    if(this.command.lastConditionResult != "undef"){
-                        // TODO - not a good solution, need to be redesigned
-                        alert(this.command.lastConditionResult);
-                    }
-                    return true;
-                } else {
-                    this.line = this.programQueue[this.programQueue.length - 1]; 
-                    //in next step the N will be incremented so we need to substract the addition to maintain the correct jump
-                    this.programQueue.pop();
-                }
-                break;
-            case this.dictionary["keywords"]["do"]:
-                if(this.math.getNumber(this.code[this.line][1]) == 0){
-                    this.nativeCodeJumper(this.dictionary["keywords"]["do"], false);
-                } else {
-                    this.activeCounters.push(this.math.getNumber(this.code[this.line][1]));
-                }
-                break;
-            case this.closer + this.dictionary["keywords"]["do"]:
-                this.activeCounters[this.activeCounters.length - 1] --;
-                if(this.activeCounters[this.activeCounters.length - 1] > 0){
-                    this.nativeCodeJumper(this.dictionary["keywords"]["do"], true);
-                } else {
-                    this.activeCounters.pop();
-                }
-                break;
-            case this.dictionary["keywords"]["while"]:
-                var result = this.evalNativeCodeCondition();
-                this.command.lastConditionResult = "undef";
-                if(result == "false"){
-                    this.nativeCodeJumper(this.dictionary["keywords"]["while"], false);
-                }
-                break;
-            case this.closer + this.dictionary["keywords"]["while"]:
-                this.nativeCodeJumper(this.dictionary["keywords"]["while"], true);
-                this.line --;
-                break;
-            case this.dictionary["keywords"]["if"]:
-                var result = this.evalNativeCodeCondition();
-                this.command.lastConditionResult = "undef";
-                if(result == "false"){
-                    this.nativeCodeJumper(this.dictionary["keywords"]["if"], false);
-                }
-                break;
-            case this.dictionary["keywords"]["else"]:
-                this.nativeCodeJumper(this.dictionary["keywords"]["if"], false);
-                break;
-            case this.dictionary["keywords"]["then"]:
-            case this.closer + this.dictionary["keywords"]["if"]:
-                break;
-            case "#":
-            case "":
-                break;
-            default:
-                result = this.command.nativeCodeCommandEval(this.code[this.line][0])
-                if(result == -2){
-                    return true;
-                } else if(result != -1){
-                    this.programQueue.push(this.line);
-                    this.line = result;
-                }
-        }
-        this.line ++;
         return false;
     }
 
     /**
-     * Interprets Karel's native code.
-     * The code should be error free, use `nativeCodeChecker`
-     * Look in the desription of `nativeCodeInterpretStep` becase lots of the information there
-     * corresponds with this function. Its basicaly a loop wrap for it.
-     * It utulizes the `turnOffInterpret` funtion
-     * Also moves the cursor in the code editor if you wish
-     * It can run in two modes:
-     *  `standard` mode - runs till the end of the command
-     *  `debug` mode - makes one step and waits for event (probably button press)
-     * @param {boolean} cursor tells if the cursor will be moved, true means yes, false no
+     * Executes jumps given by the labels. To process the jump there is rules table by which it knows what
+     * jump is needed. The rule is defined like the following description:
+     *  - start:
+     *  - ends: array of possible jump endings
+     *      - value: is the token meaning value for jump end
+     *      - definitive: true if the token ends the jump label, false otherwise (else does not end the if structure, if-end does)
+     *  - forward: true if we want to jump forward, false if backward
+     * It chooses the rule by the given token (which is found by given codePointer).
+     * The rule must be in the rules dictionary by the key of the given token meaning.
+     * @param {codePointer object} codePointer is the codePointer that will define the jump and it will be jumped with
      */
-    async nativeCodeInterpret(cursor){
+    tokenJumper(codePointer){
+        var nestedCycles = 0;
+        let jumpRules = {
+            "do-start":     {start: "do-start",     ends: [{value: "do-end", definitive: true}],        forward: true},
+            "do-end":       {start: "do-end",       ends: [{value: "do-start", definitive: true}],      forward: false},
+            "while-start":  {start: "while-start",  ends: [{value: "while-end", definitive: true}],     forward: true},
+            "while-end":    {start: "while-end",    ends: [{value: "while-start", definitive: true}],   forward: false},
+            "if-start":     {start: "if-start",     ends: [{value: "if-end", definitive: true}, {value: "else", definitive: false}], forward: true},
+            "else":         {start: "if-start",     ends: [{value: "if-end", definitive: true}],        forward: true},
+        };
+        let rule = jumpRules[this.command.getToken(codePointer).meaning];
+        if(rule === undefined){
+            console.log(this.command.getToken(codePointer));
+            throw "No jump rule for this token!";
+        }
+        while(true){
+            if(rule.forward){
+                codePointer.tokenPointer ++;
+            } else {
+                codePointer.tokenPointer --;
+            }
+            if(this.command.getToken(codePointer).meaning == rule.start){
+                nestedCycles ++;
+            } else {
+                var searchResult = -1;
+                for(var i = 0; i < rule.ends.length; i++){
+                    if(this.command.getToken(codePointer).meaning == rule.ends[i].value){
+                        searchResult = i;
+                        break;
+                    }
+                }
+                if(searchResult != -1){
+                    if(nestedCycles > 0){
+                        if(rule.ends[searchResult].definitive){
+                            nestedCycles --;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Iterprets one token of code by given code pointer, the code pointer is incremeted at the end,
+     * or setted as needed. This function requires to run properly, that the code is checked and prosessed by 
+     * the syntaxCheck function.
+     * @param {codePointer structure} codePointer is the code pointer to the token we want to be executed.
+     * @returns true if interpetation should end, false otherwise.
+     */
+    interpretToken(codePointer){
+        switch(this.command.getToken(codePointer).meaning){
+            case "function-def":
+            case "condition-def":
+                codePointer.tokenPointer ++;
+                break;
+            case "end":
+                if(this.programQueue.length > 0){
+                    if(Object.keys(this.command.conditionList).includes(codePointer.functionName)){
+                        this.command.conditionList[codePointer.functionName].result = this.command.lastConditionResult;
+                        this.command.lastConditionResult == "undef";
+                    }
+                    Object.assign(codePointer, this.programQueue[this.programQueue.length - 1]);
+                    this.programQueue.pop();
+                } else {
+                    if(this.command.lastConditionResult != "undef"){
+                        console.log(this.command.lastConditionResult);
+                    }
+                    return true;
+                }
+                break;
+            case "command":
+            case "output":
+                this.command.executeCommand(this.command.getToken(codePointer).dictKey);
+                break;
+            case "identifier":
+                this.programQueue.push(Object.assign({}, codePointer));
+                codePointer.functionName = this.command.getToken(codePointer).value
+                codePointer.tokenPointer = -1;
+                break;
+            case "do-start":
+                codePointer.tokenPointer ++; // iterating to number
+                if(parseInt(this.command.getToken(codePointer).value) > 0){
+                    this.activeCounters.push(parseInt(this.command.getToken(codePointer).value));
+                    codePointer.tokenPointer ++; // skipping keyword times
+                } else {
+                    codePointer.tokenPointer --;
+                    this.tokenJumper(codePointer);
+                }
+                break;
+            case "do-end":
+                this.activeCounters[this.activeCounters.length - 1] --;
+                if(this.activeCounters[this.activeCounters.length - 1] > 0){
+                    this.tokenJumper(codePointer);
+                    codePointer.tokenPointer += 2; // skiping number and keyword times
+                } else {
+                    this.activeCounters.pop();
+                }
+                break;
+            case "while-start":
+                codePointer.tokenPointer ++; // skipping to condition prefix
+                var result = this.command.evalCondition(codePointer, this.programQueue);
+                if(result !== undefined){
+                    codePointer.tokenPointer ++ ; // skiping to condition core
+                    if(this.command.getToken(codePointer).meaning == "identifier"){
+                        this.command.conditionList[this.command.getToken(codePointer).value].result = "undef";
+                    }
+                    if(!result){
+                        codePointer.tokenPointer -= 2;  // going back to while token to jump correctly
+                        this.tokenJumper(codePointer);
+                    }
+                }
+                break;
+            case "while-end":
+                this.tokenJumper(codePointer);
+                codePointer.tokenPointer -=1 ;
+                break;
+            case "if-start":
+                codePointer.tokenPointer ++; // skipping to condition prefix
+                var result = this.command.evalCondition(codePointer, this.programQueue);
+                if(result !== undefined){
+                    codePointer.tokenPointer ++ ; // skiping to condition core
+                    if(this.command.getToken(codePointer).meaning == "identifier"){
+                        this.command.conditionList[this.command.getToken(codePointer).value].result = "undef";
+                    }
+                    if(!result){
+                        codePointer.tokenPointer -= 2; // going back to if token for jumping
+                        this.tokenJumper(codePointer);
+                    } else {
+                        codePointer.tokenPointer ++;
+                    }
+                }
+                break;
+            case "if-end":
+                break;
+            case "else":
+                this.tokenJumper(codePointer);
+                break;
+            case "condition":
+            case "number":
+            case "times":
+            case "then":
+            case "condition-prefix":
+                // cannot happen
+                console.log(this.command.getToken(codePointer));
+                throw "Unexpected token";
+            default:
+                console.log(token);
+                throw "Unknown token";
+        }
+        codePointer.tokenPointer ++;
+        return false;
+    }
+
+    /**
+     * Interprets function in Karel's language. The code must be processed before it can be interpreted.
+     * @param {codePointer structure} codePointer is the codePointer which will define which function will be interpreted.
+     * @param {boolean} moveCursor true to move the cursor in the given editor, false otherwise.
+     * @param {ACE editor} editor is teh editor where the code is written.
+     */
+    async codeInterpret(codePointer, moveCursor, editor){
         while(this.running){
-            if(cursor){
-                this.textEditor.gotoLine(this.line + 1);
+            if(moveCursor){
+                editor.gotoLine(this.command.getToken(codePointer).row + 1);
             }
-            if(this.nativeCodeInterpretStep(this.code)){
-                this.turnOffInterpret();
-            };
-            await sleep(this.command.speed);
-            if(this.interpretMode == "debug"){
-                return;
+            if(this.interpretToken(codePointer)){
+                this.turnOffInterpret(editor);
+            } else {
+                this.updateCounter();
             }
-        }  
-    }
-
-    /**
-     * Searches for name in command list and condition list and sets the line to be executed to start of
-     * command or condition defined by the name
-     * @param {string} name is the name of command or condition we want to run
-     * @returns true if the name is found, false otherwise
-     */
-    searchForNameSetLine(name){
-        var startLine = this.command.searchForNameGetLine(name);
-        if(startLine == -1){
-            console.log("searchForNameSetLine error - name [" + name + "] not found")
-            return false;   
+            if(this.debug.active){
+                break;
+            } else {
+                await sleep(this.command.speed);
+            }
         }
-        this.line = startLine;
-        return true;
     }
 
     /**
-     * Interprets native code from text editor
-     * Checks the code for bugs
-     * Ends with any kind of error (syntax error in code, nothing found to run ect.)
+     * Checks and inteprets code from ACE text editor.
      */
-    nativeCodeInterpretFromEditor(){
-
+    textEditorInterpret(){
         if(this.running){
-            console.log("nativeCodeInterpretFromEditor error - cannot run multiple programs at the same time");
+            console.log("You cannot run two programs at the same time");
             return;
-        }
-
-        this.line = this.textEditor.selection.getCursor().row;
-        this.nativeCodeSplitter(this.textEditor.getValue());
-
-        if(!this.nativeCodeFindStartLine()){
+        };
+        if(this.processErrors(this.syntaxCheck(this.textEditor), this.textEditor)){
+            console.log("Errors found - cannot interpret");
             return;
-        }
-
-        if(!this.printNativeCodeCheckerOutput(this.nativeCodeChecker())){
+        };
+        var toRun = this.command.getFunctionByToken(this.textEditor.selection.getCursor());
+        if(toRun === undefined){
+            console.log("No function selected to run");
             return;
-        }
-
-        this.resetNativeCodeInterpret();
-        this.running = true;
-        this.interpretMode = "standard";
-
-        this.nativeCodeInterpret(true);
+        };
+        this.resetNativeCodeInterpret(this.textEditor);
+        this.setRunningTrue();
+        this.debug.active = false;
+        var codePointer = {functionName: toRun, tokenPointer: 0};
+        this.codeInterpret(codePointer, true, this.textEditor);
     }
 
     /**
-     * Interprets native Blockly generated code
-     * Runs command or condition specified by name
-     * Checks the code for bugs
-     * WARNING - Needs a `textarea` element in the source HTML file
-     * @param {string} name is the name of command or condition to be executed
+     * Checks and interprets code from Blockly edotor (with help of ACE representation editor in read only mode).
+     * @param {string} toRun is the name of the function we want to run.
      */
-    nativeCodeInterpretFromBlockly(name){
+    blocklyEditorInterpret(toRun){
         if(this.running){
-            console.log("ITC error - cannot run multiple programs at the same time");
+            console.log("You cannot run two programs at the same time");
             return;
-        }
-
-        this.nativeCodeSplitter(document.getElementById('textArea').value);
-
-        if(!this.printNativeCodeCheckerOutput(this.nativeCodeChecker())){
+        };
+        if(this.processErrors(this.syntaxCheck(this.blocklyTextRepresentation), this.blocklyTextRepresentation)){
+            console.log("Errors found - cannot interpret");
             return;
-        }
-
-        if(!this.searchForNameSetLine(name)){
+        };
+        if(toRun === undefined){
+            console.log("No function selected to run");
             return;
-        }
-
+        };
         this.resetNativeCodeInterpret();
-        this.running = true;
-        this.interpretMode = "standard";
-
-        this.nativeCodeInterpret(false); 
+        this.setRunningTrue();
+        this.debug.active = false;
+        var codePointer = {functionName: toRun, tokenPointer: 0};
+        this.codeInterpret(codePointer, true, this.blocklyTextRepresentation);
     }
 
     /**
-     * Runs debug mode Interpret from text code editor
-     * Checks the code for bugs
-     * Ends with any kind of error (syntax error in code, nothing found to run ect.)
+     * Checks and inteprets code from ACE text editor in debug mode.
      */
-    nativeCodeDebugInterpretFromEditor(){
-        if(this.running && this.interpretMode != "debug"){
-            console.log("nativeCodeInterpretFromEditor error - cannot run multiple programs at the same time");
+    debugTextEditorInterpret(){
+        if(this.running && !this.debug.active){
+            console.log("You cannot run two programs at the same time");
             return;
         }
         if(!this.running){
             console.log(this.textEditor.session.getBreakpoints().length);
-            console.log(this.textEditor.session.getBreakpoints())
-            this.line = this.textEditor.selection.getCursor().row;
-            this.nativeCodeSplitter(this.textEditor.getValue());
-            if(!this.nativeCodeFindStartLine()){
-                return;
-            }
-            if(!this.printNativeCodeCheckerOutput(this.nativeCodeChecker())){
-                return;
-            }
-            this.resetNativeCodeInterpret();
-            this.running = true;
-            this.interpretMode = "debug";
-        }
-        this.nativeCodeInterpret(true);
-    }
+            console.log(this.textEditor.session.getBreakpoints());
 
-    /**
-     * Creates table for conversion from text code to blockly
-     */
-    createConversionTable(){            
-        var returnTable = {};
-        returnTable[this.dictionary["keywords"]["function"]] = {
-            "create" : ["base_function"],
-            "action" : ["addName", "insertConnection", "setCollapse"],
+            if(this.processErrors(this.syntaxCheck(this.textEditor), this.textEditor)){
+                console.log("Errors found - cannot interpret");
+                return;
+            };
+            var toRun = this.command.getFunctionByToken(this.textEditor.selection.getCursor());
+            if(toRun === undefined){
+                console.log("No function selected to run");
+                return;
+            };
+            this.resetNativeCodeInterpret(this.textEditor);
+            this.setRunningTrue();
+            this.debug.active = true;
+            this.debug.codePointer = {functionName: toRun, tokenPointer: 0};
+            console.log(JSON.stringify(this.debug.codePointer));
         }
-        returnTable[this.dictionary["keywords"]["condition"]] = {
-            "create" : ["base_condition"],
-            "action" : ["addName", "insertConnection", "setCollapse"],
-        }
-        returnTable[this.dictionary["keywords"]["end"]] = {
-            "create" : [],
-            "action" : ["colapseBlock", "popConnectionArray", "collapse"],
-        }
-        returnTable[this.dictionary["keywords"]["forward"]] = {
-            "create" : ["function_step"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["right"]] = {
-            "create" : ["function_right"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["left"]] = {
-            "create" : ["function_left"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["placeBrick"]] = {
-            "create" : ["function_place"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["pickBrick"]] = {
-            "create" : ["function_pick"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["placeMark"]] = {
-            "create" : ["function_placemark"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["pickMark"]] = {
-            "create" : ["function_unmark"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["true"]] = {
-            "create" : ["function_true"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["false"]] = {
-            "create" : ["function_false"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["faster"]] = {
-            "create" : ["function_faster"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["slower"]] = {
-            "create" : ["function_slower"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["beep"]] = {
-            "create" : ["function_beep"],
-            "action" : ["connectBlock"],
-        }
-        returnTable[this.dictionary["keywords"]["do"]] = {
-            "create" : ["control_repeat"],
-            "action" : ["connectBlock", "insertConnection", "manageNumber"],
-        }
-        returnTable[this.closer + this.dictionary["keywords"]["do"]] = {
-            "create" : [],
-            "action" : ["popConnectionArray"],
-        }
-        returnTable[this.dictionary["keywords"]["while"]] = {
-            "create" : ["control_while"],
-            "action" : ["connectBlock", "insertConnection", "manageCondition"],
-        }
-        returnTable[this.closer + this.dictionary["keywords"]["while"]] = {
-            "create" : [],
-            "action" : ["popConnectionArray"],
-        }
-        returnTable[this.dictionary["keywords"]["if"]] = {
-            "create" : ["if_creator"],
-            "action" : ["connectBlock", "insertConnection", "manageCondition"],
-        }
-        returnTable[this.dictionary["keywords"]["then"]] = {
-            "create" : [],
-            "action" : [],
-        }
-        returnTable[this.dictionary["keywords"]["else"]] = {
-            "create" : [],
-            "action" : ["popConnectionArray"],
-        }
-        returnTable[this.closer + this.dictionary["keywords"]["if"]] = {
-            "create" : [],
-            "action" : ["popConnectionArray"],
-        }
-        return returnTable;
+        this.codeInterpret(this.debug.codePointer, true, this.textEditor);
     }
 
     /**
      * Tells the blockly block name for condition by its string in code
      * If the word in code is not among the base condition set special block is created
-     * @param {string} word is the string that we create the condition by
+     * @param {string} dictKey is the dictionary key of the condition
      */
-    tellCondBlockByWord(word){
-        switch(word){
-            case this.dictionary["keywords"]["wall"]:
+    tellCondBlockByWord(dictKey){
+        switch(dictKey){
+            case "wall":
                 return "condition_wall";
-            case this.dictionary["keywords"]["brick"]:
+            case "brick":
                 return "condition_brick";
-            case this.dictionary["keywords"]["mark"]:
+            case "mark":
                 return "condition_mark";
-            case this.dictionary["keywords"]["vacant"]:
+            case "vacant":
                 return "condition_vacant";
             default:
                 return "condition_userdefined";
@@ -773,30 +783,120 @@ class interpret{
     }
     
     /**
-     * Translates text code to blockly blocks. The text is loaded from `this.code`
-     * and it expects that the code is error free to make meaningfull structures. 
-     * To check this use function `nativeCodeChecker()`.
-     * It can handle errored code but it wont run (properly or simply wont run).
-     * It does not use `this.line` and uses its one `line` variable.
-     * @param workspace is the workspace where the blocks will be created
+     * Translates text code to blockly blocks. It generates those blocks by tokens
+     * that are expexted to be passed.
+     * @param {blockly worspace} workspace is the workspace where the blocks will be created
+     * @param {array of tokens} codeArray is array of tokens to be converted
      */
-    makeBlocksFromNativeCode(workspace){
+    makeBlocksFromNativeCode(workspace, codeArray){
         var connectTo = [];
-        var rules = this.createConversionTable();
+        var rules = {
+            "function": {
+                "create" : ["base_function"],
+                "action" : ["addName", "insertConnection", "setCollapse"],
+            },
+            "condition": {
+                "create" : ["base_condition"],
+                "action" : ["addName", "insertConnection", "setCollapse"],
+            },
+            "end": {
+                "create" : [],
+                "action" : ["colapseBlock", "popConnectionArray", "collapse"],
+            },
+            "forward": {
+                "create" : ["function_step"],
+                "action" : ["connectBlock"],
+            },
+            "right": {
+                "create" : ["function_right"],
+                "action" : ["connectBlock"],
+            }, 
+            "left": {
+                "create" : ["function_left"],
+                "action" : ["connectBlock"],
+            },
+            "placeBrick": {
+                "create" : ["function_place"],
+                "action" : ["connectBlock"],
+            },
+            "pickBrick" : {
+                "create" : ["function_pick"],
+                "action" : ["connectBlock"],
+            }, 
+            "placeMark": {
+                "create" : ["function_placemark"],
+                "action" : ["connectBlock"],
+            },
+            "pickMark": {
+                "create" : ["function_unmark"],
+                "action" : ["connectBlock"],
+            },
+            "true": {
+                "create" : ["function_true"],
+                "action" : ["connectBlock"],
+            },
+            "false": {
+                "create" : ["function_false"],
+                "action" : ["connectBlock"],
+            },
+            "faster": {
+                "create" : ["function_faster"],
+                "action" : ["connectBlock"],
+            }, 
+            "slower": {
+                "create" : ["function_slower"],
+                "action" : ["connectBlock"],
+            },
+            "beep": {
+                "create" : ["function_beep"],
+                "action" : ["connectBlock"],
+            },
+            "do": {
+                "create" : ["control_repeat"],
+                "action" : ["connectBlock", "insertConnection", "manageNumber"],
+            },
+            "while": {
+                "create" : ["control_while"],
+                "action" : ["connectBlock", "insertConnection", "manageCondition"],
+            },
+            "if": {
+                "create" : ["if_creator"],
+                "action" : ["connectBlock", "insertConnection", "manageCondition"],      
+            },
+            "else": {
+                "create" : [],
+                "action" : ["popConnectionArray"],
+            },
+            "then": {
+                "create": [],
+                "action": []
+            },
+            "times": {
+                "create": [],
+                "action": []
+            }
+        }
         var currentRule;
         var toCollapse;
         var numOfCollapsedBlocks = 0;
-        for(var line = 0; line < this.code.length; line ++){
+        for(var i = 1; i <  codeArray.length; i++){
+            codeArray[0] = codeArray[0].concat(codeArray[i]);
+        }
+        codeArray = codeArray[0];
+        for(var tokenIter = 0; tokenIter < codeArray.length; tokenIter ++){
             currentRule = {};
-            if(this.code[line][0] == "" || this.code[line][0] == "#"){
-                continue;
-            }
-            if(this.code[line][0] in rules){
-                currentRule = rules[this.code[line][0]];
+            if(this.closerRegex.test(codeArray[tokenIter].value)){
+                currentRule = {"action" : ["popConnectionArray"],}
+            } else if(codeArray[tokenIter].dictKey in rules){
+                currentRule = rules[codeArray[tokenIter].dictKey];
                 var newBlock;
                 if(currentRule["create"].length > 0){
                     if(currentRule["create"][0] == "if_creator"){
-                        if(this.ifOrIfElse(line)){
+                        let result = this.ifOrIfElse(tokenIter, codeArray);
+                        if(result === undefined){
+                            console.log("err - missing end of if structure");
+                            return;
+                        }else if(result){
                             newBlock = workspace.newBlock("control_if");
                         } else {
                             newBlock = workspace.newBlock("control_ifelse");
@@ -816,7 +916,13 @@ class interpret{
             for(var i = 0; i < currentRule["action"].length; i++){
                 switch(currentRule["action"][i]){
                     case "addName":
-                        newBlock.setFieldValue(this.code[line][1], "NAME");
+                        tokenIter ++;
+                        if(codeArray[tokenIter].meaning == "identifier"){
+                            newBlock.setFieldValue(codeArray[tokenIter].value, "NAME");
+                        } else {
+                            console.log("error - bad token to set the name by");
+                            return;
+                        }
                         break;
                     case "insertConnection":
                         if(newBlock.type == "control_if"){
@@ -839,22 +945,34 @@ class interpret{
                         connectTo.pop();
                         break;
                     case "manageCondition":
-                        if(this.code[line][1] == this.dictionary["keywords"]["isNot"]){
+                        tokenIter ++;
+                        if(codeArray[tokenIter].meaning != "condition-prefix"){
+                            console.log("error - condtion prefix expected");
+                            return;
+                        }
+                        if(codeArray[tokenIter].dictKey == "isNot"){
                             newBlock.getField('COND_PREF').setValue("optionIsNot");
                         }
-                        var conditionBlock = workspace.newBlock(this.tellCondBlockByWord(this.code[line][2]));
+                        tokenIter ++;
+                        var conditionBlock = workspace.newBlock(this.tellCondBlockByWord(codeArray[tokenIter].dictKey));
                         conditionBlock.initSvg();
                         conditionBlock.render();
                         newBlock.getInput('COND').connection.connect(conditionBlock.outputConnection);
                         if(conditionBlock.type == "condition_userdefined"){
-                            conditionBlock.getField('FC_NAME').setValue(this.code[line][2]);
+                            conditionBlock.getField('FC_NAME').setValue(codeArray[tokenIter].value);
                         }
                         break;
                     case "manageNumber":
-                        newBlock.getField('DO_TIMES').setValue(this.code[line][1]);
+                        tokenIter ++;
+                        if(codeArray[tokenIter].meaning == "number"){
+                            newBlock.getField('DO_TIMES').setValue(codeArray[tokenIter].value);
+                        } else {
+                            console.log("err - number expected");
+                            return;
+                        }
                         break;
                     case "insertName":
-                        newBlock.getField('FC_NAME').setValue(this.code[line][0]);
+                        newBlock.getField('FC_NAME').setValue(codeArray[tokenIter].value);
                         break;
                     case "setCollapse":
                         toCollapse = newBlock;
@@ -873,25 +991,28 @@ class interpret{
     }
 
     /**
-     * Tells if simple if structure of if else structure should be used based on `this.code`
-     * and given line.
-     * @param {number} line is the line to start scanning from
+     * Tells if simple 'if' structure of 'if else' structure should be used based on code tokes and given token pointer.
+     * @param {number} tokenIter the token pointer 
+     * @param {array of tokens} codeArray is the code represented by tokens in array
      * @returns true if simple `if then` should be generate false for `if then else`
      */
-    ifOrIfElse(line){
+    ifOrIfElse(tokenIter, codeArray){
+        let saveTokenIter = tokenIter
         var skipIf = -1;
-        for(; line < this.code.length; line ++){
-            switch(this.code[line][0]){
-                case this.dictionary["keywords"]["if"]:
+        for(; tokenIter < codeArray.length; tokenIter ++){
+            switch(codeArray[tokenIter].meaning){
+                case "if-start":
                     skipIf ++;
                     break;
-                case this.dictionary["keywords"]["else"]:
+                case "else":
                     if(skipIf == 0){
+                        tokenIter = saveTokenIter;
                         return false;
                     }
                     break;
-                case this.closer + this.dictionary["keywords"]["if"]:
+                case "if-end":
                     if(skipIf == 0){
+                        tokenIter = saveTokenIter;
                         return true;
                     } else {
                         skipIf --;
@@ -903,13 +1024,13 @@ class interpret{
 
     /**
      * Simple code to blockly conversion function.
-     * It loades content from HTML textarea named conversionTest
-     * WARNING - Needs `conversionTest` element in the source
      * @param {workspace} workspace is the workspace where the blocks will be created
      */
-    conversionTest(workspace){
-        this.nativeCodeSplitter(this.textEditor.getSelectedText());
-        this.makeBlocksFromNativeCode(workspace);
+    textToBlocklyConvertor(workspace){
+        this.lockBlocklyTextEditor = true;
+        this.blocklyTextRepresentation.setValue(this.textEditor.getSelectedText());
+        this.makeBlocksFromNativeCode(workspace, this.nativeCodeTokenizer(this.blocklyTextRepresentation));
+        this.lockBlocklyTextEditor = false;
     }
 
     /**
@@ -975,21 +1096,31 @@ class interpret{
             switch(item){
                 case "karelAndRoom":
                     if(!this.command.karel.checkLoadFileKarelAndRoom(dataJson[item])){
-                        return false;
+                        return item;
                     }
                     break;
                 case "code":
                 case "blockly":
-                    this.nativeCodeSplitter(dataJson[item]);
-                    if(!this.printNativeCodeCheckerOutput(this.nativeCodeChecker())){
-                        return false;
+                    var editor;
+                    if(item == "code"){
+                        editor = this.textEditor;
+                    } else {
+                        this.lockBlocklyTextEditor = true;
+                        editor = this.blocklyTextRepresentation;
                     }
+                    editor.setValue(dataJson[item]);
+                    if(this.syntaxCheck(editor).length > 0){
+                        editor.setValue("");
+                        this.lockBlocklyTextEditor = false;
+                        return item;
+                    };
+                    this.lockBlocklyTextEditor = false;
                     break;
                 default:
-                    return false;
+                    return item;
             }
         }
-        return true;
+        return;
     }
 
 
@@ -1019,8 +1150,10 @@ class interpret{
                     break;
                 case "blockly":
                     workspace.clear();
-                    interpret.nativeCodeSplitter(fileLoadedEvent.target.result);
-                    interpret.makeBlocksFromNativeCode(workspace);
+                    interpret.lockBlocklyTextEditor = true;
+                    interpret.blocklyTextRepresentation.setValue(fileLoadedEvent.target.result);
+                    interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation));
+                    interpret.lockBlocklyTextEditor = false;
                     break;
                 case "code":
                     interpret.textEditor.setValue(fileLoadedEvent.target.result);
@@ -1029,14 +1162,18 @@ class interpret{
                     var dataJson = JSON.parse(fileLoadedEvent.target.result);
                     interpret.command.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
                     workspace.clear();
-                    interpret.nativeCodeSplitter(dataJson["blockly"]);
-                    interpret.makeBlocksFromNativeCode(workspace);
+                    interpret.lockBlocklyTextEditor = true;
+                    interpret.blocklyTextRepresentation.setValue(dataJson["blockly"]);
+                    interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation));
+                    interpret.lockBlocklyTextEditor = false;
                     interpret.textEditor.setValue(dataJson["code"]);
                     break;
                 case "byFile":
                     try{
                         var dataJson = JSON.parse(fileLoadedEvent.target.result);
-                        if(!interpret.checkLoadedFile(dataJson)){
+                        let result = interpret.checkLoadedFile(dataJson);
+                        if(result !== undefined){
+                            console.log("Checking failed at: ",result);
                             throw "Corrupted save file";
                         }
                     }
@@ -1051,8 +1188,10 @@ class interpret{
                                 break;
                             case "blockly":
                                 workspace.clear();
-                                interpret.nativeCodeSplitter(dataJson["blockly"]);
-                                interpret.makeBlocksFromNativeCode(workspace);
+                                interpret.lockBlocklyTextEditor = true;
+                                interpret.blocklyTextRepresentation.setValue(dataJson["blockly"]);
+                                interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation));
+                                interpret.lockBlocklyTextEditor = false;
                                 break;
                             case "code":
                                 interpret.textEditor.setValue(dataJson["code"]);

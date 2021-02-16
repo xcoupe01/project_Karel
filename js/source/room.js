@@ -80,7 +80,6 @@ class room{
             }
             this.scene.add(this.light[i]);
         }
-        console.log(this.light);
     }
 
     /**

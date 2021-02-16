@@ -1,54 +1,47 @@
 export function setLang(){
     return {
         "keywords" : {
-            "function"      : "prikaz",
-            "condition"     : "podminka",
-            "end"           : "konec",
-            "forward"       : "krok",
-            "right"         : "vpravo",
-            "left"          : "vlevo",
-            "placeBrick"    : "poloz",
-            "pickBrick"     : "zvedni",
-            "placeMark"     : "oznac",
-            "pickMark"      : "odznac",
-            "do"            : "udelej",
-            "times"         : "krat",
-            "while"         : "dokud",
+            "function"      : "prikaz",         //
+            "condition"     : "podminka",       //
+            "end"           : "konec",          //
+            "forward"       : "krok",           //
+            "right"         : "vpravo",         //
+            "left"          : "vlevo",          //
+            "placeBrick"    : "poloz",          //
+            "pickBrick"     : "zvedni",         //
+            "placeMark"     : "oznac",          //
+            "pickMark"      : "odznac",         //
+            "do"            : "udelej",         //
+            "times"         : "krat",           //
+            "while"         : "dokud",          //
             "is"            : "je",
-            "isNot"         : "neni",
-            "wall"          : "zed",
-            "brick"         : "cihla",
-            "mark"          : "znacka",
-            "vacant"        : "volno",
-            "if"            : "kdyz",
-            "then"          : "tak",
-            "else"          : "jinak",
-            "true"          : "pravda",
-            "false"         : "nepravda",
-            "faster"        : "rychle",
-            "slower"        : "pomalu",
-            "beep"          : "pip"
+            "isNot"         : "neni",           
+            "wall"          : "zed",            //
+            "brick"         : "cihla",          //
+            "mark"          : "znacka",         //
+            "vacant"        : "volno",          //     
+            "if"            : "kdyz",           //
+            "then"          : "tak",            //
+            "else"          : "jinak",          //
+            "true"          : "pravda",         //
+            "false"         : "nepravda",       //
+            "faster"        : "rychle",         //
+            "slower"        : "pomalu",         //
+            "beep"          : "pip"             //
         },
         "blocklyCategory" : {
             "base"            : "Základ",
             "functions"       : "Funkce",
             "progFlow"        : "Řízení toku",
             "condition"       : "Podmínky",
-            "name"            : "název",
+            "name"            : "nazev",
             "userDefinedFunc" : "funkce",
-            "userDefinedCond" : "podmínka"
+            "userDefinedCond" : "podminka"
         },
         "checkerErrorMessages" : {
-            "numOfWords"    : "numOfWords - špatný počet slov na řádku",
-            "notInDef"      : "notInDef - definice v definici",
-            "inDef"         : "InDef - příkaz mimo definici",
-            "checkActive"   : "checkActive - ",
-            "checkKWTimes"  : "checkKWTimes - chybí klíčové slovo \"krát\"",
-            "checkNumber"   : "checkNumber - špatně zadané číslo",
-            "checkCondPref" : "checkCondPrefix - špatný prefix podmínky",
-            "checkNextThen" : "checkNextThen - nenalezeno klíčové slovo \"tak\"",
-            "checkExpWords" : "checkExpectedWords - chybí očekávaná slova",
-            "checkDef"      : "checkDef - nenalezena definice slova",
+            "unexpectedWord": ["Neočekávaný vyraz: dostal jsem: ", " ale očekával jsem: "],
+            "missing": "V definici chybí: ",
+            "missingDef": "Chybí definice typu "
         },
         "ACE" : {
             "highlight" : {
@@ -75,7 +68,10 @@ export function setLang(){
             "debug": "Krokuj",
             "stop": "Zastav",
             "changeRoom": "Změň místnost",
-            "homeCamera": "Resetuj kameru",
+            "homeCameraButton": "Resetuj kameru",
+            "roomFocusIndicator": "Ovládej",
+            "runningIndicator": "Běží",
+            "ACEeditorToggle": "Změň ACE",
             "makeBlocks": "Vytvoř bloky",
             "save": "Ulož",
             "load": "Načti",

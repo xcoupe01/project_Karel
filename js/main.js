@@ -25,7 +25,7 @@ function start() {
     var mainKarel = new karel(scene, controls);
     mainKarel.draw();
     mainKarel.homeCamera(camera);
-    var mainInterpret =  new interpret(editor, mainKarel);
+    var mainInterpret =  new interpret(editor, blocklyReader, mainKarel);
 
     document.querySelector('#roomCanvas').addEventListener('keydown', function(event) {
         if(mainInterpret.getRunning() == false){
@@ -164,10 +164,17 @@ function changeLanguage(langFile){
         blocklySetBlockLang(module.setLang());
         workspace.updateToolbox(createBasicToolboxByLang(mainInterpret));
         editor.session.$mode.$highlightRules.setKeywords(mainInterpret.dictionary["ACE"]["highlight"]);
+        blocklyReader.session.$mode.$highlightRules.setKeywords(mainInterpret.dictionary["ACE"]["highlight"]);
         editor.session.$foldMode.__proto__.foldingStartMarker = mainInterpret.dictionary["ACE"]["fold"]["foldStartMarker"];
         editor.session.$foldMode.__proto__.foldingStopMarker = mainInterpret.dictionary["ACE"]["fold"]["foldStopMarker"];
         editor.session.$foldMode.indentKeywords = mainInterpret.dictionary["ACE"]["fold"]["indentKeywords"];
         editor.session.bgTokenizer.start(0);
+        blocklyReader.session.bgTokenizer.start(0);
+        editor.setOptions({
+            enableBasicAutocompletion: true,
+            enableSnippets: true,
+            enableLiveAutocompletion: false,
+        });
 
         // UI set
         document.querySelector('#mainMenuIcon').title = mainInterpret.dictionary["UI"]["menu"];
@@ -176,7 +183,10 @@ function changeLanguage(langFile){
         document.querySelector('#runDebug').title = mainInterpret.dictionary["UI"]["debug"];
         document.querySelector('#stop').title = mainInterpret.dictionary["UI"]["stop"];
         document.querySelector('#openChangeRoomDialog').text = mainInterpret.dictionary["UI"]["changeRoom"];
-        document.querySelector('#homeCamera').text = mainInterpret.dictionary["UI"]["homeCamera"];
+        document.querySelector('#homeCameraButton').textContent = mainInterpret.dictionary["UI"]["homeCameraButton"];
+        document.querySelector('#roomFocusIndicator').textContent = mainInterpret.dictionary["UI"]["roomFocusIndicator"];
+        document.querySelector('#runningIndicator').textContent = mainInterpret.dictionary["UI"]["runningIndicator"];
+        document.querySelector('#ACEeditorToggle').textContent = mainInterpret.dictionary["UI"]["ACEeditorToggle"];   
         document.querySelector('#makeBlocks').text = mainInterpret.dictionary["UI"]["makeBlocks"];
         document.querySelector('#openSaveDialog').text = mainInterpret.dictionary["UI"]["save"];
         document.querySelector('#openLoadDialog').text = mainInterpret.dictionary["UI"]["load"];
@@ -207,7 +217,7 @@ function changeSyntaxCloser(closer){
     blocklySetCloser(closer);
 }
 
-// ACE settings
+// ACE settings - editor
 ace.require("ace/ext/language_tools");
 var editor = ace.edit("textEditor");
 editor.setOptions({
@@ -241,6 +251,14 @@ editor.on("guttermousedown", function(e) {
         e.editor.session.clearBreakpoint(row);
     e.stop();
 })
+
+// ACE settings - blockly reader
+var blocklyReader = ace.edit("blocklyReader");
+blocklyReader.setOptions({
+    mode: 'ace/mode/karel',
+    readOnly: true,
+});
+blocklyReader.setTheme('ace/theme/chrome');
 
 // ------------------------------------------------
 
@@ -282,8 +300,11 @@ Blockly.onresize=onresize;
 
 // setting block listener
 function myUpdateFunction(event) {
-    var code = Blockly.Karel.workspaceToCode(workspace);
-    document.getElementById('textArea').value = code;
+    if(!mainInterpret.lockBlocklyTextEditor){
+        blocklyReader.setValue("");
+        blocklyReader.setValue(Blockly.Karel.workspaceToCode(workspace));
+        blocklyReader.clearSelection();
+    }
 }
 workspace.addChangeListener(myUpdateFunction);
 
@@ -293,7 +314,7 @@ changeLanguage('./source/languages/cs.js')
 
 // setting the blockly image listeners for play
 var runMeFunc = function (eventpat){
-    mainInterpret.nativeCodeInterpretFromBlockly(eventpat.sourceBlock_.inputList[0].fieldRow[2].value_);
+    mainInterpret.blocklyEditorInterpret(eventpat.sourceBlock_.inputList[0].fieldRow[2].value_);
   return 0;
 };
 blocklySetRunMe(runMeFunc);
@@ -302,73 +323,58 @@ changeSyntaxCloser('*');
 // -----------------------------
 
 
-// room menu
-document.querySelector('#stop').onclick = function() {mainInterpret.turnOffInterpret()};
+// room dialog
 document.querySelector('#room').onclick = function(){
     mainInterpret.command.karel.resizeRoom(document.getElementById('xVal').value,document.getElementById('yVal').value);
     $('#resizeRoomDialog').dialog('close');
 };
-document.querySelector('#homeCamera').onclick = function() {mainInterpret.command.karel.homeCamera()};
-// blockly menu
-document.querySelector('#makeBlocks').onclick = function() {mainInterpret.conversionTest(workspace)};
-// code menu
-document.querySelector('#runCode').onclick = function() {mainInterpret.nativeCodeInterpretFromEditor()};
-document.querySelector('#runDebug').onclick = function() {mainInterpret.nativeCodeDebugInterpretFromEditor()};
-// save/load menu
+
+// save dialog
 document.querySelector('#saveButton').onclick = function() {
     mainInterpret.saveFile("byChoice", document.getElementById('saveName').value, workspace);
     $('#SaveDialog').dialog('close');
 };
+
+// load dialog
 document.querySelector('#loadButton').onclick = function() {
     mainInterpret.loadFromFile("byFile", workspace, 'loadFile');
     $('#LoadDialog').dialog('close');
 };
+
+// languages menu
 document.querySelector('#setCzech').onclick = function() {changeLanguage('./source/languages/cs.js')};
 document.querySelector('#setEnglish').onclick = function() {changeLanguage('./source/languages/en.js')};
+
+// navbar items
+document.querySelector('#runCode').onclick = function() {mainInterpret.textEditorInterpret()};
+document.querySelector('#runDebug').onclick = function() {mainInterpret.debugTextEditorInterpret()};
+document.querySelector('#stop').onclick = function() {mainInterpret.turnOffInterpret()};
+
 // main menu items
 document.querySelector('#openChangeRoomDialog').onclick = function() {
     $('#resizeRoomDialog').dialog({width: 400});
     document.getElementById('xVal').value = mainInterpret.command.karel.room.roomDataArray.length;
     document.getElementById('yVal').value = mainInterpret.command.karel.room.roomDataArray[0].length;
 };
+document.querySelector('#makeBlocks').onclick = function() {mainInterpret.textToBlocklyConvertor(workspace)};
 document.querySelector('#openSaveDialog').onclick = function() {$('#SaveDialog').dialog({width: 400});};
 document.querySelector('#openLoadDialog').onclick = function() {$('#LoadDialog').dialog({width: 400});};
 
-var TokenIterator = require("ace/token_iterator").TokenIterator;
-var tokenizer = new TokenIterator(editor.session, 0, 0);
-var firstRun = true;
-
-document.querySelector('#test').onclick = function() { 
-    /*
-    // make block text representation disappear
-    var x = document.getElementById("textArea");
-    if (x.style.display === "none") {
-        x.style.display = "block";
+// quick status bar
+document.querySelector('#homeCameraButton').onclick = function() {mainInterpret.command.karel.homeCamera()};
+document.querySelector('#ACEeditorToggle').onclick = function() {
+    if(document.getElementById('blocklyReader').style.display == 'none'){
+        document.getElementById('textEditor').style.display = 'none';
+        document.getElementById('blocklyReader').style.display = 'block';
     } else {
-        x.style.display = "none";
-    }
-    */
-    /*
-    if(firstRun){
-        firstRun = false;
-        tokenizer.stepForward();
-        while(tokenizer.getCurrentToken() !== undefined){
-            tokenizer.stepBackward();
-        }
-        tokenizer.stepForward();
-    }
-    while(tokenizer.getCurrentToken() !== undefined){
-        if(!(/^\s+$/).test(tokenizer.getCurrentToken().value)){
-            console.log(tokenizer.getCurrentToken());
-        }
-        tokenizer.stepForward();
-    }
-    tokenizer.stepBackward();
-    while(tokenizer.getCurrentToken() !== undefined){
-        tokenizer.stepBackward();
-    }
-    tokenizer.stepForward();
-    */
-    //console.log(editor.session.getBreakpoints());
-    mainInterpret.command.karel.test();
+        document.getElementById('blocklyReader').style.display = 'none';
+        document.getElementById('textEditor').style.display = 'block';
+    } 
+}
+document.querySelector('#counterDisplay').onclick = function() {mainInterpret.resetCounter()};
+
+document.querySelector('#test').onclick = function() {
+    console.log(editor.session.getBreakpoints());
+    //mainInterpret.command.karel.test();
+    //console.log(document.querySelector('#test').clientHeight);
 };
