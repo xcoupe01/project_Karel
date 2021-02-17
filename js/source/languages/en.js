@@ -39,9 +39,12 @@ export function setLang(){
             "userDefinedCond"   : "Condition"
         },
         "checkerErrorMessages" : {
-            "unexpectedWord": ["Unexpected expression: i got: ", " but i expected: "],
+            "unexpectedWord": ["Unexpected expression - i got: ", " but i expected: "],
             "missing": "Missing in definition: ",
-            "missingDef": "Missing definition of type "
+            "missingDef": "Missing definition of type ",
+            "redefinition": "Redefinition",
+            "badUsage": "Badly used function",
+            "badUsageNotCondition": "This is not a condition" 
         },
         "ACE" : {
             "highlight" : {

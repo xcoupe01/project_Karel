@@ -372,10 +372,10 @@ class interpret{
                     for(var j = 0; j < stack[0].checks.length; j++){
                         switch(stack[0].checks[j]){
                             case "define-command":
-                                noError = this.command.defineCommand(codeArray[i][0], buffer, errors)
+                                noError = this.command.defineCommand(codeArray[i][0], buffer, errors, this.dictionary)
                                 break;
                             case "define-condition":
-                                noError = this.command.defineCondition(codeArray[i][0], buffer, errors)
+                                noError = this.command.defineCondition(codeArray[i][0], buffer, errors, this.dictionary)
                                 break;
                             case "condition-expected":
                                 expected.push(this.dictionary["keywords"]["true"], this.dictionary["keywords"]["false"]);
@@ -384,7 +384,7 @@ class interpret{
                                 this.command.checkReachable(codeArray[i][0]);
                                 break;
                             case "reachable-condition":
-                                this.command.checkReachableCondition(codeArray[i][0]);
+                                this.command.checkReachableCondition(codeArray[i][0], errors, this.dictionary);
                                 break;
                             case "remove-expected":
                                 if(expected.includes(codeArray[i][0].value)){
@@ -791,90 +791,27 @@ class interpret{
     makeBlocksFromNativeCode(workspace, codeArray){
         var connectTo = [];
         var rules = {
-            "function": {
-                "create" : ["base_function"],
-                "action" : ["addName", "insertConnection", "setCollapse"],
-            },
-            "condition": {
-                "create" : ["base_condition"],
-                "action" : ["addName", "insertConnection", "setCollapse"],
-            },
-            "end": {
-                "create" : [],
-                "action" : ["colapseBlock", "popConnectionArray", "collapse"],
-            },
-            "forward": {
-                "create" : ["function_step"],
-                "action" : ["connectBlock"],
-            },
-            "right": {
-                "create" : ["function_right"],
-                "action" : ["connectBlock"],
-            }, 
-            "left": {
-                "create" : ["function_left"],
-                "action" : ["connectBlock"],
-            },
-            "placeBrick": {
-                "create" : ["function_place"],
-                "action" : ["connectBlock"],
-            },
-            "pickBrick" : {
-                "create" : ["function_pick"],
-                "action" : ["connectBlock"],
-            }, 
-            "placeMark": {
-                "create" : ["function_placemark"],
-                "action" : ["connectBlock"],
-            },
-            "pickMark": {
-                "create" : ["function_unmark"],
-                "action" : ["connectBlock"],
-            },
-            "true": {
-                "create" : ["function_true"],
-                "action" : ["connectBlock"],
-            },
-            "false": {
-                "create" : ["function_false"],
-                "action" : ["connectBlock"],
-            },
-            "faster": {
-                "create" : ["function_faster"],
-                "action" : ["connectBlock"],
-            }, 
-            "slower": {
-                "create" : ["function_slower"],
-                "action" : ["connectBlock"],
-            },
-            "beep": {
-                "create" : ["function_beep"],
-                "action" : ["connectBlock"],
-            },
-            "do": {
-                "create" : ["control_repeat"],
-                "action" : ["connectBlock", "insertConnection", "manageNumber"],
-            },
-            "while": {
-                "create" : ["control_while"],
-                "action" : ["connectBlock", "insertConnection", "manageCondition"],
-            },
-            "if": {
-                "create" : ["if_creator"],
-                "action" : ["connectBlock", "insertConnection", "manageCondition"],      
-            },
-            "else": {
-                "create" : [],
-                "action" : ["popConnectionArray"],
-            },
-            "then": {
-                "create": [],
-                "action": []
-            },
-            "times": {
-                "create": [],
-                "action": []
-            }
+            "function": {   create: ["base_function"],        action: ["addName", "insertConnection", "setCollapse"],},
+            "condition": {  create: ["base_condition"],       action: ["addName", "insertConnection", "setCollapse"],},
+            "end": {        create: [],                       action: ["colapseBlock", "popConnectionArray", "collapse"],},
+            "forward": {    create: ["function_step"],        action: ["connectBlock"],},
+            "right": {      create: ["function_right"],       action: ["connectBlock"],}, 
+            "left": {       create: ["function_left"],        action: ["connectBlock"],},
+            "placeBrick": { create: ["function_place"],       action: ["connectBlock"],},
+            "pickBrick" : { create: ["function_pick"],        action: ["connectBlock"],}, 
+            "placeMark": {  create: ["function_placemark"],   action: ["connectBlock"],},
+            "pickMark": {   create: ["function_unmark"],      action: ["connectBlock"],},
+            "true": {       create: ["function_true"],        action: ["connectBlock"],},
+            "false": {      create: ["function_false"],       action: ["connectBlock"],},
+            "faster": {     create: ["function_faster"],      action: ["connectBlock"],}, 
+            "slower": {     create: ["function_slower"],      action: ["connectBlock"],},
+            "beep": {       create: ["function_beep"],        action: ["connectBlock"],},
+            "do": {         create: ["control_repeat"],       action: ["connectBlock", "insertConnection", "manageNumber"],},
+            "while": {      create: ["control_while"],        action: ["connectBlock", "insertConnection", "manageCondition"],},
+            "if": {         create: ["if_creator"],           action: ["connectBlock", "insertConnection", "manageCondition"],},
+            "else": {       create: [],                       action: ["popConnectionArray"],},
+            "then": {       create: [],                       action: []},
+            "times": {      create: [],                       action: []}
         }
         var currentRule;
         var toCollapse;
@@ -886,12 +823,12 @@ class interpret{
         for(var tokenIter = 0; tokenIter < codeArray.length; tokenIter ++){
             currentRule = {};
             if(this.closerRegex.test(codeArray[tokenIter].value)){
-                currentRule = {"action" : ["popConnectionArray"],}
+                currentRule = {action : ["popConnectionArray"],}
             } else if(codeArray[tokenIter].dictKey in rules){
                 currentRule = rules[codeArray[tokenIter].dictKey];
                 var newBlock;
-                if(currentRule["create"].length > 0){
-                    if(currentRule["create"][0] == "if_creator"){
+                if(currentRule.create.length > 0){
+                    if(currentRule.create[0] == "if_creator"){
                         let result = this.ifOrIfElse(tokenIter, codeArray);
                         if(result === undefined){
                             console.log("err - missing end of if structure");
@@ -902,19 +839,19 @@ class interpret{
                             newBlock = workspace.newBlock("control_ifelse");
                         }
                     } else {
-                        newBlock = workspace.newBlock(currentRule["create"]);
+                        newBlock = workspace.newBlock(currentRule.create);
                     }
                 }
             } else {
                 newBlock = workspace.newBlock("function_userDefined");
-                currentRule = {"action" : ["connectBlock", "insertName"]}
+                currentRule = {action : ["connectBlock", "insertName"]}
             }
             if(newBlock !== undefined){
                 newBlock.initSvg();
                 newBlock.render();
             }
-            for(var i = 0; i < currentRule["action"].length; i++){
-                switch(currentRule["action"][i]){
+            for(var i = 0; i < currentRule.action.length; i++){
+                switch(currentRule.action[i]){
                     case "addName":
                         tokenIter ++;
                         if(codeArray[tokenIter].meaning == "identifier"){
@@ -1089,7 +1026,7 @@ class interpret{
     /**
      * Checks if save file is correct
      * @param {dictionary} dataJson parsed save file to JSON dictionary
-     * @returns true if the given save JSON is correct for this app, false otherwise
+     * @returns item that failed, undefined otherwise
      */
     checkLoadedFile(dataJson){
         for(var item in dataJson){
@@ -1100,8 +1037,9 @@ class interpret{
                     }
                     break;
                 case "code":
+                    break;
                 case "blockly":
-                    var editor;
+                    /*  This code performs check of the save codes - deleted because users can save codes with errors
                     if(item == "code"){
                         editor = this.textEditor;
                     } else {
@@ -1115,6 +1053,7 @@ class interpret{
                         return item;
                     };
                     this.lockBlocklyTextEditor = false;
+                    */
                     break;
                 default:
                     return item;

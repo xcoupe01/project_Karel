@@ -34,20 +34,23 @@ class command{
 
     /**
      * Defines command in the command list, saves the given init tokens and create its structure.
+     * Controls redefinition and previous occurances of the command
      * @param {token structure} token is the token that initializes the command.
      * @param {array of tokens} init is the tokes that will be added directly to the new record.
      * @param {array of errors} errors if errors occures, they will be passed in this array.
+     * @param {JSON} dictionary dictionary from which error texts are taken.
      */
-    defineCommand(token, init, errors){
+    defineCommand(token, init, errors, dictionary){
         if(token.value in this.commandList || token.value in this.conditionList){
             console.log("defineCommand error - redefinition of " + token.value);
-            errors.push({error: "Redefinition", token: token}); 
+            errors.push({error: dictionary["checkerErrorMessages"]["redefinition"], token: token}); 
         } else {
             this.commandList[token.value] = {code: init, definingToken: init.length};
             if(token.value in this.expectDefinition){
-                console.log("here");
                 if(!(this.expectDefinition[token.value].type == "function")){
-                    errors.push({error: "Bad usage", token: this.expectDefinition[token.value].token});
+                    for(var i = 0; i < this.expectDefinition[token.value].tokens.length; i++){
+                        errors.push({error: dictionary["checkerErrorMessages"]["badUsage"], token: this.expectDefinition[token.value].tokens[i]});
+                    }
                 }
                 delete this.expectDefinition[token.value];
             }
@@ -58,19 +61,23 @@ class command{
 
     /**
      * Defines condition in the condition list, saves the given init tokens and create its structure.
+     * Controls redefinition and previous occurances of the condtition.
      * @param {token structure} token is the token that initializes the command.
      * @param {array of tokens} init is the tokes that will be added directly to the new record.
      * @param {array of errors} errors if errors occures, they will be passed in this array.
+     * @param {JSON} dictionary dictionary from which error texts are taken.
      */
-    defineCondition(token, init, errors){
+    defineCondition(token, init, errors, dictionary){
         if(token.value in this.commandList || token.value in this.conditionList){
             console.log("defineCondition error - redefiniton of " + token.value);
-            errors.push({error: "Redefinition", token: token});
+            errors.push({error: dictionary["checkerErrorMessages"]["redefinition"], token: token});
         } else {
             this.conditionList[token.value] = {code: init, definingToken: init.length, result: "undef"};
             if(token.value in this.expectDefinition){
                 if(!(this.expectDefinition[token.value].type == "condition" || this.expectDefinition[token.value].type == "function")){
-                    errors.push({error: "Bad usage", token: this.expectDefinition[token.value].token});
+                    for(var i = 0; i < this.expectDefinition[token.value].tokens.length; i++){
+                        errors.push({error: dictionary["checkerErrorMessages"]["badUsage"], token: this.expectDefinition[token.value].tokens[i]});
+                    }
                 }
                 delete this.expectDefinition[token.value];
             }
@@ -124,10 +131,9 @@ class command{
     /**
      * Checks if given identifier is defined, if not, it will be added to the expected definition list with its type.
      * If it will not be defined, it will cause an error.
-     * @param {*} token is the token we need to be reachable.
+     * @param {token structure} token is the token we need to be reachable.
      */
     checkReachable(token){
-        // TODO: maybe add option to error more tokens :shrug:
         if(!(token.value in this.commandList || token.value in this.conditionList)){
             if(this.expectDefinition[token.value] === undefined){
                 this.expectDefinition[token.value] = {tokens: [token], type: "function"};
@@ -140,10 +146,13 @@ class command{
     /**
      * Checks if given condition identifier is reachable, if not, it will be added to the expected definition list with its type.
      * If it will not be defined, it will cause an error.
-     * @param {*} token is the token we need to be reachable as condition.
+     * @param {token structure} token is the token we need to be reachable as condition.
      */
-    checkReachableCondition(token){
-        // TODO: maybe add option to error more tokens :shrug:
+    checkReachableCondition(token, errors, dictionary){
+        if(token.value in this.commandList){
+            errors.push({error: dictionary["checkerErrorMessages"]["badUsageNotCondition"], token: token});
+            return;
+        }
         if(!(token.value in this.conditionList)){
             if(this.expectDefinition[token.value] === undefined){
                 this.expectDefinition[token.value] = {tokens: [token], type: "condition"};
@@ -155,8 +164,9 @@ class command{
     }
 
     /**
-     * 
-     * @param {*} codePointer 
+     * Returns token by given code pointer.
+     * @param {codePointer structure} codePointer is the codePointer of token we want to get.
+     * @returns token that corresponds to given codePointer 
      */
     getToken(codePointer){
         if(Object.keys(this.commandList).includes(codePointer.functionName)){

@@ -41,12 +41,12 @@ konec
 
 prikaz test_IF
     dokud neni cihla
-            kdyz je zed
-            tak
-                vlevo
-            jinak
-                krok
-            *kdyz
+        kdyz je zed
+        tak
+            vlevo
+        jinak
+            krok
+        *kdyz
     *dokud
     pokus2
 konec
@@ -100,4 +100,43 @@ prikaz test_volno
     jinak
         vlevo
     *kdyz
+    neco
+konec
+
+
+prikaz pokus3
+    kdyz je podminka2
+    tak
+        krok
+    *kdyz
+konec
+
+
+prikaz pokus2
+    krok
+konec
+
+
+prikaz pokus4
+    kdyz je pokus2
+    tak
+        krok
+    *kdyz
+konec
+
+
+prikaz pokus5
+    kdyz je podminka3
+    tak
+        krok
+    *kdyz
+konec
+
+
+prikaz podminka3
+    krok
+konec
+
+prikaz krok
+    vlevo
 konec

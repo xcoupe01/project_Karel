@@ -170,11 +170,6 @@ function changeLanguage(langFile){
         editor.session.$foldMode.indentKeywords = mainInterpret.dictionary["ACE"]["fold"]["indentKeywords"];
         editor.session.bgTokenizer.start(0);
         blocklyReader.session.bgTokenizer.start(0);
-        editor.setOptions({
-            enableBasicAutocompletion: true,
-            enableSnippets: true,
-            enableLiveAutocompletion: false,
-        });
 
         // UI set
         document.querySelector('#mainMenuIcon').title = mainInterpret.dictionary["UI"]["menu"];
@@ -366,9 +361,11 @@ document.querySelector('#ACEeditorToggle').onclick = function() {
     if(document.getElementById('blocklyReader').style.display == 'none'){
         document.getElementById('textEditor').style.display = 'none';
         document.getElementById('blocklyReader').style.display = 'block';
+        document.getElementById('blocklyReader').focus();
     } else {
         document.getElementById('blocklyReader').style.display = 'none';
         document.getElementById('textEditor').style.display = 'block';
+        document.getElementById('textEditor').focus();
     } 
 }
 document.querySelector('#counterDisplay').onclick = function() {mainInterpret.resetCounter()};

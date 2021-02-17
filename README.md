@@ -9,7 +9,7 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 26.1.2021**
+**Last update - 17.2.2021**
 
 **English version below**
 ___
@@ -32,7 +32,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> implementováno pomocí ACE.js, 
     - <span style="color:green"> implementováno podbarvování textu
     - <span style="color:green"> implementováno automatické zalamování textu
-    - v plánu přidání dalších funkcí z knihovny ACE (momentálně se pracuje na realtime syntax checkeru)
+    - oprava funkcí z knihovny ACE
     - <span style="color:green"> implementováno ukaládání a načítání kódu ze souboru
 - blokový editor kódu
     - <span style="color:green"> implementováno pomocí Blockly.js
@@ -42,8 +42,8 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> implementováno ukládání a načítání bloků ze souboru
     - v plánu možnost definování vlastních bloků
 - syntaktická kontrola textu
-    - <span style="color:green"> implementována kontrola s tabulkovým zadáváním kontrol
-    - <span style="color:green"> implementován přehledný interpret nativního kódu zvládající více chyb v kódu najednou
+    - <span style="color:green"> implementována kontrola pomocí LL1 tabulky a vnitřní tokenové struktury
+    - <span style="color:green"> implementován přehledný interpret vnitřní tokenové struktury zvládající více chyb v kódu najednou
     - <span style="color:green"> kontrola zobrazuje chyby v ACE
     - <span style="color:green"> implementována možnost spuštění s krokováním 
     - jednoduchý debugger (možná breakpointy s ACE)
@@ -164,15 +164,22 @@ V horním panelu jsou dostupná následující nástroje aplikace:
 
     Hlavní menu aplikace, obsahuje následující položky:
     - `Změň místnost` - Umožňuje pomocí dialogu změnit rozměry místnosti.
-    - `Resetuj kameru` - Vrátí kameru do výchozího stavu.
     - `Vytvoř bloky` - Z označeného kódu v textovém editoru vytvoří blokové schéma v blokovém editoru.
     - `Ulož` - Umožnujě uložit stav aplikace pomocí dialogu.
     - `Načti` - Umožňuje načíst stav aplikace pomocí dialogu.
-    - `Test` - Interní testovací tlačítko.
 - **Jazyky** - umoňuje změnu jazyků z nabídky.
 - **Spusť** - spustí vybraný program v textovém editoru v běžném režimu.
 - **Krokuj** - spustí vybraný program v textovém editoru v krokovacím režimu.
 - **Zastav** - zastaví jakýkoliv probíhající program.
+
+- **Rychlý přístup**
+    - Rychlý přístup je dostupný pod místností s robotem, jedná se o jednoduchou sadu nástrojů, které usnadňují práci s aplikací a jednoznačně a rychle dávaí najevo aktuální stav aplikace. Mezi prvky patří:
+        - `Počítadlo` - během běhu programu počítá, kolik musel interpret provést iterací, kliknutím lze vynulovat.
+        - `Idikátor běhu` - Je červený pokud je Karel v běhu, jinak je tmavě modrý
+        - `Idikátor ovládání` - Indikuje, zdali je uživatel v módu přímého ovlbádání robota v místnosti. Kliknutím lze tento mód aktivivat (případně kliknutím do místnosti).
+        - `Reset kamery` - Vrátí kameru na původní pozici.
+        - `Změna textového editoru` - Přepne editor ze zápisu programů na reprezentaci blokového editoru, nebo naopak.
+        - `Test` - Interní testovací tlačítko.
 
 ## Upozornění
 - Nejedná se o finální produkt a aplikace je pouze v ranné fázi vývoje.

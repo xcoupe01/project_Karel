@@ -103,11 +103,11 @@
                 <div id="row2" class="split">
                     <div class="content">
                         <div class="flex-container">
-                            <div id='counterDisplay'></div>
+                            <div id='counterDisplay' style='cursor:pointer;'></div>
                             <div id='runningIndicator'></div>
                             <div id='roomFocusIndicator' style='cursor:pointer;' onclick="document.querySelector('#roomCanvas').focus();"></div>
                             <div id='homeCameraButton' style='cursor:pointer;'></div>
-                            <div id='ACEeditorToggle' style='cursor:pointer;'>ACE toggle</div>
+                            <div id='ACEeditorToggle' style='cursor:pointer;'></div>
                             <div id='test' style='cursor:pointer;'>Test</div>
                             <div id='fullScreenButton'></div>
                             <div></div>
@@ -190,26 +190,41 @@
         <!-- dialogs -->
         <div id="resizeRoomDialog" title="" style="display: none;">
             <p id="resizeRoomText"></p>
-            <label for="xVal" id="xAxisLabel">X value</label>
-            <input type="text" name="xVal" id="xVal">
-            <br>
-            <label for="yVal" id="yAxisLabel">Y value</label>
-            <input type="text" name="yVal" id="yVal">
-            <br>
+
+            <table>
+                <tbody>
+                <tr>
+                <td><label for="xVal" id="xAxisLabel"></label></td>
+                <td><input type="text" name="xVal" id="xVal"></td>
+                </tr>
+                <tr>
+                <td><label for="yVal" id="yAxisLabel"></label></td>
+                <td><input type="text" name="yVal" id="yVal"></td>
+                </tr>
+                </tbody>
+            </table>
             <input type="button" value="room" id="room">
         </div>
 
         <div id="SaveDialog" title="" style="display: none;">
             <p id="saveText"></p>
-            <label for="roomSaveCheckbox" id="roomSaveLabel">room</label>
-            <input type="checkbox" id="roomSaveCheckbox" checked>
-            <br>
-            <label for="blocksSaveCheckbox" id="blocksSaveLabel">blocks</label>
-            <input type="checkbox" id="blocksSaveCheckbox" checked>
-            <br>
-            <label for="blocksSaveCheckbox" id="codeSaveLabel">code</label>
-            <input type="checkbox" id="codeSaveCheckbox" checked>
-            <br>
+
+            <table>
+                <tbody>
+                <tr>
+                <td><label for="roomSaveCheckbox" id="roomSaveLabel"></label></td>
+                <td><input type="checkbox" id="roomSaveCheckbox" checked></td>
+                </tr>
+                <tr>
+                <td><label for="blocksSaveCheckbox" id="blocksSaveLabel"></label></td>
+                <td><input type="checkbox" id="blocksSaveCheckbox" checked></td>
+                </tr>
+                <tr>
+                <td><label for="blocksSaveCheckbox" id="codeSaveLabel"></label></td>
+                <td><input type="checkbox" id="codeSaveCheckbox" checked></td>
+                </tr>
+                </tbody>
+            </table>
             <input type="text" id="saveName">
             <input type="button" value="save" id="saveButton">
         </div>

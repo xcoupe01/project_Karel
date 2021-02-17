@@ -1,7 +1,7 @@
 <html>
     <head>
         <title>Karel 3D</title>
-        <link rel="shortcut icon" href="favicon.ico"/>
+        <link rel="shortcut icon" href="favicon.ico" />
         <script type="text/javascript" src="js/split/split.min.js"></script>
         <link rel="stylesheet" href="css/style.css"/>
         <link rel="stylesheet" href="css/jquery-ui.css">
@@ -138,7 +138,6 @@
         <script src="js/ace/ext-language_tools.js"></script>
 
         <!-- blockly startup -->
-        <textarea id="textArea" style="display:none"></textarea>
         <script src="js/blockly/blockly_compressed.js"></script>
         <script src="js/blockly/karel_blocks.js"></script>
         <script src="js/blockly/karel_blocks_generator.js"></script>
@@ -191,26 +190,41 @@
         <!-- dialogs -->
         <div id="resizeRoomDialog" title="" style="display: none;">
             <p id="resizeRoomText"></p>
-            <label for="xVal" id="xAxisLabel">X value</label>
-            <input type="text" name="xVal" id="xVal">
-            <br>
-            <label for="yVal" id="yAxisLabel">Y value</label>
-            <input type="text" name="yVal" id="yVal">
-            <br>
+
+            <table>
+                <tbody>
+                <tr>
+                <td><label for="xVal" id="xAxisLabel"></label></td>
+                <td><input type="text" name="xVal" id="xVal"></td>
+                </tr>
+                <tr>
+                <td><label for="yVal" id="yAxisLabel"></label></td>
+                <td><input type="text" name="yVal" id="yVal"></td>
+                </tr>
+                </tbody>
+            </table>
             <input type="button" value="room" id="room">
         </div>
 
         <div id="SaveDialog" title="" style="display: none;">
             <p id="saveText"></p>
-            <label for="roomSaveCheckbox" id="roomSaveLabel">room</label>
-            <input type="checkbox" id="roomSaveCheckbox" checked>
-            <br>
-            <label for="blocksSaveCheckbox" id="blocksSaveLabel">blocks</label>
-            <input type="checkbox" id="blocksSaveCheckbox" checked>
-            <br>
-            <label for="blocksSaveCheckbox" id="codeSaveLabel">code</label>
-            <input type="checkbox" id="codeSaveCheckbox" checked>
-            <br>
+
+            <table>
+                <tbody>
+                <tr>
+                <td><label for="roomSaveCheckbox" id="roomSaveLabel"></label></td>
+                <td><input type="checkbox" id="roomSaveCheckbox" checked></td>
+                </tr>
+                <tr>
+                <td><label for="blocksSaveCheckbox" id="blocksSaveLabel"></label></td>
+                <td><input type="checkbox" id="blocksSaveCheckbox" checked></td>
+                </tr>
+                <tr>
+                <td><label for="blocksSaveCheckbox" id="codeSaveLabel"></label></td>
+                <td><input type="checkbox" id="codeSaveCheckbox" checked></td>
+                </tr>
+                </tbody>
+            </table>
             <input type="text" id="saveName">
             <input type="button" value="save" id="saveButton">
         </div>

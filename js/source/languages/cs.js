@@ -39,9 +39,12 @@ export function setLang(){
             "userDefinedCond" : "podminka"
         },
         "checkerErrorMessages" : {
-            "unexpectedWord": ["Neočekávaný vyraz: dostal jsem: ", " ale očekával jsem: "],
+            "unexpectedWord": ["Neočekávaný vyraz - dostal jsem: ", " ale očekával jsem: "],
             "missing": "V definici chybí: ",
-            "missingDef": "Chybí definice typu "
+            "missingDef": "Chybí definice typu ",
+            "redefinition": "Redefinice",
+            "badUsage": "Špatně použitá funkce",
+            "badUsageNotCondition": "Není podmínka" 
         },
         "ACE" : {
             "highlight" : {
@@ -52,8 +55,8 @@ export function setLang(){
                 "support.function": "krok|vlevo|vpravo|oznac|odznac|poloz|zvedni|rychle|pomalu|pip"
             },
             "fold" : {
-                "foldStartMarker": /\b(prikaz|podminka)\b/,
-                "foldStopMarker": /\bkonec\b/,
+                "foldStartMarker": /prikaz |podminka /,
+                "foldStopMarker": /konec/,
                 "indentKeywords": {
                     "prikaz": 1,
                     "podminka": 1,

@@ -40,12 +40,12 @@ konec
 
 prikaz test_IF
     dokud neni cihla
-            kdyz je zed
-            tak
-                vlevo
-            jinak
-                krok
-            *kdyz
+        kdyz je zed
+        tak
+            vlevo
+        jinak
+            krok
+        *kdyz
     *dokud
     pokus2
 konec

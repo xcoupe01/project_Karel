@@ -74,28 +74,30 @@ oop.inherits(FoldMode, BaseFoldMode);
 
     this.getFoldWidget = function(session, foldStyle, row) {
         var line = session.getLine(row);
+        // console.log(this.foldingStartMarker, this.foldingStopMarker);
         var isStart = this.foldingStartMarker.test(line);
         var isEnd = this.foldingStopMarker.test(line);
 
         if (isStart && !isEnd) {
             var match = line.match(this.foldingStartMarker);
-            if (match[1] == "then" && /\belseif\b/.test(line))
-                return;
+            // console.log(match);
             if (match[1]) {
                 if (session.getTokenAt(row, match.index + 1).type === "keyword")
-                    return "start";
+                return "start";
             } else if (match[2]) {
                 var type = session.bgTokenizer.getState(row) || "";
                 if (type[0] == "bracketedComment" || type[0] == "bracketedString")
-                    return "start";
+                return "start";
             } else {
                 return "start";
             }
         }
-        if (foldStyle != "markbeginend" || !isEnd || isStart && isEnd)
+        if (foldStyle != "markbeginend" || !isEnd || isStart && isEnd){
             return "";
+        }
 
         var match = line.match(this.foldingStopMarker);
+        console.log(match);
         if (match[0] === "end") {
             if (session.getTokenAt(row, match.index + 1).type === "keyword")
                 return "end";
@@ -111,15 +113,17 @@ oop.inherits(FoldMode, BaseFoldMode);
         var line = session.doc.getLine(row);
         var match = this.foldingStartMarker.exec(line);
         if (match) {
-            if (match[1])
+            console.log(match,match[1], match[2]);
+            if (match[1]){
                 return this.karelBlock(session, row, match.index + 1);
-
-            if (match[2])
+            }
+            if (match[2]){
                 return session.getCommentFoldRange(row, match.index + 1);
-
+            }
+            
             return this.openingBracketBlock(session, "{", row, match.index);
         }
-
+        
         var match = this.foldingStopMarker.exec(line);
         if (match) {
             if (match[0] === "end") {
