@@ -3,6 +3,7 @@ export function setLang(){
         "keywords" : {
             "function"      : "function",
             "condition"     : "condition",
+            "definition"    : "definition",
             "end"           : "end",
             "forward"       : "forward",
             "right"         : "right",
@@ -31,12 +32,16 @@ export function setLang(){
         },
         "blocklyCategory" : {
             "base"              : "Base",
-            "functions"         : "Functions",
+            "functions"         : "Commands",
             "progFlow"          : "Flow control",
             "condition"         : "Conditions",
+            "math"              : "Math",
             "name"              : "name",
-            "userDefinedFunc"   : "Function",
-            "userDefinedCond"   : "Condition"
+            "userDefinedFunc"   : "command",
+            "userDefinedCond"   : "condition",
+            "setvar"            : "set",
+            "defvar"            : "define",
+            "variable"          : "variable",
         },
         "checkerErrorMessages" : {
             "unexpectedWord": ["Unexpected expression - i got: ", " but i expected: "],

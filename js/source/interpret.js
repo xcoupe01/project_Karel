@@ -18,13 +18,17 @@ class interpret{
         this.running = false;                               // tells if Karel is executing code
         this.activeCounters = [];                           // used for DO loops
         this.programQueue = [];                             // used to jump to other programs and return back (saves position from which was jumped)
-        this.debug = {codePointer: {}, active: false};      // saves codePointer during debug and if debug is active
+        this.debug = {                                      // saves codePointer during debug, if debug is active and debug mode status 
+            codePointer: {}, 
+            active: false, 
+            run:false
+        };   
         this.closer = "*";                                  // tells the ending character (default is '*')
         this.closerRegex = new RegExp(/^\*/);               // Regular expression of closer
         this.commentary = new RegExp(/^#/);                 // Regular expression of comments (default is '#')
         this.lockBlocklyTextEditor = false;                 // Blocks Blockly from writing to blockly text representation editor if true
-        this.counter = -1;                                  // Step counter
-        this.updateCounter();
+        this.counter = 0;                                   // Step counter
+        this.resetCounter();
     }
     
     /**
@@ -82,6 +86,7 @@ class interpret{
     turnOffInterpret(editor){
         this.debug.active = false;
         this.debug.codePointer = {};
+        this.debug.run = false;
         this.setRunningFalse();
         if(editor !== undefined && editor != this.blocklyTextRepresentation){
             editor.setReadOnly(false);
@@ -146,6 +151,8 @@ class interpret{
 
         let outputs = [this.dictionary["keywords"]["true"], this.dictionary["keywords"]["false"]];
 
+        let expression = ["+", "-", "*", "/", "%", ")", "(", "<", ">", ">=", "<=", "==", "=", "!=", ];
+
         var codeArray = [[]];
         var iterator = 0;
         var closerLast = false;
@@ -170,8 +177,8 @@ class interpret{
                     token.meaning = "condition";
                 } else if(outputs.includes(token.value)){
                     token.meaning = "output";
-                } else if(Number.isInteger(parseInt(token.value))){
-                    token.meaning = "number";
+                } else if(Number.isInteger(parseInt(token.value)) || expression.includes(token.value) || token.value in this.math.variables){
+                    token.meaning = "expression";
                 } else {
                     switch(token.dictKey){
                         case "function":
@@ -179,6 +186,9 @@ class interpret{
                             break;
                         case "condition":
                             token.meaning = "condition-def";
+                            break;
+                        case "definition":
+                            token.meaning = "definition-def";
                             break;
                         case "end":
                             token.meaning = "end";
@@ -245,14 +255,24 @@ class interpret{
                     iterator ++;
                     codeArray.push([]);
                 }
-                if(token.value == this.closer){
-                    closerLast = true;
-                } else {
-                    closerLast = false;
-                }
+            }
+            if(tokenizer.getCurrentToken().value == this.closer){
+                closerLast = true;
+            } else {
+                closerLast = false;
             }
             tokenizer.stepForward();
         }
+        // hodit bloky definice nahoru TODO
+        var temp = [];
+        for(var i = 0; i < codeArray.length - 1; i++){
+            if(codeArray[i][0].dictKey == "definition"){
+                var [tempCA] = codeArray.splice(i, 1);
+                temp.push(tempCA);
+                i --;
+            }
+        }
+        codeArray = temp.concat(codeArray);
         return codeArray;
     }
 
@@ -278,6 +298,7 @@ class interpret{
      */
     syntaxCheck(editor){
         this.command.prepareCheck();
+        this.math.clearMath();
         var codeArray = this.nativeCodeTokenizer(editor);
         let rules = [
             /* 0 */     [
@@ -327,7 +348,7 @@ class interpret{
                         ],
             /* 8 */     [
                             {item: "do-start",          checks: []}, 
-                            {item: "number",            checks: []}, 
+                            {item: "expression",        checks: ["check-expression", "checkExpressionOut"]}, 
                             {item: "times",             checks: []}, 
                             {item: "<command-block>",   checks: []}, 
                             {item: "do-end",            checks: []}, 
@@ -343,18 +364,36 @@ class interpret{
             /* 12 */    [
                             {item: "output",            checks: ["remove-expected"]},
                             {item: "<command-block>",   checks: []}
+                        ],
+            /* 13 */    [
+                            {item: "definition-def",    checks:[]},
+                            {item: "<definition-block>",checks:[]},
+                            {item: "end",               checks:[]}
+                        ],
+            /* 14 */    [
+                            {item: "identifier",        checks:["define-variable", "check-definition-expression"]},
+                            {item: "<definition-block>",checks:[]},
+                        ],
+            /* 15 */    [
+                            {item: "expression",        checks:["check-expression"]},
+                            {item: "<command-block>",   checks:[]}
+                        ],
+            /* 16 */    [
+                            {item: "expression",        checks:["check-expression", "checkExpressionOut"]}
                         ]
         ];
         let xAxisTable = ["function-def", "condition-def", "end", "identifier", "command", "condition", "do-start", "times", 
-            "do-end", "while-start", "while-end", "if-start", "then", "else", "if-end", "condition-prefix", "number", "output"]; // all terminals
-        let yAxisTable = ["<start>", "<command-block>", "<end-if>", "<condition-core>"]; // all neterminals
+            "do-end", "while-start", "while-end", "if-start", "then", "else", "if-end", "condition-prefix", "expression", 
+            "output", "definition-def"]; // all terminals
+        let yAxisTable = ["<start>", "<command-block>", "<end-if>", "<condition-core>", "<definition-block>"]; // all neterminals
         let table = [
-                        //    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17
-                        //   fud cod end ide com con dos tim doe whs whe ifs the els ife cop num out
-            /* start */     [ 0,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
-            /* com-block */ [-1, -1,  9,  3,  2, -1,  8, -1,  9,  7,  9,  4, -1,  9,  9, -1, -1, 12],
-            /* end-if */    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  6,  5, -1, -1, -1],
-            /* cond-core */ [-1, -1, -1, 10, -1, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+                        //    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18
+                        //   fud cod end ide com con dos tim doe whs whe ifs the els ife cop exp out def
+            /* start     */ [ 0,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 13],
+            /* com-block */ [-1, -1,  9,  3,  2, -1,  8, -1,  9,  7,  9,  4, -1,  9,  9, -1, 15, 12, -1],
+            /* end-if    */ [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  6,  5, -1, -1, -1, -1],
+            /* cond-core */ [-1, -1, -1, 10, -1, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 16, -1, -1],
+            /* def-block */ [-1, -1,  9, 14, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
         ]   // LL1 table
 
         var errors = [];
@@ -381,7 +420,15 @@ class interpret{
                                 expected.push(this.dictionary["keywords"]["true"], this.dictionary["keywords"]["false"]);
                                 break;
                             case "reachable":
-                                this.command.checkReachable(codeArray[i][0]);
+                                if(codeArray[i][0].value in this.math.variables){
+                                    // reachable variable
+                                    codeArray[i][0].meaning = "expression";
+                                    var result = this.math.checkExpression(codeArray[i]);
+                                    codeArray[i] = result.codeArray;
+                                    noError = result.result;
+                                } else {
+                                    this.command.checkReachable(codeArray[i][0]);
+                                }
                                 break;
                             case "reachable-condition":
                                 this.command.checkReachableCondition(codeArray[i][0], errors, this.dictionary);
@@ -391,6 +438,45 @@ class interpret{
                                     expected.splice(expected.indexOf(codeArray[i][0].value), 1);
                                 }
                                 break;
+                            case "define-variable":
+                                this.math.defineVariable(codeArray[i][0], errors, this.dictionary);
+                                break;
+                            case "check-definition-expression":
+                                // defining variable - does it have assigned starting value check
+                                codeArray[i][0].meaning = "expression";
+                                var result = this.math.checkExpression(codeArray[i]);
+                                codeArray[i] = result.codeArray;
+                                noError = result.result;
+                                if(noError){
+                                    try{
+                                        this.math.computeExpression(codeArray[i][0]);
+                                    }
+                                    catch(err){
+                                        console.log("catched error: ", err);
+                                        if(err = "undefined variable read"){
+                                            noError = false;
+                                        } else {
+                                            throw err;
+                                        }
+                                    }
+                                }
+                                // give this variable to expression analyzator to tell if any initiating value is found
+                                break;
+                            case "check-expression":
+                                // expression check
+                                var result = this.math.checkExpression(codeArray[i]);
+                                codeArray[i] = result.codeArray;
+                                noError = result.result;
+                                break;
+                            case "checkExpressionOut":
+                                if(!(codeArray[i][0].meaning == "expression" && codeArray[i][0].type != "assigning")){
+                                    this.math.createExpressionErrors(codeArray[i][0], "Bad expression type used", errors);
+                                    noError = false;
+                                }
+                                break;
+                            default:
+                                console.log(stack[0].checks[j], stack[0]);
+                                throw "Undefined check";
                         }
                     }
                     if(!noError){
@@ -398,6 +484,9 @@ class interpret{
                     }
                     stack.shift();
                     buffer.push(codeArray[i].shift());
+                    if(codeArray[i][0] !== undefined && codeArray[i][0].meaning == "identifier" && codeArray[i][0].value in this.math.variables){
+                        codeArray[i][0].meaning = "expression";
+                    }
                 }
                 if(!noError){
                     break;
@@ -435,13 +524,15 @@ class interpret{
                     break;
                 }
             }
-            if(expected.length > 0){
-                errors.push({error: this.dictionary["checkerErrorMessages"]["missing"] + expected , token: this.command.getDefiningToken(this.command.getFunctionByToken(buffer[0]))})
+            if(expected.length > 0 && stack.length == 0){
+                errors.push({error: this.dictionary["checkerErrorMessages"]["missing"] + expected, 
+                token: this.command.getDefiningToken(this.command.getFunctionByToken(buffer[0]))})
             }
         }
         for(var key in this.command.expectDefinition){
             for(var i = 0; i < this.command.expectDefinition[key].tokens.length; i++){
-                errors.push({error: this.dictionary["checkerErrorMessages"]["missingDef"] + this.command.expectDefinition[key].type, token: this.command.expectDefinition[key].tokens[i]})
+                errors.push({error: this.dictionary["checkerErrorMessages"]["missingDef"] + this.command.expectDefinition[key].type, 
+                token: this.command.expectDefinition[key].tokens[i]})
             }
         }
         return errors;
@@ -462,9 +553,11 @@ class interpret{
             }
         }
         if(errors.length > 0){
+            console.log(errors);
             var annotationsToSet = [];
             var Range = ace.require('ace/range').Range;
             for(var i = 0; i < errors.length; i++){
+                console.log(errors[i]);
                 editor.session.addMarker(
                     new Range(errors[i].token.row, 
                         errors[i].token.column, 
@@ -588,8 +681,9 @@ class interpret{
                 break;
             case "do-start":
                 codePointer.tokenPointer ++; // iterating to number
-                if(parseInt(this.command.getToken(codePointer).value) > 0){
-                    this.activeCounters.push(parseInt(this.command.getToken(codePointer).value));
+                var number = this.math.computeExpression(this.command.getToken(codePointer));
+                if(number > 0){
+                    this.activeCounters.push(number);
                     codePointer.tokenPointer ++; // skipping keyword times
                 } else {
                     codePointer.tokenPointer --;
@@ -644,6 +738,9 @@ class interpret{
             case "else":
                 this.tokenJumper(codePointer);
                 break;
+            case "expression":
+                this.math.computeExpression(this.command.getToken(codePointer));
+                break;
             case "condition":
             case "number":
             case "times":
@@ -653,7 +750,7 @@ class interpret{
                 console.log(this.command.getToken(codePointer));
                 throw "Unexpected token";
             default:
-                console.log(token);
+                console.log(this.command.getToken(codePointer));
                 throw "Unknown token";
         }
         codePointer.tokenPointer ++;
@@ -668,44 +765,46 @@ class interpret{
      */
     async codeInterpret(codePointer, moveCursor, editor){
         while(this.running){
-            if(moveCursor){
-                editor.gotoLine(this.command.getToken(codePointer).row + 1);
-            }
             if(this.interpretToken(codePointer)){
                 this.turnOffInterpret(editor);
             } else {
                 this.updateCounter();
             }
-            if(this.debug.active){
+            if(moveCursor){
+                editor.gotoLine(this.command.getToken(codePointer).row + 1);
+            }
+            if(this.debug.active && !(this.debug.run && editor.session.getBreakpoints()[this.command.getToken(codePointer).row] === undefined)){
                 break;
             } else {
                 await sleep(this.command.speed);
             }
         }
+        console.log(this.math.variables);
     }
 
     /**
      * Checks and inteprets code from ACE text editor.
+     * @param editor is the editor we want to take the code from.
      */
-    textEditorInterpret(){
+    textEditorInterpret(editor){
         if(this.running){
             console.log("You cannot run two programs at the same time");
             return;
         };
-        if(this.processErrors(this.syntaxCheck(this.textEditor), this.textEditor)){
+        if(this.processErrors(this.syntaxCheck(editor), editor)){
             console.log("Errors found - cannot interpret");
             return;
         };
-        var toRun = this.command.getFunctionByToken(this.textEditor.selection.getCursor());
+        var toRun = this.command.getFunctionByToken(editor.selection.getCursor());
         if(toRun === undefined){
             console.log("No function selected to run");
             return;
         };
-        this.resetNativeCodeInterpret(this.textEditor);
+        this.resetNativeCodeInterpret(editor);
         this.setRunningTrue();
         this.debug.active = false;
         var codePointer = {functionName: toRun, tokenPointer: 0};
-        this.codeInterpret(codePointer, true, this.textEditor);
+        this.codeInterpret(codePointer, true, editor);
     }
 
     /**
@@ -735,31 +834,34 @@ class interpret{
     /**
      * Checks and inteprets code from ACE text editor in debug mode.
      */
-    debugTextEditorInterpret(){
+    debugTextEditorInterpret(editor){
         if(this.running && !this.debug.active){
             console.log("You cannot run two programs at the same time");
             return;
         }
         if(!this.running){
-            console.log(this.textEditor.session.getBreakpoints().length);
-            console.log(this.textEditor.session.getBreakpoints());
-
-            if(this.processErrors(this.syntaxCheck(this.textEditor), this.textEditor)){
+            //console.log(editor.session.getBreakpoints());
+            for(var i = 0; i < editor.session.getBreakpoints().length; i++){
+                if(editor.session.getBreakpoints()[i] !== undefined){
+                    this.debug.run = true;
+                    break;
+                }
+            }
+            if(this.processErrors(this.syntaxCheck(editor), editor)){
                 console.log("Errors found - cannot interpret");
                 return;
             };
-            var toRun = this.command.getFunctionByToken(this.textEditor.selection.getCursor());
+            var toRun = this.command.getFunctionByToken(editor.selection.getCursor());
             if(toRun === undefined){
                 console.log("No function selected to run");
                 return;
             };
-            this.resetNativeCodeInterpret(this.textEditor);
+            this.resetNativeCodeInterpret(editor);
             this.setRunningTrue();
             this.debug.active = true;
             this.debug.codePointer = {functionName: toRun, tokenPointer: 0};
-            console.log(JSON.stringify(this.debug.codePointer));
         }
-        this.codeInterpret(this.debug.codePointer, true, this.textEditor);
+        this.codeInterpret(this.debug.codePointer, true, editor);
     }
 
     /**
@@ -793,7 +895,8 @@ class interpret{
         var rules = {
             "function": {   create: ["base_function"],        action: ["addName", "insertConnection", "setCollapse"],},
             "condition": {  create: ["base_condition"],       action: ["addName", "insertConnection", "setCollapse"],},
-            "end": {        create: [],                       action: ["colapseBlock", "popConnectionArray", "collapse"],},
+            "definition": { create: ["base_definition"],      action: ["insertConnection", "setCollapse", "inDefinitionOn"]},
+            "end": {        create: [],                       action: ["popConnectionArray", "collapse", "inDefinitionOff"],},
             "forward": {    create: ["function_step"],        action: ["connectBlock"],},
             "right": {      create: ["function_right"],       action: ["connectBlock"],}, 
             "left": {       create: ["function_left"],        action: ["connectBlock"],},
@@ -806,7 +909,7 @@ class interpret{
             "faster": {     create: ["function_faster"],      action: ["connectBlock"],}, 
             "slower": {     create: ["function_slower"],      action: ["connectBlock"],},
             "beep": {       create: ["function_beep"],        action: ["connectBlock"],},
-            "do": {         create: ["control_repeat"],       action: ["connectBlock", "insertConnection", "manageNumber"],},
+            "do": {         create: ["control_repeat"],       action: ["connectBlock", "insertConnection", "manageExpression"],},
             "while": {      create: ["control_while"],        action: ["connectBlock", "insertConnection", "manageCondition"],},
             "if": {         create: ["if_creator"],           action: ["connectBlock", "insertConnection", "manageCondition"],},
             "else": {       create: [],                       action: ["popConnectionArray"],},
@@ -815,7 +918,47 @@ class interpret{
         }
         var currentRule;
         var toCollapse;
+        var inDefinition = false;
         var numOfCollapsedBlocks = 0;
+        var variables = [];
+
+        /**
+         * Loads expression string to be inserted in blockly block.
+         * @param {codeArray} codeArray is the code token array.
+         * @param {number} tokenIter is the current position in the code array.
+         * @param {array} variables is the array of known variables.
+         * @returns expression string and updated token iterator in a form of an object.
+         */
+        function loadExpresion(codeArray, tokenIter, variables){
+            var expressionString = "";
+            var nextIdentifierAdd = true;
+            let binaryOps = ["+", "-", "*", "/", "%"];
+            let assignOps = ["="];
+            let compareOps = ["<", "<=", ">", ">=", "==", "!="];
+            let expectingNext = binaryOps + assignOps + compareOps + ["("];
+            let allOperators = binaryOps + assignOps + compareOps + ["(", ")"];
+            while(true){
+                if(codeArray[tokenIter].meaning == "expression" || 
+                    (allOperators.includes(codeArray[tokenIter].value[0]) && codeArray[tokenIter].meaning == "identifier")){
+                    nextIdentifierAdd = false;
+                    expressionString += codeArray[tokenIter].value;
+                    if(expectingNext.includes(codeArray[tokenIter].value) || 
+                        expectingNext.includes(codeArray[tokenIter].value[codeArray[tokenIter].value.length - 1])){
+                        nextIdentifierAdd = true;
+                    }
+                    tokenIter ++;
+                } else if(codeArray[tokenIter].meaning == "identifier" && nextIdentifierAdd){
+                    variables.push(codeArray[tokenIter].value);
+                    nextIdentifierAdd = false;
+                    expressionString += codeArray[tokenIter].value;
+                    tokenIter ++;
+                } else {
+                    break;
+                }
+            }
+            return {string: expressionString, iterator: tokenIter};
+        }
+
         for(var i = 1; i <  codeArray.length; i++){
             codeArray[0] = codeArray[0].concat(codeArray[i]);
         }
@@ -843,8 +986,21 @@ class interpret{
                     }
                 }
             } else {
-                newBlock = workspace.newBlock("function_userDefined");
-                currentRule = {action : ["connectBlock", "insertName"]}
+                //console.log("tokenIter: ", codeArray[tokenIter], "tokenIter + 1: ",codeArray[tokenIter + 1])
+                if(inDefinition){
+                    newBlock = workspace.newBlock("math_definevar");
+                    newBlock.setFieldValue(codeArray[tokenIter].value, "VAR_NAME");
+                    currentRule = {action: ["connectBlock", "manageExpression"]};
+                } else if(codeArray[tokenIter + 1].value == "="){
+                    newBlock = workspace.newBlock("math_setvar");
+                    newBlock.setFieldValue(codeArray[tokenIter].value, "VAR_NAME");
+                    variables.push(codeArray[tokenIter].value);
+                    currentRule = {action: ["connectBlock", "manageExpression"]};
+                } else {
+                    newBlock = workspace.newBlock("function_userDefined");
+                    variables.push(codeArray[tokenIter].value);
+                    currentRule = {action : ["connectBlock", "insertName"]};
+                }
             }
             if(newBlock !== undefined){
                 newBlock.initSvg();
@@ -891,7 +1047,15 @@ class interpret{
                             newBlock.getField('COND_PREF').setValue("optionIsNot");
                         }
                         tokenIter ++;
-                        var conditionBlock = workspace.newBlock(this.tellCondBlockByWord(codeArray[tokenIter].dictKey));
+                        var conditionBlock;
+                        if(variables.includes(codeArray[tokenIter].value) || codeArray[tokenIter].meaning == "expression" || codeArray[tokenIter + 1] == "expresion"){
+                            var result = loadExpresion(codeArray, tokenIter, variables);
+                            tokenIter = result.iterator;
+                            conditionBlock = workspace.newBlock("math_variable");
+                            conditionBlock.setFieldValue(result.string, 'VAR_NAME');
+                        } else {
+                            conditionBlock = workspace.newBlock(this.tellCondBlockByWord(codeArray[tokenIter].dictKey));
+                        }
                         conditionBlock.initSvg();
                         conditionBlock.render();
                         newBlock.getInput('COND').connection.connect(conditionBlock.outputConnection);
@@ -899,14 +1063,18 @@ class interpret{
                             conditionBlock.getField('FC_NAME').setValue(codeArray[tokenIter].value);
                         }
                         break;
-                    case "manageNumber":
+                    case "manageExpression":
                         tokenIter ++;
-                        if(codeArray[tokenIter].meaning == "number"){
-                            newBlock.getField('DO_TIMES').setValue(codeArray[tokenIter].value);
-                        } else {
-                            console.log("err - number expected");
-                            return;
+                        if(codeArray[tokenIter].value == "="){
+                            tokenIter ++;
                         }
+                        var expressionBlock = workspace.newBlock("math_variable");
+                        var result = loadExpresion(codeArray, tokenIter, variables);
+                        tokenIter = result.iterator - 1;
+                        expressionBlock.initSvg();
+                        expressionBlock.render();
+                        expressionBlock.setFieldValue(result.string, "VAR_NAME");
+                        newBlock.getInput('EXPRESSION').connection.connect(expressionBlock.outputConnection);
                         break;
                     case "insertName":
                         newBlock.getField('FC_NAME').setValue(codeArray[tokenIter].value);
@@ -922,6 +1090,15 @@ class interpret{
                             toCollapse = undefined;
                         }
                         break;
+                    case "inDefinitionOn":
+                        inDefinition = true;
+                        break;
+                    case "inDefinitionOff":
+                        inDefinition = false;
+                        break;
+                    default:
+                        console.log(currentRule.action[i]);
+                        throw "Unknown action";
                 }
             }
         }
@@ -1093,9 +1270,13 @@ class interpret{
                     interpret.blocklyTextRepresentation.setValue(fileLoadedEvent.target.result);
                     interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation));
                     interpret.lockBlocklyTextEditor = false;
+                    interpret.blocklyTextRepresentation.setValue("");
+                    interpret.blocklyTextRepresentation.setValue(Blockly.Karel.workspaceToCode(workspace));
+                    interpret.blocklyTextRepresentation.clearSelection();
                     break;
                 case "code":
                     interpret.textEditor.setValue(fileLoadedEvent.target.result);
+                    interpret.textEditor.clearSelection();
                     break;
                 case "all":
                     var dataJson = JSON.parse(fileLoadedEvent.target.result);
@@ -1131,9 +1312,13 @@ class interpret{
                                 interpret.blocklyTextRepresentation.setValue(dataJson["blockly"]);
                                 interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation));
                                 interpret.lockBlocklyTextEditor = false;
+                                interpret.blocklyTextRepresentation.setValue("");
+                                interpret.blocklyTextRepresentation.setValue(Blockly.Karel.workspaceToCode(workspace));
+                                interpret.blocklyTextRepresentation.clearSelection();
                                 break;
                             case "code":
                                 interpret.textEditor.setValue(dataJson["code"]);
+                                interpret.textEditor.clearSelection();
                                 break;
                             default:
                                 console.log("LoadFromFile warning - unknown save tree [" + key + "]");

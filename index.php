@@ -127,7 +127,7 @@
             <!-- ACE code editor -->
             <div id="c" class="split split-horizontal">
                 <div class="content">
-                    <div id="textEditor" style="height:100%"><?php include('saves/error_save.txt'); ?></div>
+                    <div id="textEditor" style="height:100%"><?php include('saves/math_save2.txt'); ?></div>
                     <div id="blocklyReader" style="height:100%; display:none;"></div>
                 </div>
             </div>  

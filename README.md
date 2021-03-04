@@ -1,6 +1,6 @@
 # Projek Karel 3D
-### Author - Vojtěch Čoupek
-### Bakalářksá práce za podpory VUT FIT Brno a Gymnasium Šlapanice
+### Autor - Vojtěch Čoupek
+### Bakalářská práce za podpory VUT FIT Brno a Gymnasium Šlapanice
 
 [![Foo](https://gympl.gslapanice.cz/themes/slapanice/images/gympls.jpg)](https://gympl.gslapanice.cz/)
 
@@ -46,7 +46,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> implementován přehledný interpret vnitřní tokenové struktury zvládající více chyb v kódu najednou
     - <span style="color:green"> kontrola zobrazuje chyby v ACE
     - <span style="color:green"> implementována možnost spuštění s krokováním 
-    - jednoduchý debugger (možná breakpointy s ACE)
+    - <span style="color:green"> jednoduchý debugger (možná breakpointy s ACE)
 - uživatelsky dostupné modifikace místnosti
     - <span style="color:green"> implementováno nastavení rozměrů místnosti
     - <span style="color:green"> implementováno ukládání a načítání místosti ze souboru
@@ -54,8 +54,8 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - mutace programovacího jazyka karel do podoby C lang
     - mutace programovacího jazyka karel do podoby Python
 - přidání čísel a proměnných do programu
-    - v plánu navržení proměnných v jazyku
-    - v plánu jednoduché operace s čísly
+    - <span style="color:green"> navrženy proměnné v jazyku
+    - <span style="color:green"> implementovány jednoduché operace s čísly
 - jazykové mutace
     - <span style="color:green"> implementováno pomocí js lang file
     - <span style="color:green"> v plánu mutace do anglického jazyka
@@ -72,7 +72,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
 - přehledné GUI
     - <span style="color:green"> implementovaná možnost změny velikosti oken - split.js
     - <span style="color:green"> implementována první verze uživatelského prostředí
-    - v plánu vlastní lehce modifikovatelné prostředí
+    - <span style="color:green"> implementováno modifikovatelné prostředí
     - v plánu různá témata
 
 ## Spuštění
@@ -181,6 +181,32 @@ V horním panelu jsou dostupná následující nástroje aplikace:
         - `Změna textového editoru` - Přepne editor ze zápisu programů na reprezentaci blokového editoru, nebo naopak.
         - `Test` - Interní testovací tlačítko.
 
+## Proměnné
+Tento projekt si dává za cíl originální jazyk rozšířit. Tohoto cíle je dosaženo pomocí obohacení jazyka o proměnné.
+Do proměnných lze ukládat celočíselné kladné i záporné hodnoty definované matematickými výrazy s použitím celočíselných kladných hodnot a hodnot z proměnných. V rovnicích lze využívat tyto operátory:
+    - `+` - sčítání
+    - `-` - odečítání
+    - `*` - násobení 
+    - `/` - celočíselné dělení
+    - `%` - zbytek po dělení
+Karel rozumí i uzávorkování výrazů pomocí jednoduchých závorek `(` a `)`.
+    - příklad validní konstrukce - `8 * (4 - promenna2)`
+Hodnoty těchto výrazů lze poté ukládat do definovaných proměnných.
+Proměnné je potřeba definovat pomocí následující syntaxe na úrovni definice příkazů a podmínek:
+
+```
+definuj
+    # definice proměnné a přiřazení hodnoty
+    [nazev promenne] = [matematický výraz]
+    # pouze definice proměnné
+    [nazev promenne]
+konec
+```
+Těchto definičních bloků může být v projektu několik ovšem matematický výraz nesmí obsahovat ještě nedefinovanou proměnnou. Pořadí definice proměnných interpretem je odshora dolů v souboru. Věchny definované proměnné jsou v globálním scope a jsou od jejich definice dostupné ve všech příkazech i podmínkách.
+Proměnné a výrazy lze využít v definování počtu cyklů opakuj (definují N počtů opakování) a v konstrukcích rozhodující pomocí podmínky, kde paltí, že hodnota 0 je nepravda a jakákoliv jiná je pravda.
+
+## Režim debugování
+Pokud nechceme spouštět celý program v Karlovi najednou, ale chceme program krokovat, využijeme tlačítko "brouka", které interpret spustí v debugovacím režimu. Nyní Karel bude porvádět jeden příkaz na jedno kliknutí debug tlařítka. Pokud je kód příliš dlouhý a nechce se nám proklikávat až do potřebého bodu, je možné do míst vložit breakpoint kliknutím na číslo řádku na levé straně editoru. Poté debugovací rozhraní provede interpretaci do tohoto bodu, zde se zastaví a čeká na opětovné zmáčknutí debug tlačítka pro další postup.
 ## Upozornění
 - Nejedná se o finální produkt a aplikace je pouze v ranné fázi vývoje.
 - Grafika obsahuje placeholder objekty, opravdové modely budou doplněny v budoucnu.

@@ -6,13 +6,15 @@ export{command};
  */
 class command{
 
-    constructor(karel){
+    constructor(karel, math){
         this.karel = karel;                     // given robot karel to operate with
         this.commandList = {};                  // user defined commands list dictionary
         this.conditionList = {};                // user defined condition list dictionary
         this.speed = 125;                       // tells the time for interpet step
         this.lastConditionResult = "undef";     // used for user defined condition evaluation
         this.expectDefinition = {};
+        this.math = math;
+        this.math.assignCommand(this);
     }
 
     /**
@@ -39,9 +41,10 @@ class command{
      * @param {array of tokens} init is the tokes that will be added directly to the new record.
      * @param {array of errors} errors if errors occures, they will be passed in this array.
      * @param {JSON} dictionary dictionary from which error texts are taken.
+     * @returns true if successful, false otherwise
      */
     defineCommand(token, init, errors, dictionary){
-        if(token.value in this.commandList || token.value in this.conditionList){
+        if(token.value in this.commandList || token.value in this.conditionList || token.value in this.math.variables){
             console.log("defineCommand error - redefinition of " + token.value);
             errors.push({error: dictionary["checkerErrorMessages"]["redefinition"], token: token}); 
         } else {
@@ -66,9 +69,10 @@ class command{
      * @param {array of tokens} init is the tokes that will be added directly to the new record.
      * @param {array of errors} errors if errors occures, they will be passed in this array.
      * @param {JSON} dictionary dictionary from which error texts are taken.
+     * @returns true if successful, false otherwise
      */
     defineCondition(token, init, errors, dictionary){
-        if(token.value in this.commandList || token.value in this.conditionList){
+        if(token.value in this.commandList || token.value in this.conditionList || token.value in this.math.variables){
             console.log("defineCondition error - redefiniton of " + token.value);
             errors.push({error: dictionary["checkerErrorMessages"]["redefinition"], token: token});
         } else {
@@ -208,6 +212,12 @@ class command{
                     console.log(conditionCore);
                     throw "Bad condition for evaluation";
             }
+        } else if(conditionCore.menaning = "expression"){
+            if(this.math.computeExpression(conditionCore) == 0){
+                result = false;
+            } else {
+                result = true;
+            }
         } else {
             if(this.conditionList[conditionCore.value].result == "undef"){
                 codePointer.tokenPointer -= 2; // setting code pointer to the begining of the structire (if-start, while-start)
@@ -255,7 +265,7 @@ class command{
                 this.karel.placeBrick();
                 break;
             case "pickBrick":
-                this.karel.pickBrick();
+                this.karel.pickUpBrick();
                 break;
             case "placeMark":
                 this.karel.markOn();

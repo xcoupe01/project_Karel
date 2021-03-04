@@ -89,7 +89,8 @@ function createBasicToolboxByLang(Interpret){
             "0",
             [
                 "base_function", 
-                "base_condition"
+                "base_condition",
+                "base_definition"
             ]
         ],
         "functions" : [
@@ -128,7 +129,19 @@ function createBasicToolboxByLang(Interpret){
                 "condition_vacant",
                 "condition_userdefined"
             ]
-        ]
+        ],
+        "math": [
+            "230",
+            [
+                "math_number",
+                "math_variable",
+                "math_operators",
+                "math_compare",
+                "math_brackets",
+                "math_definevar",
+                "math_setvar"
+            ]
+        ] 
     };
     var returnJson = {
         "kind" : "categoryToolbox",
@@ -205,11 +218,34 @@ function changeLanguage(langFile){
 
 /**
  * Sets Karel's syntax closer (eg.: *while)
- * @param {*} closer is the closer character
+ * @param {character} closer is the closer character
  */
 function changeSyntaxCloser(closer){
     mainInterpret.closer = closer;
     blocklySetCloser(closer);
+}
+
+/**
+ * manages breakpoint adition and deletion update
+ * @param {event} e 
+ */
+function manageBreakpoint(e) {
+    var target = e.domEvent.target; 
+    if (target.className.indexOf("ace_gutter-cell") == -1)
+        return; 
+    if (!e.editor.isFocused()) 
+        return; 
+    //console.log(e.clientX > 25 + target.getBoundingClientRect().left);
+    //console.log(e.clientX, 25 + target.getBoundingClientRect().left);
+    if (e.clientX > 25 + target.getBoundingClientRect().left) 
+        return; 
+    var breakpoints = e.editor.session.getBreakpoints(row, 0);
+    var row = e.getDocumentPosition().row;
+    if(typeof breakpoints[row] === typeof undefined)
+        e.editor.session.setBreakpoint(row);
+    else
+        e.editor.session.clearBreakpoint(row);
+    e.stop();
 }
 
 // ACE settings - editor
@@ -228,24 +264,7 @@ editor.commands.on("afterExec", function (event) {
         editor.execCommand("startAutocomplete");
     }
 });
-editor.on("guttermousedown", function(e) {
-    var target = e.domEvent.target; 
-    if (target.className.indexOf("ace_gutter-cell") == -1)
-        return; 
-    if (!editor.isFocused()) 
-        return; 
-    //console.log(e.clientX > 25 + target.getBoundingClientRect().left);
-    //console.log(e.clientX, 25 + target.getBoundingClientRect().left);
-    if (e.clientX > 25 + target.getBoundingClientRect().left) 
-        return; 
-    var breakpoints = e.editor.session.getBreakpoints(row, 0);
-    var row = e.getDocumentPosition().row;
-    if(typeof breakpoints[row] === typeof undefined)
-        e.editor.session.setBreakpoint(row);
-    else
-        e.editor.session.clearBreakpoint(row);
-    e.stop();
-})
+editor.on("guttermousedown", function (event) {manageBreakpoint(event)});
 
 // ACE settings - blockly reader
 var blocklyReader = ace.edit("blocklyReader");
@@ -254,6 +273,7 @@ blocklyReader.setOptions({
     readOnly: true,
 });
 blocklyReader.setTheme('ace/theme/chrome');
+blocklyReader.on("guttermousedown", function (event) {manageBreakpoint (event)});
 
 // ------------------------------------------------
 
@@ -341,8 +361,20 @@ document.querySelector('#setCzech').onclick = function() {changeLanguage('./sour
 document.querySelector('#setEnglish').onclick = function() {changeLanguage('./source/languages/en.js')};
 
 // navbar items
-document.querySelector('#runCode').onclick = function() {mainInterpret.textEditorInterpret()};
-document.querySelector('#runDebug').onclick = function() {mainInterpret.debugTextEditorInterpret()};
+document.querySelector('#runCode').onclick = function() {
+    if(document.querySelector('#textEditor').style.display == "none"){
+        mainInterpret.textEditorInterpret(blocklyReader);
+    } else {
+        mainInterpret.textEditorInterpret(editor);
+    }
+};
+document.querySelector('#runDebug').onclick = function() {
+    if(document.querySelector('#textEditor').style.display == "none"){
+        mainInterpret.debugTextEditorInterpret(blocklyReader);
+    } else {
+        mainInterpret.debugTextEditorInterpret(editor);
+    }
+};
 document.querySelector('#stop').onclick = function() {mainInterpret.turnOffInterpret()};
 
 // main menu items
@@ -371,7 +403,5 @@ document.querySelector('#ACEeditorToggle').onclick = function() {
 document.querySelector('#counterDisplay').onclick = function() {mainInterpret.resetCounter()};
 
 document.querySelector('#test').onclick = function() {
-    console.log(editor.session.getBreakpoints());
-    //mainInterpret.command.karel.test();
-    //console.log(document.querySelector('#test').clientHeight);
+    console.log(mainInterpret.nativeCodeTokenizer(editor));
 };

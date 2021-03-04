@@ -15,8 +15,8 @@ Blockly.Blocks['function_step'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["forward"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -27,7 +27,7 @@ Blockly.Blocks['function_right'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["right"]);
-    this.setPreviousStatement(true, null);
+    this.setPreviousStatement(true, "command");
     this.setNextStatement(true, null);
     this.setColour(90);
     this.setTooltip("");
@@ -39,8 +39,8 @@ Blockly.Blocks['function_left'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["left"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -51,8 +51,8 @@ Blockly.Blocks['function_place'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["placeBrick"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -63,8 +63,8 @@ Blockly.Blocks['function_pick'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["pickBrick"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -75,8 +75,8 @@ Blockly.Blocks['function_placemark'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["placeMark"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -87,8 +87,8 @@ Blockly.Blocks['function_unmark'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["pickMark"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -99,8 +99,8 @@ Blockly.Blocks['function_true'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["true"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -111,8 +111,8 @@ Blockly.Blocks['function_false'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["false"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -123,8 +123,8 @@ Blockly.Blocks['function_faster'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["faster"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -135,8 +135,8 @@ Blockly.Blocks['function_slower'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["slower"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -147,8 +147,8 @@ Blockly.Blocks['function_beep'] = {
   init: function() {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["beep"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -160,8 +160,8 @@ Blockly.Blocks['function_userDefined'] = {
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["blocklyCategory"]["userDefinedFunc"])
         .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["name"]), "FC_NAME");
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(90);
  this.setTooltip("");
  this.setHelpUrl("");
@@ -171,33 +171,40 @@ Blockly.Blocks['function_userDefined'] = {
 Blockly.Blocks['control_repeat'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField(Blockly.langDictionary["keywords"]["do"])
-        .appendField(new Blockly.FieldNumber(0), "DO_TIMES")
+        .appendField(Blockly.langDictionary["keywords"]["do"]);
+    this.appendValueInput("EXPRESSION")
+        .setCheck("number");
+    this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["times"]);
     this.appendStatementInput("INNER_CODE")
-        .setCheck(null);
+        .setCheck("command");
     this.appendDummyInput()
         .appendField(Blockly.closer+Blockly.langDictionary["keywords"]["do"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(180);
     this.setTooltip("");
     this.setHelpUrl("");
+    var numBlock = this.workspace.newBlock('math_number');
+    numBlock.setShadow(true);
+    numBlock.initSvg();
+    numBlock.render();
+    this.getInput('EXPRESSION').connection.connect(numBlock.outputConnection);
   }
 };
 
 Blockly.Blocks['control_while'] = {
   init: function() {
     this.appendValueInput("COND")
-        .setCheck("condition")
+        .setCheck(["condition", "number"])
         .appendField(Blockly.langDictionary["keywords"]["while"])
         .appendField(new Blockly.FieldDropdown([[Blockly.langDictionary["keywords"]["is"],"optionIs"], [Blockly.langDictionary["keywords"]["isNot"],"optionIsNot"]]), "COND_PREF");
     this.appendStatementInput("INNER_CODE")
-        .setCheck(null);
+        .setCheck("command");
     this.appendDummyInput()
         .appendField(Blockly.closer+Blockly.langDictionary["keywords"]["while"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(180);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -207,16 +214,16 @@ Blockly.Blocks['control_while'] = {
 Blockly.Blocks['control_if'] = {
   init: function() {
     this.appendValueInput("COND")
-        .setCheck(null)
+        .setCheck(["condition", "number"])
         .appendField(Blockly.langDictionary["keywords"]["if"])
         .appendField(new Blockly.FieldDropdown([[Blockly.langDictionary["keywords"]["is"],"optionIs"], [Blockly.langDictionary["keywords"]["isNot"],"optionIsNot"]]), "COND_PREF");
     this.appendStatementInput("INNER_CODE_THEN")
-        .setCheck(null)
+        .setCheck("command")
         .appendField(Blockly.langDictionary["keywords"]["then"]);
     this.appendDummyInput()
         .appendField(Blockly.closer+Blockly.langDictionary["keywords"]["if"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(180);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -226,19 +233,19 @@ Blockly.Blocks['control_if'] = {
 Blockly.Blocks['control_ifelse'] = {
   init: function() {
     this.appendValueInput("COND")
-        .setCheck(null)
+        .setCheck(["condition", "number"])
         .appendField(Blockly.langDictionary["keywords"]["if"])
         .appendField(new Blockly.FieldDropdown([[Blockly.langDictionary["keywords"]["is"],"optionIs"], [Blockly.langDictionary["keywords"]["isNot"],"optionIsNot"]]), "COND_PREF");
     this.appendStatementInput("INNER_CODE_THEN")
-        .setCheck(null)
+        .setCheck("command")
         .appendField(Blockly.langDictionary["keywords"]["then"]);
     this.appendStatementInput("INNER_CODE_ELSE")
-        .setCheck(null)
+        .setCheck("command")
         .appendField(Blockly.langDictionary["keywords"]["else"]);
     this.appendDummyInput()
         .appendField(Blockly.closer+Blockly.langDictionary["keywords"]["if"]);
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
     this.setColour(180);
     this.setTooltip("");
     this.setHelpUrl("");
@@ -301,6 +308,128 @@ Blockly.Blocks['condition_userdefined'] = {
   }
 };
 
+Blockly.Blocks['math_number'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldNumber(0, 0, Infinity, 1), "VALUE");
+    this.setOutput(true, "number");
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+Blockly.Blocks['math_variable'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["variable"]), "VAR_NAME");
+    this.setOutput(true, "number");
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+  }
+};
+
+Blockly.Blocks['math_operators'] = {
+  init: function() {
+    this.appendValueInput("LEFT_SIDE")
+        .setCheck("number");
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldDropdown([["+","+"], ["-","-"], ["*","*"], ["/","/"], ["%","%"]]), "OPERATOR");
+    this.appendValueInput("RIGHT_SIDE")
+        .setCheck("number");
+    this.setOutput(true, "number");
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+    var numBlock = this.workspace.newBlock('math_number');
+    numBlock.setShadow(true);
+    numBlock.initSvg();
+    numBlock.render();
+    this.getInput('LEFT_SIDE').connection.connect(numBlock.outputConnection);
+    numBlock = this.workspace.newBlock('math_number');
+    numBlock.setShadow(true);
+    numBlock.initSvg();
+    numBlock.render();
+    this.getInput('RIGHT_SIDE').connection.connect(numBlock.outputConnection);
+  }
+};
+
+Blockly.Blocks['math_compare'] = {
+  init: function() {
+    this.appendValueInput("LEFT_SIDE")
+        .setCheck("number");
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldDropdown([[">",">"], [">=",">="], ["<","<"], ["<=","<="], ["==","=="], ["!=","!="]]), "OPERATOR");
+    this.appendValueInput("RIGHT_SIDE")
+        .setCheck("number");
+    this.setOutput(true, "number");
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+    var numBlock = this.workspace.newBlock('math_number');
+    numBlock.setShadow(true);
+    numBlock.initSvg();
+    numBlock.render();
+    this.getInput('LEFT_SIDE').connection.connect(numBlock.outputConnection);
+    numBlock = this.workspace.newBlock('math_number');
+    numBlock.setShadow(true);
+    numBlock.initSvg();
+    numBlock.render();
+    this.getInput('RIGHT_SIDE').connection.connect(numBlock.outputConnection);
+  }
+};
+
+Blockly.Blocks['math_brackets'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("(");
+    this.appendValueInput("VALUE")
+        .setCheck("number");
+    this.appendDummyInput()
+        .appendField(")");
+    this.setOutput(true, "number");
+    this.setColour(230);
+    this.setTooltip("");
+    this.setHelpUrl("");
+    var numBlock = this.workspace.newBlock('math_number');
+    numBlock.setShadow(true);
+    numBlock.initSvg();
+    numBlock.render();
+    this.getInput('VALUE').connection.connect(numBlock.outputConnection);
+  }
+};
+
+Blockly.Blocks['math_definevar'] = {
+  init: function() {
+    this.appendValueInput("EXPRESSION")
+        .setCheck("number")
+        .appendField(Blockly.langDictionary["blocklyCategory"]["defvar"])
+        .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["variable"]), "VAR_NAME")
+        .appendField("=");
+    this.setPreviousStatement(true, "variable_def");
+    this.setNextStatement(true, "variable_def");
+    this.setColour(230);
+ this.setTooltip("");
+ this.setHelpUrl("");
+  }
+}
+
+Blockly.Blocks['math_setvar'] = {
+  init: function() {
+    this.appendValueInput("EXPRESSION")
+        .setCheck("number")
+        .appendField(Blockly.langDictionary["blocklyCategory"]["setvar"])
+        .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["variable"]), "VAR_NAME")
+        .appendField("=");
+    this.setPreviousStatement(true, "command");
+    this.setNextStatement(true, "command");
+    this.setColour(230);
+ this.setTooltip("");
+ this.setHelpUrl("");
+  }
+}
+
 Blockly.Blocks['base_function'] = {
   init: function() {
     this.appendDummyInput()
@@ -308,7 +437,7 @@ Blockly.Blocks['base_function'] = {
         .appendField(Blockly.langDictionary["keywords"]["function"])
         .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["name"]), "NAME");
     this.appendStatementInput("INNER_CODE")
-        .setCheck(null);
+        .setCheck("command");
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["end"]);
     this.setColour(0);
@@ -324,11 +453,25 @@ Blockly.Blocks['base_condition'] = {
         .appendField(Blockly.langDictionary["keywords"]["condition"])
         .appendField(new Blockly.FieldTextInput(Blockly.langDictionary["blocklyCategory"]["name"]), "NAME");
     this.appendStatementInput("INNER_CODE")
-        .setCheck(null);
+        .setCheck("command");
     this.appendDummyInput()
         .appendField(Blockly.langDictionary["keywords"]["end"]);
     this.setColour(0);
     this.setTooltip("");
     this.setHelpUrl("");
+  }
+};
+
+Blockly.Blocks['base_definition'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.langDictionary["keywords"]["definition"]);
+    this.appendStatementInput("INNER_CODE")
+        .setCheck("variable_def");
+    this.appendDummyInput()
+        .appendField(Blockly.langDictionary["keywords"]["end"]);
+    this.setColour(0);
+ this.setTooltip("");
+ this.setHelpUrl("");
   }
 };

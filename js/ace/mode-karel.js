@@ -19,27 +19,33 @@ var karelHighlightRules = function() {
     var hexInteger = "(?:0[xX][\\dA-Fa-f]+)";
     var integer = "(?:" + decimalInteger + "|" + hexInteger + ")";
 
+    /* enables Floats to be recognizeg - pt1
     var fraction = "(?:\\.\\d+)";
     var intPart = "(?:\\d+)";
     var pointFloat = "(?:(?:" + intPart + "?" + fraction + ")|(?:" + intPart + "\\.))";
     var floatNumber = "(?:" + pointFloat + ")";
+    */
 
     this.$rules = { //rules just for highlighting
         "start" : [
         {
             token : "comment",          // single line comment
             regex : "#.*$"
-        }, {
+        },
+        /* enables Floats to be recognizeg - pt2
+        {
             token : "constant.numeric", // float
             regex : floatNumber
-        }, {
+        }, 
+        */
+        {
             token : "constant.numeric", // integer
             regex : integer + "\\b"
         }, 
         this.keywordRule
         , {
             token : "keyword.operator", //operators
-            regex : "\\+|\\-|\\*|\\/|%|\\#|\\^|~|<|>|<=|=>|==|~=|=|\\:|\\.\\.\\.|\\.\\."
+            regex : "\\+|\\-|\\*|\\/|\\^|<|>|<=|=>|==|=|\\:|\\)|\\("
         }, {
             token : "text",             //text
             regex : "\\s+|\\w+"

@@ -1,42 +1,47 @@
 export function setLang(){
     return {
         "keywords" : {
-            "function"      : "prikaz",         //
-            "condition"     : "podminka",       //
-            "end"           : "konec",          //
-            "forward"       : "krok",           //
-            "right"         : "vpravo",         //
-            "left"          : "vlevo",          //
-            "placeBrick"    : "poloz",          //
-            "pickBrick"     : "zvedni",         //
-            "placeMark"     : "oznac",          //
-            "pickMark"      : "odznac",         //
-            "do"            : "udelej",         //
-            "times"         : "krat",           //
-            "while"         : "dokud",          //
+            "function"      : "prikaz",
+            "condition"     : "podminka",
+            "definition"    : "definice",
+            "end"           : "konec",
+            "forward"       : "krok",
+            "right"         : "vpravo",
+            "left"          : "vlevo",
+            "placeBrick"    : "poloz",
+            "pickBrick"     : "zvedni",
+            "placeMark"     : "oznac",
+            "pickMark"      : "odznac",
+            "do"            : "udelej",
+            "times"         : "krat",
+            "while"         : "dokud",
             "is"            : "je",
-            "isNot"         : "neni",           
-            "wall"          : "zed",            //
-            "brick"         : "cihla",          //
-            "mark"          : "znacka",         //
-            "vacant"        : "volno",          //     
-            "if"            : "kdyz",           //
-            "then"          : "tak",            //
-            "else"          : "jinak",          //
-            "true"          : "pravda",         //
-            "false"         : "nepravda",       //
-            "faster"        : "rychle",         //
-            "slower"        : "pomalu",         //
-            "beep"          : "pip"             //
+            "isNot"         : "neni",
+            "wall"          : "zed",
+            "brick"         : "cihla",
+            "mark"          : "znacka",
+            "vacant"        : "volno",    
+            "if"            : "kdyz",
+            "then"          : "tak",
+            "else"          : "jinak",
+            "true"          : "pravda",
+            "false"         : "nepravda",
+            "faster"        : "rychle",
+            "slower"        : "pomalu",
+            "beep"          : "pip"
         },
         "blocklyCategory" : {
             "base"            : "Základ",
             "functions"       : "Funkce",
             "progFlow"        : "Řízení toku",
             "condition"       : "Podmínky",
+            "math"            : "Matematika",
             "name"            : "nazev",
             "userDefinedFunc" : "funkce",
-            "userDefinedCond" : "podminka"
+            "userDefinedCond" : "podminka",
+            "setvar"          : "nastav",
+            "defvar"          : "definuj",
+            "variable"        : "promenna",
         },
         "checkerErrorMessages" : {
             "unexpectedWord": ["Neočekávaný vyraz - dostal jsem: ", " ale očekával jsem: "],
@@ -48,7 +53,7 @@ export function setLang(){
         },
         "ACE" : {
             "highlight" : {
-                "entity.name.function" : "prikaz|podminka|konec",
+                "entity.name.function" : "prikaz|podminka|konec|definice",
                 "keyword.control" : "kdyz|tak|jinak|\*kdyz|udelej|\*udelej|dokud|\*dokud|krat",
                 "variable.parameter" : "zed|cihla|znacka|je|neni|volno",
                 "constant.language" : "pravda|nepravda",
