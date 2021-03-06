@@ -9,6 +9,11 @@ class math{
         this.variables = {};
         this.numberOfVariables = 10;
         this.command;
+        this.binaryOps = ["+", "-", "*", "/", "%"];
+        this.assignOps = ["="];
+        this.compareOps = ["<", "<=", ">", ">=", "==", "!="];
+        this.expectingNext = this.binaryOps + this.assignOps + this.compareOps + ["("];
+        this.allOperators = this.binaryOps + this.assignOps + this.compareOps + ["(", ")"];
     }
 
     /**
@@ -54,6 +59,102 @@ class math{
         return this.variables[name];
     }
 
+
+    /**
+     * ACE sometimes produces tokens that are expresion but presented as identifiers (like "((+").
+     * This function can tell the diference between those tokes which should be expressions and the ones that souldnt.
+     * This function takes the code array and the list of operators we want to be recognized, repairs the code array and
+     * tells if the repair was done.
+     * @param {codeArray} codeArray is the code array that contains the bad tokens.
+     * @returns true of the array war repaired, false otherwise
+     */
+    checkIdentifiersMixing(codeArray){
+        var testedToken = codeArray[0];
+        var insertTokens = [];
+        while(testedToken.value.length > 0){
+            if(this.allOperators.includes(testedToken.value[0] + testedToken.value[1])){
+                insertTokens.push({
+                    value: testedToken.value[0] + testedToken.value[1] , 
+                    meaning: "expression", 
+                    row: testedToken.row, 
+                    column: testedToken.column, 
+                    psaMeaning: testedToken.value[0] + testedToken.value[1], 
+                    psaTerminal: true
+                });
+                testedToken.column += 2;
+                testedToken.value = testedToken.value.substring(2);
+            } else if(this.allOperators.includes(testedToken.value[0])){
+                insertTokens.push({
+                    value: testedToken.value[0], 
+                    meaning: "expression", 
+                    row: testedToken.row, 
+                    column: testedToken.column, 
+                    psaMeaning: testedToken.value[0], 
+                    psaTerminal: true
+                });
+                testedToken.column ++;
+                testedToken.value = testedToken.value.substring(1);
+            } else {
+                return false;
+            }
+        }
+        codeArray.shift();
+        while(insertTokens.length > 0){
+            codeArray.unshift(insertTokens.pop());
+        }
+        return true;
+    }
+
+    /**
+     * Loads expression and from code array and returns information about it.
+     * This function assumes that there is a expression in begining of code array, the
+     * expression is shifted from the array and the colected information about the 
+     * expression is returned in the output object.
+     * Return object contains:
+     *  - expressionArray - array of tokens that belong to the current expression.
+     *  - assignNum - number of assigning operators.
+     *  - expressionString - is the text representation of the expression.
+     * @param {*} codeArray is the code array to scan the expression from
+     * @returns object containing information about the expression (described above).
+     */
+    loadExpression(codeArray){
+        var expressionArray = [];
+        var assignNum = 0;
+        var expressionString = "";
+
+        while(codeArray[0].meaning == "expression" || codeArray[0].meaning == "identifier"){
+            if(codeArray[0].meaning == "identifier"){
+                if(this.expectingNext.includes(expressionArray[expressionArray.length - 1].value)){
+                    codeArray[0].meaning = "expression";
+                    codeArray[0].psaMeaning = "variable";
+                } else if(this.checkIdentifiersMixing(codeArray)){
+                    if(this.assignOps.includes(codeArray[0].value)){
+                        assignNum ++;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                if(Number.isInteger(parseInt(codeArray[0].value))){
+                    codeArray[0].psaMeaning = "number";
+                } else {
+                    if(codeArray[0].value in this.variables){
+                        codeArray[0].psaMeaning = "variable";
+                    } else {
+                        codeArray[0].psaMeaning = codeArray[0].value;
+                    }
+                }
+                if(this.assignOps.includes(codeArray[0].value)){
+                    assignNum ++;
+                }
+            }
+            codeArray[0].psaTerminal = true;
+            expressionString += codeArray[0].value;
+            expressionArray.push(codeArray.shift());
+        }
+        return {expressionArray: expressionArray, assignNum: assignNum, expressionString: expressionString};
+    }
+
     /**
      * Checks expression based on the PSA analysis. The checker loads the whole 
      * expression, checks it and creates the expression tree, which will later 
@@ -65,20 +166,16 @@ class math{
      * This special token contains all the expression tokens, its expression tree, expression type and where the 
      * outcome should be saved.
      * @param {codeArray} codeArray is the code array on whichs top, there is the expression
-     * @returns object that contains new codeArray and the result of the checking.
+     * @param {array} errors array of errors to be processed. 
+     * @param {distionary} dictionary aplication dictionary used to determine error texts.
+     * @returns false if any error is found, true otherwise.
      */
-    checkExpression(codeArray){
-        var expressionArray = [];
+    checkExpression(codeArray, errors, dictionary){
         var expressionToken = Object.assign({}, codeArray[0]);
-
-        let binaryOps = ["+", "-", "*", "/", "%"];
-        let assignOps = ["="];
-        let compareOps = ["<", "<=", ">", ">=", "==", "!="];
-        let expectingNext = binaryOps + assignOps + compareOps + ["("];
-        let allOperators = binaryOps + assignOps + compareOps + ["(", ")"];
-
-        var assignNum = 0;
-        var compare = {expression: false, error: false};
+        var loadedExpression = this.loadExpression(codeArray);
+        var assignNum = loadedExpression.assignNum;
+        var expressionArray = loadedExpression.expressionArray;
+        //console.log("codeArray: ",codeArray.slice(), " expression Array: ", expressionArray.slice(), " assignNum: ", assignNum);
 
         let table = [
         /*    predical        *    +    <   num                */
@@ -201,90 +298,6 @@ class math{
             return false;
         }
 
-        /**
-         * ACE sometimes produces tokens that are expresion but presented as identifiers (like "((+").
-         * This function can tell the diference between those tokes which should be expressions and the ones that souldnt.
-         * This function takes the code array and the list of operators we want to be recognized, repairs the code array and
-         * tells if the repair was done.
-         * @param {codeArray} codeArray is the code array that contains the bad tokens.
-         * @param {array} allOperators all the operatos we want to be recognized.
-         * @returns object that contains result (if the operation was done) and the repaired code array.
-         */
-        function checkIdentifiersMixing(codeArray, allOperators){
-            var testedToken = codeArray[0];
-            var insertTokens = [];
-            while(testedToken.value.length > 0){
-                if(allOperators.includes(testedToken.value[0] + testedToken.value[1])){
-                    insertTokens.push({
-                        value: testedToken.value[0] + testedToken.value[1] , 
-                        meaning: "expression", 
-                        row: testedToken.row, 
-                        column: testedToken.column, 
-                        psaMeaning: testedToken.value[0] + testedToken.value[1], 
-                        psaTerminal: true
-                    });
-                    testedToken.column += 2;
-                    testedToken.value = testedToken.value.substring(2);
-                } else if(allOperators.includes(testedToken.value[0])){
-                    insertTokens.push({
-                        value: testedToken.value[0], 
-                        meaning: "expression", 
-                        row: testedToken.row, 
-                        column: testedToken.column, 
-                        psaMeaning: testedToken.value[0], 
-                        psaTerminal: true
-                    });
-                    testedToken.column ++;
-                    testedToken.value = testedToken.value.substring(1);
-                } else {
-                    return {result: false};
-                }
-            }
-            codeArray.shift();
-            codeArray = insertTokens.concat(codeArray);
-            return {result: true, codeArray: codeArray};
-        }
-
-        // loading the expression
-        while(codeArray[0].meaning == "expression" || codeArray[0].meaning == "identifier"){
-            if(codeArray[0].meaning == "identifier"){
-                var operMix = checkIdentifiersMixing(codeArray, allOperators);
-                if(expectingNext.includes(expressionArray[expressionArray.length - 1].value) && codeArray[0].value in this.variables){
-                    codeArray[0].meaning = "expression";
-                    codeArray[0].psaMeaning = "variable";
-                } else if(operMix.result){
-                    codeArray = operMix.codeArray;
-                    if(assignOps.includes(codeArray[0].value)){
-                        assignNum ++;
-                    } else if(compareOps.includes(codeArray[0].value)){
-                        compare.error = compare.expression;
-                        compare.expression = true;
-                    }
-                } else {
-                    break;
-                }
-            } else {
-                if(Number.isInteger(parseInt(codeArray[0].value))){
-                    codeArray[0].psaMeaning = "number";
-                } else {
-                    if(codeArray[0].value in this.variables){
-                        codeArray[0].psaMeaning = "variable";
-                    } else {
-                        codeArray[0].psaMeaning = codeArray[0].value;
-                    }
-                }
-                if(assignOps.includes(codeArray[0].value)){
-                    assignNum ++;
-                } else if(compareOps.includes(codeArray[0].value)){
-                    compare.error = compare.expression;
-                    compare.expression = true;
-                }
-            }
-            //console.log(codeArray.slice());
-            codeArray[0].psaTerminal = true;
-            expressionArray.push(codeArray.shift());
-        }
-
         // creating token folder
         expressionToken.includes = expressionArray.slice();
         delete expressionToken.value;
@@ -293,28 +306,19 @@ class math{
         codeArray.unshift(expressionToken);
 
         // telling the expression type
-        if((compare.expression && assignNum > 0) || compare.error){
-            console.log("expression type error");
-            return {result: false, codeArray: codeArray};
-        }
         if(assignNum > 0){
             for(assignNum; assignNum > 0; assignNum --){
-                if(!expressionArray[0].value in this.variables){
-                    console.log("error - bad assign");
-                    return {result: false, codeArray: codeArray};
+                if(!(expressionArray[0].value in this.variables)){
+                    errors.push({error: dictionary["checkerErrorMessages"]["variableExpected"], token: expressionArray[0]});
+                    return false;
                 }
                 expressionToken.saveTo.push(expressionArray.shift().value);
-                if(!assignOps.includes(expressionArray[0].value)){
-                    console.log("error - bad assign");
-                    return {result: false, codeArray: codeArray};
+                if(!this.assignOps.includes(expressionArray[0].value)){
+                    errors.push({error: dictionary["checkerErrorMessages"]["assignExpected"], token: expressionArray[0]});
+                    return false;
                 }
                 expressionArray.shift();
             }
-            expressionToken.type = "assigning";
-        } else if(compare.expression){
-            expressionToken.type = "compare";
-        } else {
-            expressionToken.type = "compute"; 
         }
 
         // checking the expression by PSA
@@ -332,43 +336,38 @@ class math{
                     break;
                 case ">":
                     var currentRule = getStackRuleClosure(stack);
-                    console.log("current rule: ",currentRule);
+                    //console.log("current rule: ",currentRule);
                     if(currentRule.rule in rules){
                         stack.push({psaMeaning: "E", psaTerminal: false, tokens: currentRule.tokens});
                     } else {
-                        console.log("error");
-                        return {result: false, codeArray: codeArray};
+                        console.log("current rule: ",currentRule);
+                        this.createExpressionErrors(expressionToken, dictionary["checkerErrorMessages"]["badExpression"], errors);
+                        return false;
                     }
                     break;
                 case " ":
                 default:
-                    console.log("error");
-                    return {result: false, codeArray: codeArray};
+                    this.createExpressionErrors(expressionToken, dictionary["checkerErrorMessages"]["badExpression"], errors);
+                    return false;
             }
         }while(!(expressionArray[0].psaMeaning == "$" && stackEndCheck(stack)));
         expressionToken.expressionTree = stack[1];
-        console.log("success -> ", expressionToken);
-        return {result: true, codeArray: codeArray};
+        //console.log("success -> ", expressionToken);
+        return true;
     }
 
     /**
      * Computes givet token expression folder. It uses recursion processing of the 
      * expression tree described in the `computeToken` function to evaluate the espression.
      * @param {token} expressionToken is the token expression folder.
-     * @returns if it is not an assigning expression, the value is returned.
+     * @returns the value is returned.
      */
     computeExpression(expressionToken){
-        switch(expressionToken.type){
-            case "compare":
-            case "compute":
-                return this.computeToken(expressionToken.expressionTree);
-            case "assigning":
-                var result = this.computeToken(expressionToken.expressionTree);
-                for(var i = 0; i < expressionToken.saveTo.length; i++){
-                    this.variables[expressionToken.saveTo[i]] = result;
-                }
-                break;
+        var result = this.computeToken(expressionToken.expressionTree);
+        for(var i = 0; i < expressionToken.saveTo.length; i++){
+            this.variables[expressionToken.saveTo[i]] = result;
         }
+        return result;
     }
 
     /**
@@ -454,18 +453,20 @@ class math{
      * @param {string} errorString is the text of the error.
      * @param {array} errors is the errors array.
      */
-    createExpressionErrors(expressionToken, errorString, errors){
+     createExpressionErrors(expressionToken, errorString, errors){
         for(var i = 0; i < expressionToken.includes.length; i++){
             var currentRow = expressionToken.includes[i].row;
             var currentColumn = expressionToken.includes[i].column;
-            while(currentRow == expressionToken.includes[i]){
+            console.log(expressionToken.includes.slice());
+            while(expressionToken.includes[i + 1] !== undefined && currentRow == expressionToken.includes[i + 1].row){
                 i++;
             }
             var valueString = "";
-            for(var j = 0; j < expressionToken[i].column - currentColumn; j++){
+            console.log(i);
+            for(var j = currentColumn; j < expressionToken.includes[i].column + expressionToken.includes[i].value.length; j++){
                 valueString += "x";
             }
-            errors.push({error: errorString, token: {value: valueString, row: currentRow, column: currentColumn}});
+            errors.push({error: errorString, token: {value: valueString, row: currentRow, column: currentColumn, expression: expressionToken}});
         }
     }
 }

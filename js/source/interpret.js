@@ -151,8 +151,6 @@ class interpret{
 
         let outputs = [this.dictionary["keywords"]["true"], this.dictionary["keywords"]["false"]];
 
-        let expression = ["+", "-", "*", "/", "%", ")", "(", "<", ">", ">=", "<=", "==", "=", "!=", ];
-
         var codeArray = [[]];
         var iterator = 0;
         var closerLast = false;
@@ -177,7 +175,7 @@ class interpret{
                     token.meaning = "condition";
                 } else if(outputs.includes(token.value)){
                     token.meaning = "output";
-                } else if(Number.isInteger(parseInt(token.value)) || expression.includes(token.value) || token.value in this.math.variables){
+                } else if(Number.isInteger(parseInt(token.value)) || this.math.allOperators.includes(token.value)){
                     token.meaning = "expression";
                 } else {
                     switch(token.dictKey){
@@ -263,7 +261,7 @@ class interpret{
             }
             tokenizer.stepForward();
         }
-        // hodit bloky definice nahoru TODO
+        // putting definition blocks to the front in the original order
         var temp = [];
         for(var i = 0; i < codeArray.length - 1; i++){
             if(codeArray[i][0].dictKey == "definition"){
@@ -423,9 +421,7 @@ class interpret{
                                 if(codeArray[i][0].value in this.math.variables){
                                     // reachable variable
                                     codeArray[i][0].meaning = "expression";
-                                    var result = this.math.checkExpression(codeArray[i]);
-                                    codeArray[i] = result.codeArray;
-                                    noError = result.result;
+                                    noError = this.math.checkExpression(codeArray[i], errors, this.dictionary);
                                 } else {
                                     this.command.checkReachable(codeArray[i][0]);
                                 }
@@ -442,11 +438,8 @@ class interpret{
                                 this.math.defineVariable(codeArray[i][0], errors, this.dictionary);
                                 break;
                             case "check-definition-expression":
-                                // defining variable - does it have assigned starting value check
                                 codeArray[i][0].meaning = "expression";
-                                var result = this.math.checkExpression(codeArray[i]);
-                                codeArray[i] = result.codeArray;
-                                noError = result.result;
+                                noError = this.math.checkExpression(codeArray[i], errors, this.dictionary);
                                 if(noError){
                                     try{
                                         this.math.computeExpression(codeArray[i][0]);
@@ -460,13 +453,9 @@ class interpret{
                                         }
                                     }
                                 }
-                                // give this variable to expression analyzator to tell if any initiating value is found
                                 break;
                             case "check-expression":
-                                // expression check
-                                var result = this.math.checkExpression(codeArray[i]);
-                                codeArray[i] = result.codeArray;
-                                noError = result.result;
+                                noError = this.math.checkExpression(codeArray[i], errors, this.dictionary);
                                 break;
                             case "checkExpressionOut":
                                 if(!(codeArray[i][0].meaning == "expression" && codeArray[i][0].type != "assigning")){
@@ -526,7 +515,7 @@ class interpret{
             }
             if(expected.length > 0 && stack.length == 0){
                 errors.push({error: this.dictionary["checkerErrorMessages"]["missing"] + expected, 
-                token: this.command.getDefiningToken(this.command.getFunctionByToken(buffer[0]))})
+                token: this.command.getDefiningToken(this.command.getFunctionByToken(buffer[0]))});
             }
         }
         for(var key in this.command.expectDefinition){
@@ -922,57 +911,20 @@ class interpret{
         var numOfCollapsedBlocks = 0;
         var variables = [];
 
-        /**
-         * Loads expression string to be inserted in blockly block.
-         * @param {codeArray} codeArray is the code token array.
-         * @param {number} tokenIter is the current position in the code array.
-         * @param {array} variables is the array of known variables.
-         * @returns expression string and updated token iterator in a form of an object.
-         */
-        function loadExpresion(codeArray, tokenIter, variables){
-            var expressionString = "";
-            var nextIdentifierAdd = true;
-            let binaryOps = ["+", "-", "*", "/", "%"];
-            let assignOps = ["="];
-            let compareOps = ["<", "<=", ">", ">=", "==", "!="];
-            let expectingNext = binaryOps + assignOps + compareOps + ["("];
-            let allOperators = binaryOps + assignOps + compareOps + ["(", ")"];
-            while(true){
-                if(codeArray[tokenIter].meaning == "expression" || 
-                    (allOperators.includes(codeArray[tokenIter].value[0]) && codeArray[tokenIter].meaning == "identifier")){
-                    nextIdentifierAdd = false;
-                    expressionString += codeArray[tokenIter].value;
-                    if(expectingNext.includes(codeArray[tokenIter].value) || 
-                        expectingNext.includes(codeArray[tokenIter].value[codeArray[tokenIter].value.length - 1])){
-                        nextIdentifierAdd = true;
-                    }
-                    tokenIter ++;
-                } else if(codeArray[tokenIter].meaning == "identifier" && nextIdentifierAdd){
-                    variables.push(codeArray[tokenIter].value);
-                    nextIdentifierAdd = false;
-                    expressionString += codeArray[tokenIter].value;
-                    tokenIter ++;
-                } else {
-                    break;
-                }
-            }
-            return {string: expressionString, iterator: tokenIter};
-        }
-
         for(var i = 1; i <  codeArray.length; i++){
             codeArray[0] = codeArray[0].concat(codeArray[i]);
         }
         codeArray = codeArray[0];
-        for(var tokenIter = 0; tokenIter < codeArray.length; tokenIter ++){
+        while(codeArray.length > 0){
             currentRule = {};
-            if(this.closerRegex.test(codeArray[tokenIter].value)){
+            if(this.closerRegex.test(codeArray[0].value)){
                 currentRule = {action : ["popConnectionArray"],}
-            } else if(codeArray[tokenIter].dictKey in rules){
-                currentRule = rules[codeArray[tokenIter].dictKey];
+            } else if(codeArray[0].dictKey in rules){
+                currentRule = rules[codeArray[0].dictKey];
                 var newBlock;
                 if(currentRule.create.length > 0){
                     if(currentRule.create[0] == "if_creator"){
-                        let result = this.ifOrIfElse(tokenIter, codeArray);
+                        let result = this.ifOrIfElse(0, codeArray);
                         if(result === undefined){
                             console.log("err - missing end of if structure");
                             return;
@@ -986,19 +938,18 @@ class interpret{
                     }
                 }
             } else {
-                //console.log("tokenIter: ", codeArray[tokenIter], "tokenIter + 1: ",codeArray[tokenIter + 1])
                 if(inDefinition){
                     newBlock = workspace.newBlock("math_definevar");
-                    newBlock.setFieldValue(codeArray[tokenIter].value, "VAR_NAME");
+                    newBlock.setFieldValue(codeArray[0].value, "VAR_NAME");
                     currentRule = {action: ["connectBlock", "manageExpression"]};
-                } else if(codeArray[tokenIter + 1].value == "="){
+                } else if(codeArray[1].value == "="){
                     newBlock = workspace.newBlock("math_setvar");
-                    newBlock.setFieldValue(codeArray[tokenIter].value, "VAR_NAME");
-                    variables.push(codeArray[tokenIter].value);
+                    newBlock.setFieldValue(codeArray[0].value, "VAR_NAME");
+                    variables.push(codeArray[0].value);
                     currentRule = {action: ["connectBlock", "manageExpression"]};
                 } else {
                     newBlock = workspace.newBlock("function_userDefined");
-                    variables.push(codeArray[tokenIter].value);
+                    variables.push(codeArray[0].value);
                     currentRule = {action : ["connectBlock", "insertName"]};
                 }
             }
@@ -1009,9 +960,9 @@ class interpret{
             for(var i = 0; i < currentRule.action.length; i++){
                 switch(currentRule.action[i]){
                     case "addName":
-                        tokenIter ++;
-                        if(codeArray[tokenIter].meaning == "identifier"){
-                            newBlock.setFieldValue(codeArray[tokenIter].value, "NAME");
+                        codeArray.shift()
+                        if(codeArray[0].meaning == "identifier"){
+                            newBlock.setFieldValue(codeArray[0].value, "NAME");
                         } else {
                             console.log("error - bad token to set the name by");
                             return;
@@ -1038,46 +989,46 @@ class interpret{
                         connectTo.pop();
                         break;
                     case "manageCondition":
-                        tokenIter ++;
-                        if(codeArray[tokenIter].meaning != "condition-prefix"){
+                        codeArray.shift()
+                        if(codeArray[0].meaning != "condition-prefix"){
                             console.log("error - condtion prefix expected");
                             return;
                         }
-                        if(codeArray[tokenIter].dictKey == "isNot"){
+                        if(codeArray[0].dictKey == "isNot"){
                             newBlock.getField('COND_PREF').setValue("optionIsNot");
                         }
-                        tokenIter ++;
+                        codeArray.shift();
                         var conditionBlock;
-                        if(variables.includes(codeArray[tokenIter].value) || codeArray[tokenIter].meaning == "expression" || codeArray[tokenIter + 1] == "expresion"){
-                            var result = loadExpresion(codeArray, tokenIter, variables);
-                            tokenIter = result.iterator;
+                        if(variables.includes(codeArray[0].value) || codeArray[0].meaning == "expression" || codeArray[1] == "expresion"){
+                            var result = this.math.loadExpression(codeArray);
                             conditionBlock = workspace.newBlock("math_variable");
-                            conditionBlock.setFieldValue(result.string, 'VAR_NAME');
+                            conditionBlock.setFieldValue(result.expressionString, 'VAR_NAME');
+                            codeArray.unshift({});
                         } else {
-                            conditionBlock = workspace.newBlock(this.tellCondBlockByWord(codeArray[tokenIter].dictKey));
+                            conditionBlock = workspace.newBlock(this.tellCondBlockByWord(codeArray[0].dictKey));
+                            if(conditionBlock.type == "condition_userdefined"){
+                                conditionBlock.getField('FC_NAME').setValue(codeArray[0].value);
+                            }
                         }
                         conditionBlock.initSvg();
                         conditionBlock.render();
                         newBlock.getInput('COND').connection.connect(conditionBlock.outputConnection);
-                        if(conditionBlock.type == "condition_userdefined"){
-                            conditionBlock.getField('FC_NAME').setValue(codeArray[tokenIter].value);
-                        }
                         break;
                     case "manageExpression":
-                        tokenIter ++;
-                        if(codeArray[tokenIter].value == "="){
-                            tokenIter ++;
+                        codeArray.shift();
+                        if(codeArray[0].value == "="){
+                            codeArray.shift();
                         }
                         var expressionBlock = workspace.newBlock("math_variable");
-                        var result = loadExpresion(codeArray, tokenIter, variables);
-                        tokenIter = result.iterator - 1;
+                        var result = this.math.loadExpression(codeArray);
+                        expressionBlock.setFieldValue(result.expressionString, "VAR_NAME");
                         expressionBlock.initSvg();
                         expressionBlock.render();
-                        expressionBlock.setFieldValue(result.string, "VAR_NAME");
                         newBlock.getInput('EXPRESSION').connection.connect(expressionBlock.outputConnection);
+                        codeArray.unshift({});
                         break;
                     case "insertName":
-                        newBlock.getField('FC_NAME').setValue(codeArray[tokenIter].value);
+                        newBlock.getField('FC_NAME').setValue(codeArray[0].value);
                         break;
                     case "setCollapse":
                         toCollapse = newBlock;
@@ -1101,6 +1052,7 @@ class interpret{
                         throw "Unknown action";
                 }
             }
+            codeArray.shift();
         }
     }
 

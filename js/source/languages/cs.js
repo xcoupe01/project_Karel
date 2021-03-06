@@ -49,7 +49,10 @@ export function setLang(){
             "missingDef": "Chybí definice typu ",
             "redefinition": "Redefinice",
             "badUsage": "Špatně použitá funkce",
-            "badUsageNotCondition": "Není podmínka" 
+            "badUsageNotCondition": "Není podmínka",
+            "variableExpected": "Očekával jsem proměnnou",
+            "assignExpected": "Očekával jsem znamínko `=`",
+            "badExpression": "Chyba ve výrazu"
         },
         "ACE" : {
             "highlight" : {

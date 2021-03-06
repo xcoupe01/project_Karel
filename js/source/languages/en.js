@@ -49,7 +49,10 @@ export function setLang(){
             "missingDef": "Missing definition of type ",
             "redefinition": "Redefinition",
             "badUsage": "Badly used function",
-            "badUsageNotCondition": "This is not a condition" 
+            "badUsageNotCondition": "This is not a condition",
+            "variableExpected": "Expected variable",
+            "assignExpected": "Expected equal sighn",
+            "badExpression": "Error in expression"
         },
         "ACE" : {
             "highlight" : {

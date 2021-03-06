@@ -9,7 +9,7 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 17.2.2021**
+**Last update - 6.3.2021**
 
 **English version below**
 ___
