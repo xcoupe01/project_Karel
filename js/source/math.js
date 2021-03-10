@@ -53,6 +53,7 @@ class math{
      */
     getVariable(name){
         if(!(name in this.variables)){
+            karelConsoleLog("internaError");
             console.log(name);
             throw "undefined variable";
         }
@@ -238,6 +239,7 @@ class math{
                 case "$":
                     return 6;
                 default:
+                    karelConsoleLog("internaError");
                     console.log(token)
                     throw "Unknown expression token";
             }
@@ -371,7 +373,7 @@ class math{
     }
 
     /**
-     * Evaluates expression by the expression tree by recursion
+     * Evaluates expression by the expression tree by recursion. When zero division detected, warning posted.
      * @param {expression tree node} expressionTree is the root node of the expression tree we want to evaluate.
      * @returns value of the expression tree.
      */
@@ -384,10 +386,12 @@ class math{
                     if(expressionTree.value in this.variables && this.variables[expressionTree.value] != "undefined"){
                         return this.variables[expressionTree.value];
                     } else {
+                        karelConsoleLog("internaError");
                         console.log("variables: ",this.variables);
                         throw "undefined variable read";
                     }
                 default:
+                    karelConsoleLog("internaError");
                     console.log(expressionTree);
                     throw "Unknown psaMeaning";
             }
@@ -405,9 +409,17 @@ class math{
                     case "*":
                         return this.computeToken(expressionTree.tokens[0]) * this.computeToken(expressionTree.tokens[2]);
                     case "/":
-                        return Math.floor(this.computeToken(expressionTree.tokens[0]) / this.computeToken(expressionTree.tokens[2]));
+                        var divby = this.computeToken(expressionTree.tokens[2]);
+                        if(divby == 0){
+                            karelConsoleLog("zeroDivisionError");
+                        }
+                        return Math.floor(this.computeToken(expressionTree.tokens[0]) / divby);
                     case "%":
-                        return this.computeToken(expressionTree.tokens[0]) % this.computeToken(expressionTree.tokens[2]);
+                        var divby = this.computeToken(expressionTree.tokens[2]);
+                        if(divby == 0){
+                            karelConsoleLog("zeroDivisionError");
+                        }
+                        return this.computeToken(expressionTree.tokens[0]) % divby;
                     case ">":
                         if(this.computeToken(expressionTree.tokens[0]) > this.computeToken(expressionTree.tokens[2])){
                             return 1;
@@ -439,6 +451,7 @@ class math{
                         }
                         return 0;
                     default:
+                        karelConsoleLog("internaError");
                         console.log(expressionTree);
                         throw "Unknown middle token";
                 }
@@ -457,16 +470,29 @@ class math{
         for(var i = 0; i < expressionToken.includes.length; i++){
             var currentRow = expressionToken.includes[i].row;
             var currentColumn = expressionToken.includes[i].column;
-            console.log(expressionToken.includes.slice());
             while(expressionToken.includes[i + 1] !== undefined && currentRow == expressionToken.includes[i + 1].row){
                 i++;
             }
             var valueString = "";
-            console.log(i);
             for(var j = currentColumn; j < expressionToken.includes[i].column + expressionToken.includes[i].value.length; j++){
                 valueString += "x";
             }
             errors.push({error: errorString, token: {value: valueString, row: currentRow, column: currentColumn, expression: expressionToken}});
         }
+    }
+
+    /**
+     * Creates HTML table which tells all the variables and its value. The table is
+     * displayed in the UI.
+     * @param {dictionary} dictionary is the app dictionary.
+     * @returns string with HTML table with information about variables.
+     */
+    createVariableOverview(dictionary){
+        var outputText = "<table> <tr><td colspan=\"2\" style=\"text-align: center;\"> " + dictionary["UI"]["varTable"]["variables"] + "</td></tr>";
+        for(var key in this.variables){
+            outputText += "<tr><td>" + key + "</td><td>" + this.variables[key] + "</td></tr>";
+        }
+        outputText += "</table>"
+        return outputText;
     }
 }

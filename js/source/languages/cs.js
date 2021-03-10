@@ -79,13 +79,19 @@ export function setLang(){
             "debug": "Krokuj",
             "stop": "Zastav",
             "changeRoom": "Změň místnost",
-            "homeCameraButton": "Resetuj kameru",
-            "roomFocusIndicator": "Ovládej",
+            "homeCameraButton": "Reset kamery",
+            "roomFocusIndicator": "Ovládáš",
             "runningIndicator": "Běží",
             "ACEeditorToggle": "Změň ACE",
             "makeBlocks": "Vytvoř bloky",
             "save": "Ulož",
             "load": "Načti",
+            "counter": "Počítadlo",
+            "textEditorLabel": "Kód",
+            "blocklyEditorLabel": "Bloky",
+            "showControls": "Ovládání",
+            "resetView": "Reset oken",
+            "setWindows": "Nastav okna",
             "changeRoomDialog": {
                 "dialogTitle": "Změň rozměry místnosti",
                 "dialogText": "Umožňuje změnu rozměrů místnosti. Níže zadejte požadované rozměry místnosti v ose X a ose Y, Tlačítkem 'Změň' bude současná místnost smazána a vytvořena nová se zadanými rozměry.",
@@ -106,7 +112,33 @@ export function setLang(){
                 "dialogTitle": "Načti práci",
                 "dialogText": "Provede načtení zadaného souboru pro načtení uložené pozice.",
                 "button": "Načti"
+            },
+            "varTable": {
+                "variables": "Proměnné",
+                
             }
+        },
+        "consoleLogs": {
+            "greetings": "Ahoj, já jsem Karel :)",
+            "internaError": "Nastala vnitřní chyba aplikace",
+            "twoRunningError": "Nemůžu spustit dva programy zaráz",
+            "checkErrorsFound": "Během kontroly byly nalezeny chyby, běh přerušen",
+            "noSelectedFunction": "Nebyl vybrán program, který bych mohl spustit",
+            "blockConversionError": "Nastala chyba během transoformace na bloky",
+            "corruptedSaveFile": "Načítaný soubor je poškozený",
+            "noFileToLoad": "Nebyl vyrán soubor pro načtení",
+            "zeroDivisionError": "Dělení nulou detekováno, výsledek je chybný",
+            "cantReachError": "Nedosáhnu na vrchol cihle před sebou",
+            "outOfRoomError": "Nemohu operovat mimo místnost",
+            "badRoomInputError": "Nemohu vygenerovat tuto místnost, očekávám čísla od 2 do 100",
+            "nothingToPickUpError": "Nemám cihlu, kterou bych zvedl",
+            "alreadyMarkedError": "Políčko je již označeno",
+            "alreadyUnmarkedError": "Poličko již označeno není",
+            "blockAlreadyRemovedError": "Poličko je již odebráno",
+            "blockAlreadyPresentError": "Políčko je již v místnoti",
+            "cannotRemoveBricksError": "Nemohu odstranit políčko, jsou na něm cihly",
+            "cannotRemoveMarkError": "Nemohu odstranit políčko, je na něm značka",
+            "defaultWindowSizeSet": "Nové výchozí velikosti oken nastaveny"
         }
     };
 }

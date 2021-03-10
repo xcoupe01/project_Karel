@@ -80,12 +80,18 @@ export function setLang(){
             "stop": "Stop",
             "changeRoom": "Change Room",
             "homeCameraButton": "Home camera",
-            "roomFocusIndicator": "Room focus",
+            "roomFocusIndicator": "Control enabled",
             "runningIndicator": "Running",
             "ACEeditorToggle": "Toggle ACE",
             "makeBlocks": "Make blocks",
             "save": "Save",
             "load": "Load",
+            "counter": "Counter",
+            "textEditorLabel": "Code",
+            "blocklyEditorLabel": "Blocks",
+            "showControls": "Controls",
+            "resetView": "Reset window",
+            "setWindows": "Set windows",
             "changeRoomDialog": {
                 "dialogTitle": "Change room dimensions",
                 "dialogText": "Changes room dimensions in X and Y axis. The currenct room will be erased and replaced with the new one with the specified dimensions.",
@@ -106,7 +112,33 @@ export function setLang(){
                 "dialogTitle": "Load work",
                 "dialogText": "Loads given file with save position.",
                 "button": "Load"
+            },
+            "varTable": {
+                "variables": "Variables",
+                
             }
+        },
+        "consoleLogs": {
+            "greetings": "Hello, my name is Karel :)",
+            "internaError": "Internal application error occured",
+            "twoRunningError": "Cannot execute two programs at once",
+            "checkErrorsFound": "Errors were found during checking, executicon aborted",
+            "noSelectedFunction": "No program choosed to be executed",
+            "blockConversionError": "Error ocured during text to block conversion",
+            "corruptedSaveFile": "Corrupted save file",
+            "noFileToLoad": "No file selected to load from",
+            "zeroDivisionError": "Zero division detected, bad result",
+            "cantReachError": "Cannot reach top of brick stack",
+            "outOfRoomError": "Cannot operate outside of the room",
+            "badRoomInputError": "Cannot generate this room, numbers from 2 to 100 expected",
+            "nothingToPickUpError": "No brick to pick up",
+            "alreadyMarkedError": "Block already marked",
+            "alreadyUnmarkedError": "Block already unmarked",
+            "blockAlreadyRemovedError": "Block already removed",
+            "blockAlreadyPresentError": "Block already present",
+            "cannotRemoveBricksError": "Cannot remove block because of bricks",
+            "cannotRemoveMarkError": "Cannot remove block because of mark",
+            "defaultWindowSizeSet": "New default windows sizes set"
         }
     };
 }

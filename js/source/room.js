@@ -63,7 +63,7 @@ class room{
         this.light = [];
         const offset = 2;
         for(var i = 0; i < 4; i++){
-            this.light[i] = new THREE.PointLight( 0xffffff, 1, 100 );
+            this.light[i] = new THREE.PointLight( 0xffffff, 1.2, 100 );
             switch(i){
                 case 0:
                     this.light[i].position.set(-offset, 4, -offset);
@@ -113,6 +113,7 @@ class room{
      */
     addBrickToPos(posX, posY){
         if(posX >= this.roomDataArray.length || posY >= this.roomDataArray[posX].length){
+            karelConsoleLog("outOfRoomError");
             console.log("ROOM ABTP error - cannot add brick out of room");
             return;
         }
@@ -143,6 +144,7 @@ class room{
      */
     removeBrickFromPos(posX, posY){
         if(posX >= this.roomDataArray.length || posY >= this.roomDataArray[posX].length){
+            karelConsoleLog("outOfRoomError");
             console.log("ROOM RBFP error - cannot remove brick out of room");
             return;
         }
@@ -156,6 +158,7 @@ class room{
                 this.updateMark(posX, posY);
             }
         } else {
+            karelConsoleLog("nothingToPickUpError");
             console.log("ROOM RBFP error - nothing to pick up at [" + posX + "][" + posY + "]");
         }
     }
@@ -178,6 +181,7 @@ class room{
             this.scene.add(mark);
             this.roomDataArray[posX][posY].markObject = mark;
         } else {
+            karelConsoleLog("alreadyMarkedError");
             console.log("Failed markPosition at [" + posX + "][" + posY + "] - already marked");
         }
     }
@@ -194,6 +198,7 @@ class room{
             this.roomDataArray[posX][posY].markObject = {};
             this.roomDataArray[posX][posY].mark = false;
         } else {
+            karelConsoleLog("alreadyUnmarkedError");
             console.log("Failed unmarkPosition at [" + posX + "][" + posY + "] - not marked");
         }
     }
@@ -214,14 +219,17 @@ class room{
      */
     removeBlockFromRoomPos(posX, posY){
         if(!this.roomDataArray[posX][posY].inRoom){
+            karelConsoleLog("blockAlreadyRemovedError");
             console.log("RBFRP error - block already removed at [" + posX + "," + posY + "]");
             return;
         }
         if(this.roomDataArray[posX][posY].bricks > 0){
+            karelConsoleLog("cannotRemoveBricksError");
             console.log("RBFRP error - cannot remove becase of bricks at [" + posX + "," + posY + "]");
             return;
         }
         if(this.roomDataArray[posX][posY].mark){
+            karelConsoleLog("cannotRemoveMarkError");
             console.log("RBFRP error - cannot remove becase of mark at [" + posX + "," + posY + "]");
             return;
         }
@@ -237,6 +245,7 @@ class room{
      */
     putBlockToRoomPos(posX, posY){
         if(this.roomDataArray[posX][posY].inRoom){
+            karelConsoleLog("blockAlreadyPresentError");
             console.log("PBTRP error - block already present at [" + posX + "," + posY + "]");
             return;
         }

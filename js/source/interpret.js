@@ -49,21 +49,24 @@ class interpret{
 
     /**
      * Sets interpret to running state and swithces the indicator in the UI.
-     * Needs div in the html vith `runningIndicator` id !!!
+     * Needs div in the html vith `runIndikator` id !!!
      */
     setRunningTrue(){
         this.running = true;
-        this.originalIndicatorColor = document.querySelector('#runningIndicator').style.backgroundColor;
-        document.querySelector('#runningIndicator').style.backgroundColor = "red";
+        document.querySelector('#runIndikator').style.display = "block";
     }
 
     /**
      * Sets interpret to not running state and swithces off the indicator in the UI.
-     * Needs div in the html vith `runningIndicator` id !!! 
+     * Needs div in the html vith `runIndikator` id !!! 
      */
     setRunningFalse(){
         this.running = false;
-        document.querySelector('#runningIndicator').style.backgroundColor = this.originalIndicatorColor;
+        document.querySelector('#runIndikator').style.display = "none";
+        if(document.querySelector('#roomCanvas') == document.activeElement){
+            document.querySelector('#roomCanvas').blur();
+            document.querySelector('#roomCanvas').focus();
+        }
     }
 
     /**
@@ -99,7 +102,8 @@ class interpret{
      */
     updateCounter(){
         this.counter ++;
-        document.getElementById('counterDisplay').textContent = this.counter;
+        document.getElementById('counterDisplay').textContent = this.dictionary["UI"]["counter"] + ": " + this.counter;
+        document.getElementById('counterDisplay').style.display = "block";
     }
 
     /**
@@ -108,7 +112,11 @@ class interpret{
      */
     resetCounter(){
         this.counter = 0;
-        document.getElementById('counterDisplay').textContent = this.counter;
+        document.getElementById('counterDisplay').style.display = "none";
+    }
+
+    updateVariabeOverview(){
+        document.getElementById('variableOverview').innerHTML = this.math.createVariableOverview(this.dictionary);
     }
 
     /**
@@ -445,6 +453,7 @@ class interpret{
                                         this.math.computeExpression(codeArray[i][0]);
                                     }
                                     catch(err){
+                                        karelConsoleLog("internaError");
                                         console.log("catched error: ", err);
                                         if(err = "undefined variable read"){
                                             noError = false;
@@ -464,6 +473,7 @@ class interpret{
                                 }
                                 break;
                             default:
+                                karelConsoleLog("internaError");
                                 console.log(stack[0].checks[j], stack[0]);
                                 throw "Undefined check";
                         }
@@ -495,6 +505,7 @@ class interpret{
                 let searchX = xAxisTable.indexOf(codeArray[i][0].meaning);
                 let searchY = yAxisTable.indexOf(stack[0].item);
                 if(searchX == -1 || searchY == -1){
+                    karelConsoleLog("internaError");
                     console.log("X: ",searchX, " Y: ",searchY);
                     console.log("stack: ",stack);
                     console.log("testedCommand: ",codeArray[i]);
@@ -546,7 +557,6 @@ class interpret{
             var annotationsToSet = [];
             var Range = ace.require('ace/range').Range;
             for(var i = 0; i < errors.length; i++){
-                console.log(errors[i]);
                 editor.session.addMarker(
                     new Range(errors[i].token.row, 
                         errors[i].token.column, 
@@ -600,6 +610,7 @@ class interpret{
         let rule = jumpRules[this.command.getToken(codePointer).meaning];
         if(rule === undefined){
             console.log(this.command.getToken(codePointer));
+            karelConsoleLog("internaError");
             throw "No jump rule for this token!";
         }
         while(true){
@@ -736,9 +747,11 @@ class interpret{
             case "then":
             case "condition-prefix":
                 // cannot happen
+                karelConsoleLog("internaError");
                 console.log(this.command.getToken(codePointer));
                 throw "Unexpected token";
             default:
+                karelConsoleLog("internaError");
                 console.log(this.command.getToken(codePointer));
                 throw "Unknown token";
         }
@@ -758,6 +771,7 @@ class interpret{
                 this.turnOffInterpret(editor);
             } else {
                 this.updateCounter();
+                this.updateVariabeOverview();
             }
             if(moveCursor){
                 editor.gotoLine(this.command.getToken(codePointer).row + 1);
@@ -777,16 +791,16 @@ class interpret{
      */
     textEditorInterpret(editor){
         if(this.running){
-            console.log("You cannot run two programs at the same time");
+            karelConsoleLog("twoRunningError");
             return;
         };
         if(this.processErrors(this.syntaxCheck(editor), editor)){
-            console.log("Errors found - cannot interpret");
+            karelConsoleLog("checkErrorsFound");
             return;
         };
         var toRun = this.command.getFunctionByToken(editor.selection.getCursor());
         if(toRun === undefined){
-            console.log("No function selected to run");
+            karelConsoleLog("noSelectedFunction");
             return;
         };
         this.resetNativeCodeInterpret(editor);
@@ -802,15 +816,15 @@ class interpret{
      */
     blocklyEditorInterpret(toRun){
         if(this.running){
-            console.log("You cannot run two programs at the same time");
+            karelConsoleLog("twoRunningError");
             return;
         };
         if(this.processErrors(this.syntaxCheck(this.blocklyTextRepresentation), this.blocklyTextRepresentation)){
-            console.log("Errors found - cannot interpret");
+            karelConsoleLog("checkErrorsFound");
             return;
         };
         if(toRun === undefined){
-            console.log("No function selected to run");
+            karelConsoleLog("noSelectedFunction");
             return;
         };
         this.resetNativeCodeInterpret();
@@ -825,7 +839,7 @@ class interpret{
      */
     debugTextEditorInterpret(editor){
         if(this.running && !this.debug.active){
-            console.log("You cannot run two programs at the same time");
+            karelConsoleLog("twoRunningError");
             return;
         }
         if(!this.running){
@@ -837,12 +851,12 @@ class interpret{
                 }
             }
             if(this.processErrors(this.syntaxCheck(editor), editor)){
-                console.log("Errors found - cannot interpret");
+                karelConsoleLog("checkErrorsFound");
                 return;
             };
             var toRun = this.command.getFunctionByToken(editor.selection.getCursor());
             if(toRun === undefined){
-                console.log("No function selected to run");
+                karelConsoleLog("noSelectedFunction");
                 return;
             };
             this.resetNativeCodeInterpret(editor);
@@ -926,6 +940,7 @@ class interpret{
                     if(currentRule.create[0] == "if_creator"){
                         let result = this.ifOrIfElse(0, codeArray);
                         if(result === undefined){
+                            karelConsoleLog("blockConversionError");
                             console.log("err - missing end of if structure");
                             return;
                         }else if(result){
@@ -964,6 +979,7 @@ class interpret{
                         if(codeArray[0].meaning == "identifier"){
                             newBlock.setFieldValue(codeArray[0].value, "NAME");
                         } else {
+                            karelConsoleLog("blockConversionError");
                             console.log("error - bad token to set the name by");
                             return;
                         }
@@ -991,6 +1007,7 @@ class interpret{
                     case "manageCondition":
                         codeArray.shift()
                         if(codeArray[0].meaning != "condition-prefix"){
+                            karelConsoleLog("blockConversionError");
                             console.log("error - condtion prefix expected");
                             return;
                         }
@@ -1048,6 +1065,7 @@ class interpret{
                         inDefinition = false;
                         break;
                     default:
+                        karelConsoleLog("blockConversionError");
                         console.log(currentRule.action[i]);
                         throw "Unknown action";
                 }
@@ -1146,6 +1164,7 @@ class interpret{
                 }
                 break;
             default:
+                karelConsoleLog("internaError");
                 console.log("saveFile - unsuported mode [" + mode + "]");
                 return; 
         }
@@ -1245,11 +1264,13 @@ class interpret{
                         var dataJson = JSON.parse(fileLoadedEvent.target.result);
                         let result = interpret.checkLoadedFile(dataJson);
                         if(result !== undefined){
+                            karelConsoleLog("corruptedSaveFile");
                             console.log("Checking failed at: ",result);
                             throw "Corrupted save file";
                         }
                     }
                     catch(err){
+                        karelConsoleLog("corruptedSaveFile");
                         console.log("loadFromFile error - Corupted save file")
                         return;
                     }
@@ -1273,12 +1294,14 @@ class interpret{
                                 interpret.textEditor.clearSelection();
                                 break;
                             default:
+                                karelConsoleLog("corruptedSaveFile");
                                 console.log("LoadFromFile warning - unknown save tree [" + key + "]");
                                 break;
                         }
                     }
                     break;
                 default:
+                    karelConsoleLog("corruptedSaveFile");
                     console.log("LoadFromFile error - unsuported mode [" + mode + "]");
                     return;
             } 
@@ -1286,7 +1309,7 @@ class interpret{
         try {
             fileReader.readAsText(fileToLoad, "UTF-8");
         } catch(err) {
-            alert('No file to load');
+            karelConsoleLog("noFileToLoad");
       };  
     }
 }

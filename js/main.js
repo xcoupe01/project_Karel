@@ -27,8 +27,16 @@ function start() {
     mainKarel.homeCamera(camera);
     var mainInterpret =  new interpret(editor, blocklyReader, mainKarel);
 
+    /*
+    const geometry = new THREE.BoxGeometry(1, 1, 0);
+    const material = new THREE.MeshBasicMaterial({color : 0xff00ff});
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.y = 2.25;
+    scene.add(cube);
+    */
+
     document.querySelector('#roomCanvas').addEventListener('keydown', function(event) {
-        if(mainInterpret.getRunning() == false){
+        if(!mainInterpret.getRunning()){
             if(event.keyCode == 87){
                 mainKarel.goForward();
             }
@@ -69,9 +77,10 @@ function start() {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
-            }
-    renderer.render(scene, camera);
-    requestAnimationFrame(render);
+        }
+        //cube.lookAt(camera.position);
+        renderer.render(scene, camera);
+        requestAnimationFrame(render);
     }
 
   requestAnimationFrame(render);
@@ -192,9 +201,8 @@ function changeLanguage(langFile){
         document.querySelector('#stop').title = mainInterpret.dictionary["UI"]["stop"];
         document.querySelector('#openChangeRoomDialog').text = mainInterpret.dictionary["UI"]["changeRoom"];
         document.querySelector('#homeCameraButton').textContent = mainInterpret.dictionary["UI"]["homeCameraButton"];
-        document.querySelector('#roomFocusIndicator').textContent = mainInterpret.dictionary["UI"]["roomFocusIndicator"];
-        document.querySelector('#runningIndicator').textContent = mainInterpret.dictionary["UI"]["runningIndicator"];
-        document.querySelector('#ACEeditorToggle').textContent = mainInterpret.dictionary["UI"]["ACEeditorToggle"];   
+        document.querySelector('#controlIndikator').textContent = mainInterpret.dictionary["UI"]["roomFocusIndicator"];
+        document.querySelector('#runIndikator').textContent = mainInterpret.dictionary["UI"]["runningIndicator"];  
         document.querySelector('#makeBlocks').text = mainInterpret.dictionary["UI"]["makeBlocks"];
         document.querySelector('#openSaveDialog').text = mainInterpret.dictionary["UI"]["save"];
         document.querySelector('#openLoadDialog').text = mainInterpret.dictionary["UI"]["load"];
@@ -213,6 +221,15 @@ function changeLanguage(langFile){
         document.querySelector('#LoadDialog').title = mainInterpret.dictionary["UI"]["loadDialog"]["dialogTitle"];
         document.querySelector('#loadText').textContent = mainInterpret.dictionary["UI"]["loadDialog"]["dialogText"];
         document.querySelector('#loadButton').value = mainInterpret.dictionary["UI"]["loadDialog"]["button"];
+        document.querySelector('#showTextCodeTitle').textContent = mainInterpret.dictionary["UI"]["textEditorLabel"];
+        document.querySelector('#showBlocklyCodeTitle').textContent = mainInterpret.dictionary["UI"]["blocklyEditorLabel"];
+        document.querySelector('#resetView').textContent = mainInterpret.dictionary["UI"]["resetView"];
+        document.querySelector('#showControls').textContent = mainInterpret.dictionary["UI"]["showControls"];
+        document.querySelector('#setWindows').textContent = mainInterpret.dictionary["UI"]["setWindows"];
+        mainInterpret.updateVariabeOverview();
+        window.dictionary = mainInterpret.dictionary["consoleLogs"];
+        karelConsoleClear();
+        karelConsoleLog("greetings");
     });
 }
 
@@ -335,8 +352,8 @@ var runMeFunc = function (eventpat){
 blocklySetRunMe(runMeFunc);
 
 changeSyntaxCloser('*');
-// -----------------------------
 
+// ----------------------------- UI set
 
 // room dialog
 document.querySelector('#room').onclick = function(){
@@ -389,19 +406,87 @@ document.querySelector('#openLoadDialog').onclick = function() {$('#LoadDialog')
 
 // quick status bar
 document.querySelector('#homeCameraButton').onclick = function() {mainInterpret.command.karel.homeCamera()};
-document.querySelector('#ACEeditorToggle').onclick = function() {
-    if(document.getElementById('blocklyReader').style.display == 'none'){
-        document.getElementById('textEditor').style.display = 'none';
-        document.getElementById('blocklyReader').style.display = 'block';
-        document.getElementById('blocklyReader').focus();
+document.querySelector('#showControls').onclick = function() {
+    if(document.querySelector('#controlButtons').style.display == "none"){
+        document.querySelector('#controlButtons').style.display = "flex";
     } else {
-        document.getElementById('blocklyReader').style.display = 'none';
-        document.getElementById('textEditor').style.display = 'block';
-        document.getElementById('textEditor').focus();
-    } 
+        document.querySelector('#controlButtons').style.display = "none";
+    }
 }
+
+// speed slider
+function setSpeed(value){
+    document.querySelector('#speedSlider').value = value;
+    document.querySelector('#speedNumber').value = value;
+    mainInterpret.command.setSpeed(value);
+};
+document.querySelector('#speedSlider').oninput = function(){setSpeed(document.querySelector('#speedSlider').value)};
+document.querySelector('#speedNumber').addEventListener("change", function(){setSpeed(document.querySelector('#speedNumber').value)});
+setSpeed(150);
+
+// controls
+document.querySelector('#control-left').onclick = function() {
+    if(!mainInterpret.getRunning()){
+        mainInterpret.command.karel.turnLeft();
+    }
+};
+document.querySelector('#control-forward').onclick = function() {
+    if(!mainInterpret.getRunning()){
+        mainInterpret.command.karel.goForward();
+    }
+};
+document.querySelector('#control-right').onclick = function() {
+    if(!mainInterpret.getRunning()){
+        mainInterpret.command.karel.turnRight();
+    }
+};
+document.querySelector('#control-place').onclick = function() {
+    if(!mainInterpret.getRunning()){
+        mainInterpret.command.karel.placeBrick();
+    }
+};
+document.querySelector('#control-pick').onclick = function() {
+    if(!mainInterpret.getRunning()){
+        mainInterpret.command.karel.pickUpBrick();
+    }
+};
+document.querySelector('#control-mark').onclick = function() {
+    if(!mainInterpret.getRunning()){
+        mainInterpret.command.karel.markSwitch();
+    }
+};
+document.querySelector('#control-delete').onclick = function() {
+    if(!mainInterpret.getRunning()){
+        mainInterpret.command.karel.toggleRoomBlock();
+    }
+};
+
+// code tab selector
+document.querySelector('#showTextCode').onclick = function() {
+    document.getElementById('showBlocklyCode').style.backgroundColor = 'var(--bg-terciary)';
+    document.getElementById('showBlocklyCode').style.color = 'var(--bg-secondary)';
+    document.getElementById('showTextCode').style.backgroundColor = 'var(--bg-secondary)';
+    document.getElementById('showTextCode').style.color = 'var(--text-primary)';
+    document.getElementById('blocklyReader').style.display = 'none';
+    document.getElementById('textEditor').style.display = 'block';
+    document.getElementById('textEditor').focus();
+};
+document.querySelector('#showBlocklyCode').onclick = function(){
+    document.getElementById('showTextCode').style.backgroundColor = 'var(--bg-terciary)';
+    document.getElementById('showTextCode').style.color = 'var(--bg-secondary)';
+    document.getElementById('showBlocklyCode').style.backgroundColor = 'var(--bg-secondary)';
+    document.getElementById('showBlocklyCode').style.color = 'var(--text-primary)';
+    document.getElementById('textEditor').style.display = 'none';
+    document.getElementById('blocklyReader').style.display = 'block';
+    document.getElementById('blocklyReader').focus();
+};
+
+// room overlay
 document.querySelector('#counterDisplay').onclick = function() {mainInterpret.resetCounter()};
+document.querySelector('#runIndikator').onclick = function() {mainInterpret.turnOffInterpret()};
+
 
 document.querySelector('#test').onclick = function() {
-    console.log(mainInterpret.nativeCodeTokenizer(editor));
+    mainInterpret.counter += 10000;
+    mainInterpret.updateCounter();
 };

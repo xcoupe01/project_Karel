@@ -147,7 +147,7 @@ class karel{
 
     /**
      * Places brick in front of the robot.
-     * Checks for room limitations.
+     * Checks for room limitations and Karel's reach ability.
      */
     placeBrick(){
         if(!this.isWall()){
@@ -155,25 +155,32 @@ class karel{
                 this.room.roomDataArray[this.positionX][this.positionY].bricks < -1 ||
                 this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks -
                 this.room.roomDataArray[this.positionX][this.positionY].bricks > 9){
-                console.log("PlB error - cannot place brick due to height difference")
+                karelConsoleLog("cantReachError");
             } else {
                 this.room.addBrickToPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
             }    
         } else {
-            console.log("PlB error - cannot place brick to wall")
+            karelConsoleLog("outOfRoomError");
         }
         
     }
 
     /**
-     * Picks up brick in front of the robot
-     * Checks for room limitation
+     * Picks up brick in front of the robot.
+     * Checks for room limitations and Karel's reach ability.
      */
     pickUpBrick(){
         if(!this.isWall()){
-            this.room.removeBrickFromPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+            if(this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks -
+                this.room.roomDataArray[this.positionX][this.positionY].bricks < 0 ||
+                this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks -
+                this.room.roomDataArray[this.positionX][this.positionY].bricks > 10){
+                karelConsoleLog("cantReachError");
+            } else {
+                this.room.removeBrickFromPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+            } 
         } else {
-            console.log("PiB error - cannot pic up outside the room");
+            karelConsoleLog("outOfRoomError");
         }
     }
 
@@ -291,6 +298,7 @@ class karel{
                 this.tellPosotionInFrontY() < 0 | 
                 this.tellPositionInFrontX >= this.room.roomDataArray.length | 
                 this.tellPosotionInFrontY >= this.room.roomDataArray[this.positionX].length){
+                karelConsoleLog("outOfRoomError");
                 console.log("TRB error - cannot toggle block outside of the room at [" + this.tellPositionInFrontX() + "," + this.tellPosotionInFrontY() + "]");
             } else {
                 this.room.toggleRoomBlockPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
@@ -308,18 +316,22 @@ class karel{
      */
     resizeRoom(valueX, valueY){
         if(typeof valueX != "string" || typeof valueY != "string"){
+            karelConsoleLog("badRoomInputError"); 
             console.log("RR error - bad input, not a string");
             return;
         }
         if(isNaN(valueX) || isNaN(valueY)){
+            karelConsoleLog("badRoomInputError");
             console.log("RR error - input not a number");
             return;
         }
         if(valueX > 100 || valueY > 100){
+            karelConsoleLog("badRoomInputError");
             console.log("RR error - too large numbers");
             return;
         }
         if(valueX < 1 || valueY < 1){
+            karelConsoleLog("badRoomInputError");
             console.log("RR error - bad values to resize");
             return;
         }
@@ -413,21 +425,5 @@ class karel{
             }
         }
         return true;
-    }
-
-    /**
-     * Loads 3D model from file
-     */
-    test(){
-        var scene = this.scene;
-        var loader = new GLTFLoader();
-        loader.load('objects/karel.glb', function (gltf){
-            gltf.scene.scale.set(0.35, 0.35, 0.35);
-            gltf.scene.rotateY(Math.PI);
-            gltf.scene.position.y = -0.3;
-            scene.add(gltf.scene);
-        }, undefined, function (error){
-            console.log(error);
-        });
     }
 }

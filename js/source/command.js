@@ -11,6 +11,7 @@ class command{
         this.commandList = {};                  // user defined commands list dictionary
         this.conditionList = {};                // user defined condition list dictionary
         this.speed = 125;                       // tells the time for interpet step
+        this.speedStep = 10;                    // is the speed incremet step
         this.lastConditionResult = "undef";     // used for user defined condition evaluation
         this.expectDefinition = {};
         this.math = math;
@@ -31,7 +32,6 @@ class command{
      */
     prepareRun(){
         this.lastConditionResult = "undef";
-        this.speed = 125;
     }
 
     /**
@@ -45,7 +45,6 @@ class command{
      */
     defineCommand(token, init, errors, dictionary){
         if(token.value in this.commandList || token.value in this.conditionList || token.value in this.math.variables){
-            console.log("defineCommand error - redefinition of " + token.value);
             errors.push({error: dictionary["checkerErrorMessages"]["redefinition"], token: token}); 
         } else {
             this.commandList[token.value] = {code: init, definingToken: init.length};
@@ -73,7 +72,6 @@ class command{
      */
     defineCondition(token, init, errors, dictionary){
         if(token.value in this.commandList || token.value in this.conditionList || token.value in this.math.variables){
-            console.log("defineCondition error - redefiniton of " + token.value);
             errors.push({error: dictionary["checkerErrorMessages"]["redefinition"], token: token});
         } else {
             this.conditionList[token.value] = {code: init, definingToken: init.length, result: "undef"};
@@ -178,6 +176,7 @@ class command{
         } else if (Object.keys(this.conditionList).includes(codePointer.functionName)){
             return this.conditionList[codePointer.functionName].code[codePointer.tokenPointer];
         } else {
+            karelConsoleLog("internaError");
             console.log("codePointer: ", codePointer);
             throw "Unreachable token by codePointer";
         }
@@ -209,6 +208,7 @@ class command{
                     result = this.karel.isVacant();
                     break;
                 default:
+                    karelConsoleLog("internaError");
                     console.log(conditionCore);
                     throw "Bad condition for evaluation";
             }
@@ -234,6 +234,7 @@ class command{
                         result = false;
                         break;
                     default:
+                        karelConsoleLog("internaError");
                         console.log(this.conditionList[conditionCore.value]);
                         throw "Undefined condition result";
                 }
@@ -289,22 +290,41 @@ class command{
                 this.karel.beep();
                 break;
             default:
+                karelConsoleLog("internaError");
                 console.log(dictKey);
                 throw "Unexpected dictKey";
         }
     }
 
     /**
-     * Sets the speed of the interpret step to 125 miliseconds
+     * Sets the speed to given value.
+     * @param value is the speed we want to set.
      */
-    speedUpKarel(){
-        this.speed = 125;
+    setSpeed(value){
+        this.speed = value;
     }
 
     /**
-     * Sets the speed of the interpret step to 250 miliseconds
+     * Speeds up the robot by speed step in the speed limit.
+     * Also sets the iu directly - `speedNumber` and `speedSlider` elements needed.
+     */
+    speedUpKarel(){
+        if(this.speed >= (20 + this.speedStep)){
+            this.speed -= this.speedStep;
+            document.querySelector('#speedNumber').value = this.speed;
+            document.querySelector('#speedSlider').value = this.speed;
+        }
+    }
+
+    /**
+     * Slows down the robo by speed step in the speed limit.
+     * Also sets the iu directly - `speedNumber` and `speedSlider` elements needed.
      */
     slowDownKarel(){
-        this.speed = 250;
+        if(this.speed <= (1000 - this.speedStep)){
+            this.speed += this.speedStep;
+            document.querySelector('#speedNumber').value = this.speed;
+            document.querySelector('#speedSlider').value = this.speed;
+        }
     }
 }

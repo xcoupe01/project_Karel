@@ -45,7 +45,7 @@ var karelHighlightRules = function() {
         this.keywordRule
         , {
             token : "keyword.operator", //operators
-            regex : "\\+|\\-|\\*|\\/|\\^|<|>|<=|=>|==|=|\\:|\\)|\\("
+            regex : "\\+|\\-|\\*|\\/|\\%|<|>|<=|=>|==|=|!=|\\)|\\("
         }, {
             token : "text",             //text
             regex : "\\s+|\\w+"

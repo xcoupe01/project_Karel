@@ -1,28 +1,48 @@
 :root {
     font-size: 16px;
-    /*font-family: ''; */
+    font-family: 'Courier New', monospace;
+
+    /* theme 1*/
     --text-primary: #F0F4EF;
-    --text-secondary: #BFCC94;
+    --text-secondary: #F0F4EF;
     --bg-primary: #0D1821;
     --bg-secondary: #344966;
     --bg-terciary: #B4CDED;
+    --scroll-active: #bbbbbb;
+    --scroll-inactive: #cccccc;
+    
+    /* theme 2 
+    --text-primary: #DEF2F1;
+    --text-secondary: #2B7A78;
+    --bg-primary: #17252A;
+    --bg-secondary: #3AAFA9;
+    --bg-terciary: #FEFFFF;
+    */
+    /* theme 3 
+    --text-primary: #2E9CCA;
+    --text-secondary: #464866;
+    --bg-primary: #25274D;
+    --bg-secondary: #AAABB8;
+    --bg-terciary: #29648A;
+    */
+
     --bg-quaternaly: #ffffff;
     --bg-red: #ff6961;
     --bg-orange: #ffb347;
-    --bg-green: #cae7c1;
+    --bg-green: #77dd77;
 }
 
 main {
     margin-top: 3rem;
-    padding: 0.5rem;
-    height:93vh;
+    padding: 0rem;
+    height: calc(100% - 3rem - 2*0rem);
 }
 
 html, body {
     height: 100%;
     padding: 0;
     margin: 0;
-    background-color: var(--bg-terciary); 
+    background-color: white; 
     box-sizing: border-box;
     overflow-y: hidden;
 }
@@ -34,6 +54,7 @@ html, body {
     width: 100%;
     position: fixed;
     background-color: var(--bg-primary);
+    z-index: 10;
 }
 
 .navbar-nav {
@@ -95,8 +116,7 @@ html, body {
     background-color: var(--bg-primary);
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-    
+    z-index: 10;
 }
 
 .nav-dropdown-content a {
@@ -129,11 +149,11 @@ split-hidden {
     overflow-y: hidden;
     overflow-x: hidden;
 }
+
 .content {
-    box-shadow: inset 0 1px 1px #e4e4e4;
     background-color: #fff;
     /*min-height: 50vh;  was there, in case of any problem with split.js return*/
-    min-height: 100%;
+    /*min-height: 100%;*/
 }
 
 .gutter {
@@ -165,31 +185,223 @@ split-hidden {
 
 .ace_gutter-cell.ace_breakpoint{ 
     border-radius: 20px 20px 20px 20px;
-    box-shadow: 0px 0px 1px 1px #1100ff inset; 
+    box-shadow: 0px 0px 1px 1px var(--bg-orange) inset; 
 }
 
 .errorMarker {
     border-bottom: 1px solid red;
     /* background-color: var(--bg-red); */
     position: absolute;
-    z-index:20;
+    z-index: 20;
   }
 
-/*----------- test -----------*/
-.flex-container{
+/*----------- dashboard -----------*/
+.dashboard-buttons{
     display: flex;
     flex-wrap: wrap;
-    background-color: var(--bg-quaternaly);
     align-items: center;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0.1rem;
 }
 
-.flex-container > div, .flex-container > input {
-    background-color: var(--bg-primary);
-    width: 110px;
-    margin: 5px;
+.dashboard-buttons > div, .dashboard-buttons > input {
+    background-color: var(--bg-secondary);
+    width: calc(25% - 0.2rem);
+    margin: 0.1rem;
+    min-width: 7.5rem;
     color: var(--text-primary);
     text-align: center;
     line-height: 3rem;
     border-radius: 1rem;
     user-select: none;
-  }
+}
+
+.dashboard-buttons > .dashboard-slider {
+    display: flex;
+    flex-wrap: flex;
+    width: 100%;
+    height: 3rem;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.dashboard-buttons > .dashboard-slider > div {
+    padding: 1rem;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background-color: var(--bg-terciary);
+    border-radius: 5px;
+    height: 0.2rem;
+    opacity: 0.7;
+    transition: opacity 0.5s;
+    outline: 0;
+    outline-color: transparent;
+    box-shadow: none;
+}
+
+.slider:hover{
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 25px;
+    background: var(--text-primary);
+    cursor: pointer;
+    border-radius: 5px;
+}
+  
+.slider::-moz-range-thumb {
+    width: 15px;
+    height: 25px;
+    background: var(--text-primary);
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.numberPicker {
+    width: 75px;
+    outline: 0;
+    outline-color: transparent;
+    box-shadow: none;
+    border-radius: 5px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.numberPicker::-webkit-inner-spin-button, 
+.numberPicker::-webkit-outer-spin-button { 
+    opacity: 1;
+    border-radius: 5px;
+}
+
+.dashboard-buttons > .dashboard-textbox-console {
+    width: calc(50% - 2.2rem);
+    background-color: black;
+    border-color: var(--bg-secondary);
+    border-style: solid;
+    border-width: 1rem;
+    height: 15rem;
+    position: relative;
+    overflow: auto;
+    line-height: 1.2rem;
+}
+
+.dashboard-buttons > .dashboard-textbox-console > table {
+    color: lime;
+    width: 100%;
+    padding: 1rem;
+}
+
+.dashboard-buttons > .dashboard-textbox-console > div {
+    white-space: nowrap;
+    color: lime;
+    padding: 1rem;
+    text-align: left;
+}
+
+.controls {
+    flex-wrap: wrap;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0.1rem;
+}
+
+.controls div {
+    background-color: var(--bg-primary);
+    width: calc((100%/7) - 0.2rem);
+    margin: 0.1rem;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 3rem;
+    height: 3rem;
+    border-radius: 1rem;
+    user-select: none;
+    cursor: pointer;
+}
+
+.controls div svg {
+    max-width: 1.5rem;
+    max-height: 1.5rem;
+    margin: 0.70rem;
+}
+/*----------- scrollbars set -----------*/
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+  
+::-webkit-scrollbar-thumb {
+    background: var(--scroll-inactive);
+    border-radius: 5px;
+}
+  
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-active);
+    border-radius: 5px;
+}
+
+/*----------- room overlay ----------- */
+.overlay {
+    display: flex;
+    flex-wrap: wrap;
+    align-self: flex-start;
+    position: absolute;
+}
+
+.overlay div {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    text-align: center;
+    padding: 0.2rem 1rem 0.2rem 1rem;
+    border-radius: 1rem;
+    display: none;
+    cursor:pointer;
+    margin: 1rem 0rem 0rem 1rem;
+    z-index: 5;
+}
+
+/* ----------- code nav bar ----------- */
+.codeNavbar {
+    display:flex;
+    background-color: var(--bg-terciary);
+    align-items: flex-start;
+}
+
+.codeNavbar > div {
+    color: var(--bg-secondary);
+    padding: 0rem 1.5rem 0rem 0rem;
+    margin: 0.1rem;
+    cursor: pointer;
+    background-color: var(--bg-terciary);
+    user-select: none;
+    height: 2rem;
+    line-height: 2rem;
+    border-radius: 5px 5px 0px 0px;
+    display: flex;
+    align-items: center;
+    border-style: solid;
+    border-width: 2px;
+    border-color: var(--bg-secondary);
+}
+
+.codeNavbar svg {
+    width: 0.8rem;
+    min-width: 0.8rem;
+    margin: 0 0.5rem;
+}

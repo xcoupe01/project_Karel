@@ -9,7 +9,7 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 6.3.2021**
+**Last update - 10.3.2021**
 
 **English version below**
 ___
@@ -71,7 +71,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - v plánu vlastní grafické modely pro objekty v místnosti
 - přehledné GUI
     - <span style="color:green"> implementovaná možnost změny velikosti oken - split.js
-    - <span style="color:green"> implementována první verze uživatelského prostředí
+    - <span style="color:green"> implementována druhá verze uživatelského prostředí
     - <span style="color:green"> implementováno modifikovatelné prostředí
     - v plánu různá témata
 
@@ -87,8 +87,8 @@ Kód pište do nejpravějšího ze tří zobrazených oken - `Editor kódu`. Dos
 - `zvedni` - robot zvedne cihlu
 - `oznac` - robot označí pole
 - `odznac` - robot odznačí pole
-- `rychle` - robot se přepne do rychlého režimu
-- `pomalu` - robot se přepne do pomalého režimu
+- `rychle` - Zvýší rychlost robota o 10 ms - posune s posuvníkem rychlosti
+- `pomalu` - Sníží rychlost robota o 10 ms - posune s posuvníkem rychlosti
 - `pip` - robot přehraje upozornění
 
 Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly.Tyto příkazy lze různě podle potřeby skládat zasebe jako v každém jiném programovacím jazyku, je ale potřeba, **aby na každém řádku byl pouze jeden příkaz**. Příkazy lze vkládat i do strukrur jako jsou:
@@ -151,12 +151,21 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku. Apl
     - `Z` pro zvednutí cihly 
     - `I` pro odebrání nebo vrácení políčka před Karlem
     - myší a šipkami lze pohybovat kamerou v místnosti. 
+
+    V levém horním rohu místnosti se mohou objevovat kontextové bubliny upozorňující na konkrétní stav aplikace. Mohou to být tyto:
+        - `Počítadlo` - Pokud je spuštěn program, zobrazuje, kolik iterací interpretu bylo třeba pro vykonání programu udělat. Kliknutím se vymaže
+        - `Ovládáš` - Pokud je místnost aktivována a je možné robota napřímo ovládat, zobrazí se toto upozornění. Po kluknutí na něj se přímý režim vypne.
+        - `Běží` - Pokud je prováděn program, zobrazí se toto upozornění. Po kliknutí na něj se provádění příkazu zastaví (podobně jako klinutím na tlačítko `stop`).
+
 - **Blokový editor**
 
     Slouží k vytváření kódu pomocí blokového přístupu programování. Pohyb po ploše je možná pomocí myši, včetně přibližování a oddalování, které je dále dostupné pomocí tlačítek v pravém spodním rohu. Tlačítko terče slouží k vystředění blokové pracovní plochy. Pod těmito tlačítky se nachází ikona koše, která zpřístupňuje smazané struktury. Struktury se mažou uchopením a buďto přetažením do toolboxu a nebo právě na tuto ikonu koše.
+
 - **Textový editor**
 
-    Umožnujě programování robota textovou formou v nativním jazyce Karel. Disponuje jednoduchým autocompletem, který pomáhá při programování a obarvuje syntax jazyka. Spustit kód je možné nakliknutím do prostoru programu, který uživatel chce spustit a kliknutím na tlačítko `Spusť`. Dostupný je také režim krokování, který se spouští podobým způsobem, akorát pomocí tlačítka `Krokuj`. V režimu krokování se vykoná pouze jeden krok programu při každém stisknutí tlačítka krokuj.
+    Umožnujě programování robota textovou formou v nativním jazyce Karel. Disponuje jednoduchým autocompletem, který pomáhá při programování a obarvuje syntax jazyka. Spustit kód je možné nakliknutím do prostoru programu, který uživatel chce spustit a kliknutím na tlačítko `Spusť`. Dostupný je také režim krokování, který se spouští podobým způsobem, akorát pomocí tlačítka `Krokuj`. V režimu krokování se vykoná pouze jeden krok programu při každém stisknutí tlačítka krokuj, pokud jsou ale v editoru nastavené breakpointy, vykonávání je zastaveno pouze na nich. Textový editor má na své horní hraně dvě záložky:
+        - `Kód` - textový editor aplikace, kde lze Karlovi psát vlastní kód.
+        - `Bloky` - textová reprezentace blokového editoru, nelze do ní psát, ale disponuje všemi ostatními funkcemi regulérního editoru. 
 
 
 V horním panelu jsou dostupná následující nástroje aplikace:
@@ -167,30 +176,44 @@ V horním panelu jsou dostupná následující nástroje aplikace:
     - `Vytvoř bloky` - Z označeného kódu v textovém editoru vytvoří blokové schéma v blokovém editoru.
     - `Ulož` - Umožnujě uložit stav aplikace pomocí dialogu.
     - `Načti` - Umožňuje načíst stav aplikace pomocí dialogu.
+    - `Nastav okna` - Nastaví výchozí velikosti oken aplikace.
 - **Jazyky** - umoňuje změnu jazyků z nabídky.
 - **Spusť** - spustí vybraný program v textovém editoru v běžném režimu.
 - **Krokuj** - spustí vybraný program v textovém editoru v krokovacím režimu.
 - **Zastav** - zastaví jakýkoliv probíhající program.
 
 - **Rychlý přístup**
-    - Rychlý přístup je dostupný pod místností s robotem, jedná se o jednoduchou sadu nástrojů, které usnadňují práci s aplikací a jednoznačně a rychle dávaí najevo aktuální stav aplikace. Mezi prvky patří:
-        - `Počítadlo` - během běhu programu počítá, kolik musel interpret provést iterací, kliknutím lze vynulovat.
-        - `Idikátor běhu` - Je červený pokud je Karel v běhu, jinak je tmavě modrý
-        - `Idikátor ovládání` - Indikuje, zdali je uživatel v módu přímého ovlbádání robota v místnosti. Kliknutím lze tento mód aktivivat (případně kliknutím do místnosti).
-        - `Reset kamery` - Vrátí kameru na původní pozici.
-        - `Změna textového editoru` - Přepne editor ze zápisu programů na reprezentaci blokového editoru, nebo naopak.
+    - Rychlý přístup je dostupný pod místností s robotem, jedná se o jednoduchou sadu nástrojů, které usnadňují práci s aplikací a jednoznačně a rychle dávají najevo aktuální stav aplikace. Mezi prvky patří:
+        - `Reset kamery` - Vrátí kameru místosti na základní pozici.
+        - `Ovládání` - Zobrazí tlačítka pro přímé ovládání robota.
+        - `Reset oken` - Vrátí velikosti oken aplikace do výchozího nastavení. 
         - `Test` - Interní testovací tlačítko.
+        - `Posuvník rychlosti` - Nastavuje rychlost interpretu jazyka, na pravé straně lze nastavit i přímo číselně. Číslo znamená počet milisekund na příkaz. Lze nastavit i v programu pomocí příkazů `rychle` a `pomalu`.
+        - `Konzole` - Zde robot vypisuje hlášení o svém aktuálním stavu, nejčastěji chybová hlášení.
+        - `Proměnné` - Zde robot vypisuje všechny definované proměnné a jejich hodnoty.
+
+    - Po kliknutí na tlačítko `Ovládání` se na vrcholu tohoto okna zobrazí tlačítka pro přímé ovládání robota potřebná napříkald pro dotyková zařízení. Tyto tlačítka jsou z leva do prava následující:
+        - `Vlevo` pro otočení vlevo 
+        - `Krok` pro krok vpřed
+        - `Vpravo` pro otočení vpravo
+        - `Polož` pro položení cihly
+        - `Zvedni` pro zvednutí cihly 
+        - `Označ/odznač` pro označení nebo odznačení aktuální karlovy pozice
+        - `Odeber blok` pro odebrání nebo vrácení políčka před Karlem
 
 ## Proměnné
 Tento projekt si dává za cíl originální jazyk rozšířit. Tohoto cíle je dosaženo pomocí obohacení jazyka o proměnné.
 Do proměnných lze ukládat celočíselné kladné i záporné hodnoty definované matematickými výrazy s použitím celočíselných kladných hodnot a hodnot z proměnných. V rovnicích lze využívat tyto operátory:
-    - `+` - sčítání
-    - `-` - odečítání
-    - `*` - násobení 
-    - `/` - celočíselné dělení
-    - `%` - zbytek po dělení
+
+- `+` - sčítání
+- `-` - odečítání
+- `*` - násobení 
+- `/` - celočíselné dělení
+- `%` - zbytek po dělení
+
 Karel rozumí i uzávorkování výrazů pomocí jednoduchých závorek `(` a `)`.
-    - příklad validní konstrukce - `8 * (4 - promenna2)`
+- příklad validní konstrukce : `8 * (4 - promenna2)`
+
 Hodnoty těchto výrazů lze poté ukládat do definovaných proměnných.
 Proměnné je potřeba definovat pomocí následující syntaxe na úrovni definice příkazů a podmínek:
 
@@ -202,8 +225,7 @@ definuj
     [nazev promenne]
 konec
 ```
-Těchto definičních bloků může být v projektu několik ovšem matematický výraz nesmí obsahovat ještě nedefinovanou proměnnou. Pořadí definice proměnných interpretem je odshora dolů v souboru. Věchny definované proměnné jsou v globálním scope a jsou od jejich definice dostupné ve všech příkazech i podmínkách.
-Proměnné a výrazy lze využít v definování počtu cyklů opakuj (definují N počtů opakování) a v konstrukcích rozhodující pomocí podmínky, kde paltí, že hodnota 0 je nepravda a jakákoliv jiná je pravda.
+Těchto definičních bloků může být v projektu několik ovšem matematický výraz nesmí obsahovat ještě nedefinovanou proměnnou. Pořadí definice proměnných interpretem je odshora dolů v souboru. Věchny definované proměnné jsou v globálním scope a jsou od jejich definice dostupné ve všech příkazech i podmínkách. Proměnné a výrazy lze využít v definování počtu cyklů opakuj (definují N počtů opakování) a v konstrukcích rozhodující pomocí podmínky, kde paltí, že hodnota 0 je nepravda a jakákoliv jiná je pravda.
 
 ## Režim debugování
 Pokud nechceme spouštět celý program v Karlovi najednou, ale chceme program krokovat, využijeme tlačítko "brouka", které interpret spustí v debugovacím režimu. Nyní Karel bude porvádět jeden příkaz na jedno kliknutí debug tlařítka. Pokud je kód příliš dlouhý a nechce se nám proklikávat až do potřebého bodu, je možné do míst vložit breakpoint kliknutím na číslo řádku na levé straně editoru. Poté debugovací rozhraní provede interpretaci do tohoto bodu, zde se zastaví a čeká na opětovné zmáčknutí debug tlačítka pro další postup.
@@ -225,39 +247,6 @@ You need to run local server for Karel to function properly. Easiest way is to r
 - This is not the final version and future functions will be added
 - Graphics contains placeholder objects for now, real models will be added in the future.
 
-## UI description
-- **Room**
-    - Visualizes the robot in his room, you can directly control him by clicking in the room and using folowing controls.
-    - controls:
-        - `W` to go forward
-        - `A` to rotate left
-        - `D` to rotate right
-        - `O` to mark current Karel's position
-        - `P` to place brick
-        - `Z` to pick up brick
-        - `I` to remove or return block in front of Karel
-        - mouse to move camera in the room
-- **Blockly editor**
-    - Used to program robot by blocks.
-- **Text code editor**
-    - Used to program robot by code.
-## Nav bar description
-You can find control for each section under it
-- **Menu**
-    - `Change room` - 
-    - `Home camera` - resets the camera
-    - `Make Blocks` - creates blocks described by text form the selected text in the text editor
-    - `Save` - opens dialog to generate save file
-    - `Load` - opens dialog to load application by the specified file
-    - `Test` - internal developper button
-- **Languages**
-    - insert a code to be transported to Blockly code
-- **Run**
-    - runs block of code specifed by cursor
-- **Debug**
-    - runs block of code specified by cursor in debug mode (step by step)   
-- **Stop**
-    - stops ecevution of any code
 ## Used resources
 - [ACE code editor](https://ace.c9.io/)
 - [Three.js web 3D graphics](https://threejs.org/)
