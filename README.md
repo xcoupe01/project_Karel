@@ -9,7 +9,7 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 10.3.2021**
+**Last update - 14.3.2021**
 
 **English version below**
 ___
@@ -56,6 +56,8 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
 - přidání čísel a proměnných do programu
     - <span style="color:green"> navrženy proměnné v jazyku
     - <span style="color:green"> implementovány jednoduché operace s čísly
+    - <span style="color:green"> implementovány lokální a globální proměnné v jazyku
+    - <span style="color:green"> implementován jednoduchá přehled dostupných promenných
 - jazykové mutace
     - <span style="color:green"> implementováno pomocí js lang file
     - <span style="color:green"> v plánu mutace do anglického jazyka
@@ -214,19 +216,55 @@ Do proměnných lze ukládat celočíselné kladné i záporné hodnoty definova
 Karel rozumí i uzávorkování výrazů pomocí jednoduchých závorek `(` a `)`.
 - příklad validní konstrukce : `8 * (4 - promenna2)`
 
-Hodnoty těchto výrazů lze poté ukládat do definovaných proměnných.
-Proměnné je potřeba definovat pomocí následující syntaxe na úrovni definice příkazů a podmínek:
+Hodnoty těchto výrazů lze poté ukládat do definovaných proměnných. Karel nabízí proměnné dvojího typu - globální a lokální. Globální proměnné je třeba poprvé definovat na úrovni definice příkazů a podmínek následujícím syntaxem:
 
 ```
-definuj
-    # definice proměnné a přiřazení hodnoty
-    [nazev promenne] = [matematický výraz]
-    # pouze definice proměnné
-    [nazev promenne]
+globalni promenna mojePromenna = 2
+```
+
+Následně je možné do ní jakkolv stejným syntaxem zapisovat. Druhé klíčové slovo `promenna` je zde nepovinné, avšak díky němu je zakázáno definovat proměnné s tímto názvem (názvy se nesmí shodovat s klíčovými slovy jazyka, ani s názvem jakéhokoliv příkazu, či podmínky). Dále lze podobně v příkazech či podmínkách definovat lokální proměnná:
+
+```
+lokalni promena mojeLokProm = 4
+```
+
+Opět je klíčové slovo `promenna` nepovinné a název proměnné se nesmí shodovat s žádným názvem příkazu, podmínky nebo nyní i globální proměnné. Proměnné lze použít například při hledání středu místnosti následujícím způsobem:
+
+```
+# pomocí globálních proměnných
+
+globalni promena1 = 1
+
+prikaz pulka_glob
+    globalni promena1 = 0
+    dokud neni zed
+        krok
+        globalni promena1 = promena1 + 1
+    *dokud
+    vlevo
+    vlevo
+    globalni promena1 = promena1 / 2
+    udelej promena1 krat
+        krok
+    *udelej
+konec
+
+# pomocí lokálních proměnných
+
+prikaz pulka_lok
+    lokalni pocitadlo = 0
+    dokud neni zed
+        krok
+        lokalni pocitadlo = pocitadlo + 1
+    *dokud
+    vlevo
+    vlevo
+    lokalni pocitadlo = pocitadlo / 2
+    udelej pocitadlo krat
+        krok
+    *udelej
 konec
 ```
-Těchto definičních bloků může být v projektu několik ovšem matematický výraz nesmí obsahovat ještě nedefinovanou proměnnou. Pořadí definice proměnných interpretem je odshora dolů v souboru. Věchny definované proměnné jsou v globálním scope a jsou od jejich definice dostupné ve všech příkazech i podmínkách. Proměnné a výrazy lze využít v definování počtu cyklů opakuj (definují N počtů opakování) a v konstrukcích rozhodující pomocí podmínky, kde paltí, že hodnota 0 je nepravda a jakákoliv jiná je pravda.
-
 ## Režim debugování
 Pokud nechceme spouštět celý program v Karlovi najednou, ale chceme program krokovat, využijeme tlačítko "brouka", které interpret spustí v debugovacím režimu. Nyní Karel bude porvádět jeden příkaz na jedno kliknutí debug tlařítka. Pokud je kód příliš dlouhý a nechce se nám proklikávat až do potřebého bodu, je možné do míst vložit breakpoint kliknutím na číslo řádku na levé straně editoru. Poté debugovací rozhraní provede interpretaci do tohoto bodu, zde se zastaví a čeká na opětovné zmáčknutí debug tlačítka pro další postup.
 ## Upozornění

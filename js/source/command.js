@@ -36,56 +36,20 @@ class command{
 
     /**
      * Defines command in the command list, saves the given init tokens and create its structure.
-     * Controls redefinition and previous occurances of the command
-     * @param {token structure} token is the token that initializes the command.
-     * @param {array of tokens} init is the tokes that will be added directly to the new record.
-     * @param {array of errors} errors if errors occures, they will be passed in this array.
-     * @param {JSON} dictionary dictionary from which error texts are taken.
-     * @returns true if successful, false otherwise
+     * @param {token} token is the token that initializes the command.
+     * @param {array} init are the tokes that will be added directly to the new record.
      */
-    defineCommand(token, init, errors, dictionary){
-        if(token.value in this.commandList || token.value in this.conditionList || token.value in this.math.variables){
-            errors.push({error: dictionary["checkerErrorMessages"]["redefinition"], token: token}); 
-        } else {
-            this.commandList[token.value] = {code: init, definingToken: init.length};
-            if(token.value in this.expectDefinition){
-                if(!(this.expectDefinition[token.value].type == "function")){
-                    for(var i = 0; i < this.expectDefinition[token.value].tokens.length; i++){
-                        errors.push({error: dictionary["checkerErrorMessages"]["badUsage"], token: this.expectDefinition[token.value].tokens[i]});
-                    }
-                }
-                delete this.expectDefinition[token.value];
-            }
-            return true;
-        }
-        return false;
+    defineCommand(token, init){
+        this.commandList[token.value] = {code: init, definingToken: init.length};
     }
 
     /**
      * Defines condition in the condition list, saves the given init tokens and create its structure.
-     * Controls redefinition and previous occurances of the condtition.
-     * @param {token structure} token is the token that initializes the command.
-     * @param {array of tokens} init is the tokes that will be added directly to the new record.
-     * @param {array of errors} errors if errors occures, they will be passed in this array.
-     * @param {JSON} dictionary dictionary from which error texts are taken.
-     * @returns true if successful, false otherwise
+     * @param {token} token is the token that initializes the condition.
+     * @param {array} init is the tokes that will be added directly to the new record.
      */
-    defineCondition(token, init, errors, dictionary){
-        if(token.value in this.commandList || token.value in this.conditionList || token.value in this.math.variables){
-            errors.push({error: dictionary["checkerErrorMessages"]["redefinition"], token: token});
-        } else {
-            this.conditionList[token.value] = {code: init, definingToken: init.length, result: "undef"};
-            if(token.value in this.expectDefinition){
-                if(!(this.expectDefinition[token.value].type == "condition" || this.expectDefinition[token.value].type == "function")){
-                    for(var i = 0; i < this.expectDefinition[token.value].tokens.length; i++){
-                        errors.push({error: dictionary["checkerErrorMessages"]["badUsage"], token: this.expectDefinition[token.value].tokens[i]});
-                    }
-                }
-                delete this.expectDefinition[token.value];
-            }
-            return true;
-        }
-        return false;
+    defineCondition(token, init){
+        this.conditionList[token.value] = {code: init, definingToken: init.length, result: "undef"};
     }
 
     /**
@@ -128,41 +92,6 @@ class command{
             return this.conditionList[functionName].code[this.conditionList[functionName].definingToken];
         }
         return;
-    }
-
-    /**
-     * Checks if given identifier is defined, if not, it will be added to the expected definition list with its type.
-     * If it will not be defined, it will cause an error.
-     * @param {token structure} token is the token we need to be reachable.
-     */
-    checkReachable(token){
-        if(!(token.value in this.commandList || token.value in this.conditionList)){
-            if(this.expectDefinition[token.value] === undefined){
-                this.expectDefinition[token.value] = {tokens: [token], type: "function"};
-            } else {
-                this.expectDefinition[token.value].tokens.push(token);
-            }
-        }
-    }
-
-    /**
-     * Checks if given condition identifier is reachable, if not, it will be added to the expected definition list with its type.
-     * If it will not be defined, it will cause an error.
-     * @param {token structure} token is the token we need to be reachable as condition.
-     */
-    checkReachableCondition(token, errors, dictionary){
-        if(token.value in this.commandList){
-            errors.push({error: dictionary["checkerErrorMessages"]["badUsageNotCondition"], token: token});
-            return;
-        }
-        if(!(token.value in this.conditionList)){
-            if(this.expectDefinition[token.value] === undefined){
-                this.expectDefinition[token.value] = {tokens: [token], type: "condition"};
-            } else {
-                this.expectDefinition[token.value].type = "condition";
-                this.expectDefinition[token.value].tokens.push(token);
-            }
-        }
     }
 
     /**
@@ -212,8 +141,8 @@ class command{
                     console.log(conditionCore);
                     throw "Bad condition for evaluation";
             }
-        } else if(conditionCore.menaning = "expression"){
-            if(this.math.computeExpression(conditionCore) == 0){
+        } else if(conditionCore.meaning == "expression"){
+            if(this.math.computeExpression(conditionCore, undefined, codePointer.functionName) == 0){
                 result = false;
             } else {
                 result = true;

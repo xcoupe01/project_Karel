@@ -98,8 +98,7 @@ function createBasicToolboxByLang(Interpret){
             "0",
             [
                 "base_function", 
-                "base_condition",
-                "base_definition"
+                "base_condition"
             ]
         ],
         "functions" : [
@@ -147,8 +146,8 @@ function createBasicToolboxByLang(Interpret){
                 "math_operators",
                 "math_compare",
                 "math_brackets",
-                "math_definevar",
-                "math_setvar"
+                "math_global_var",
+                "math_local_var"
             ]
         ] 
     };
@@ -487,6 +486,5 @@ document.querySelector('#runIndikator').onclick = function() {mainInterpret.turn
 
 
 document.querySelector('#test').onclick = function() {
-    mainInterpret.counter += 10000;
-    mainInterpret.updateCounter();
+    console.log(mainInterpret.syntaxCheck(editor));
 };

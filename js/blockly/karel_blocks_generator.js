@@ -106,7 +106,8 @@ Blockly.Karel['function_userDefined'] = function(block){
 }
 
 Blockly.Karel['control_repeat'] = function(block){
-    var code = Blockly.langDictionary["keywords"]["do"] + " " + Blockly.Karel.valueToCode(block, 'EXPRESSION', 0) + " " + Blockly.langDictionary["keywords"]["times"] + "\n";
+    var code = Blockly.langDictionary["keywords"]["do"] + " " + Blockly.Karel.valueToCode(block, 'EXPRESSION', 0) + 
+        " " + Blockly.langDictionary["keywords"]["times"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
     code += Blockly.closer + Blockly.langDictionary["keywords"]["do"] + "\n";
     if(block.getNextBlock() != null){
@@ -214,12 +215,9 @@ Blockly.Karel['math_brackets'] = function(block){
     return ["( " + Blockly.Karel.valueToCode(block, 'VALUE', 0) + " )", 0];
 }
 
-Blockly.Karel['math_definevar'] = function(block) {
-    var text_var_name = block.getFieldValue('VAR_NAME');
-    var value_expression = Blockly.Karel.valueToCode(block, 'EXPRESSION', 0);
-    if(value_expression != ""){
-        text_var_name = text_var_name + " = " + value_expression;
-    }
+Blockly.Karel['math_global_var'] = function(block) {
+    var text_var_name = Blockly.langDictionary["keywords"]["global"] + " " + Blockly.langDictionary["keywords"]["variable"] + 
+        " " +block.getFieldValue('VAR_NAME') + " = " + Blockly.Karel.valueToCode(block, 'EXPRESSION', 0);
     var code = text_var_name + "\n";
     if(block.getNextBlock() != null){
         code += Blockly.Karel.blockToCode(block.getNextBlock());
@@ -227,12 +225,9 @@ Blockly.Karel['math_definevar'] = function(block) {
     return code;
   };
 
-Blockly.Karel['math_setvar'] = function(block) {
-    var text_var_name = block.getFieldValue('VAR_NAME');
-    var value_expression = Blockly.Karel.valueToCode(block, 'EXPRESSION', 0);
-    if(value_expression != ""){
-        text_var_name = text_var_name + " = " + value_expression;
-    }
+Blockly.Karel['math_local_var'] = function(block) {
+    var text_var_name = Blockly.langDictionary["keywords"]["local"] + " " + Blockly.langDictionary["keywords"]["variable"] + 
+        " " + block.getFieldValue('VAR_NAME') + " = " + Blockly.Karel.valueToCode(block, 'EXPRESSION', 0);
     var code = text_var_name + "\n";
     if(block.getNextBlock() != null){
         code += Blockly.Karel.blockToCode(block.getNextBlock());
@@ -249,13 +244,6 @@ Blockly.Karel['base_function'] = function(block){
 
 Blockly.Karel['base_condition'] = function(block){
     var code = Blockly.langDictionary["keywords"]["condition"] + " " + block.getFieldValue('NAME') + "\n";
-    code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
-    code += Blockly.langDictionary["keywords"]["end"] + "\n";
-    return code + "\n";
-}
-
-Blockly.Karel['base_definition'] = function(block){
-    var code = Blockly.langDictionary["keywords"]["definition"] + "\n";
     code += Blockly.Karel.statementToCode(block, 'INNER_CODE');
     code += Blockly.langDictionary["keywords"]["end"] + "\n";
     return code + "\n";

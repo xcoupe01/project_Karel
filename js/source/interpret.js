@@ -133,8 +133,10 @@ class interpret{
      *  - row: is the row where the token was found
      *  - column: is the column where the token was found
      * There are these possible meaning (terminals):
-     *  - function-def, condition-def, end, command, condition, identifier, output, number, do-start, do-end,
-     *     times, while-start, while-end, if-start, if-end, then, else, condition-prefix
+     *  - function-def, condition-def, end, command, condition, identifier, output, expression, do-start, do-end,
+     *     times, while-start, while-end, if-start, if-end, then, else, condition-prefix, global, local, kw-var
+     * In the end the global variable definitions are shifted to the start and the mixed expression tokens which
+     * ACE creates.
      * @param {ACE editor} editor is the editor we want to be tokenized from 
      * @returns dictionary of functions that contains its tokens.  
      */
@@ -160,7 +162,6 @@ class interpret{
         let outputs = [this.dictionary["keywords"]["true"], this.dictionary["keywords"]["false"]];
 
         var codeArray = [[]];
-        var iterator = 0;
         var closerLast = false;
         while(tokenizer.getCurrentToken() !== undefined){
             if(!(/^\s+$/).test(tokenizer.getCurrentToken().value) && !this.commentary.test(tokenizer.getCurrentToken().value)){
@@ -193,15 +194,12 @@ class interpret{
                         case "condition":
                             token.meaning = "condition-def";
                             break;
-                        case "definition":
-                            token.meaning = "definition-def";
-                            break;
                         case "end":
                             token.meaning = "end";
                             break;
                         case "do":
                             if(closerLast){
-                                codeArray[iterator].pop();
+                                codeArray[codeArray.length - 1].pop();
                                 token.meaning = "do-end";
                                 token.column -= this.closer.length;
                                 token.value = this.closer + token.value;
@@ -212,13 +210,9 @@ class interpret{
                         case "times":
                             token.meaning = "times";
                             break;
-                        case "do":
-                            token.meaning = "do-end";
-                            token.column -= this.closer.length;
-                            break;
                         case "while":
                             if(closerLast){
-                                codeArray[iterator].pop();
+                                codeArray[codeArray.length - 1].pop();
                                 token.meaning = "while-end";
                                 token.column -= this.closer.length;
                                 token.value = this.closer + token.value;
@@ -226,13 +220,9 @@ class interpret{
                                 token.meaning = "while-start";
                             }
                             break;
-                        case "while":
-                            token.meaning = "while-end";
-                            token.column -= this.closer.length;
-                            break;
                         case "if":
                             if(closerLast){
-                                codeArray[iterator].pop();
+                                codeArray[codeArray.length - 1].pop();
                                 token.meaning = "if-end";
                                 token.column -= this.closer.length;
                                 token.value = this.closer + token.value;
@@ -246,19 +236,24 @@ class interpret{
                         case "else":
                             token.meaning = "else";
                             break;
-                        case "if":
-                            token.meaning = "if-end"
-                            token.column -= this.closer.length;
-                            break;
                         case "is":
                         case "isNot":
                             token.meaning = "condition-prefix";
                             break;
+                        case "local":
+                        case "global":
+                            token.meaning = token.dictKey;
+                            break;
+                        case "variable":
+                            token.meaning = "kw-var";
+                            break;
                     }
                 }
-                codeArray[iterator].push(token);
+                if(token.meaning == "function-def" || token.meaning == "condition-def"){
+                    codeArray.push([]);
+                }
+                codeArray[codeArray.length - 1].push(token);
                 if(token.meaning == "end"){
-                    iterator ++;
                     codeArray.push([]);
                 }
             }
@@ -271,15 +266,153 @@ class interpret{
         }
         // putting definition blocks to the front in the original order
         var temp = [];
-        for(var i = 0; i < codeArray.length - 1; i++){
-            if(codeArray[i][0].dictKey == "definition"){
+        for(var i = 0; i < codeArray.length; i++){
+            if(codeArray[i].length == 0){
+                codeArray.splice(i, 1);
+                i --;
+            } else if(codeArray[i][0].dictKey == "global"){
                 var [tempCA] = codeArray.splice(i, 1);
                 temp.push(tempCA);
                 i --;
             }
         }
         codeArray = temp.concat(codeArray);
+        // repairing ace mixed operators evaluated as identifiers
+        for(var i = 0; i <  codeArray.length; i++){
+            for(var j = 0; j < codeArray[i].length; j++){
+                if(codeArray[i][j].meaning == "identifier"){
+                    var beginCodeArray = codeArray[i].slice(0, j);
+                    var endCodeArray = codeArray[i].slice(j, codeArray[i].length);
+                    if(this.math.checkIdentifiersMixing(endCodeArray)){
+                        codeArray[i] = beginCodeArray.concat(endCodeArray);
+                    }
+                }
+            }
+        }
         return codeArray;
+    }
+
+    /**
+     * Pre checks the code array for identifiers. Its goal is to change every identifier token
+     * to either expression, use-command or user-condition tokens. It makes checks about redefinition,
+     * illegal definitions ect. and pushes them into error array.
+     * @param {codeArray} codeArray is the code array to be pre checked.
+     * @param {array} errors is the array errors will be passed to.
+     */
+    preCheckTokenRepair(codeArray, errors){
+        // scanning userdefined commands and conditions
+        var names = {commands: [], conditions: []};
+        for(var i = 0; i < codeArray.length; i++){
+            switch(codeArray[i][0].meaning){
+                case "function-def":
+                    if(codeArray[i][1] !== undefined && codeArray[i][1].meaning == "identifier"){
+                        if(names.commands.concat(names.conditions).includes(codeArray[i][1].value)){
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["redefinition"], token: codeArray[i][1]});
+                        } else {
+                            names.commands.push(codeArray[i][1].value)
+                        }
+                    } else {
+                        if(codeArray[i][1] === undefined){
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["uncompleteDefinition"], token: codeArray[i][0]});
+                        } else {
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["commandNameError"], token: codeArray[i][1]});
+                        }
+                    }
+                    break;
+                case "condition-def":
+                    if(codeArray[i][1] !== undefined && codeArray[i][1].meaning == "identifier"){
+                        if(names.commands.concat(names.conditions).includes(codeArray[i][1].value)){
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["redefinition"], token: codeArray[i][1]});
+                        } else {
+                            names.conditions.push(codeArray[i][1].value)
+                        }
+                    } else {
+                        if(codeArray[i][1] === undefined){
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["uncompleteDefinition"], token: codeArray[i][0]});
+                        } else {
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["variableNameError"], token: codeArray[i][1]});
+                        }
+                    }
+                    break;
+            }
+        }
+        
+        // scanning variables
+        var globalVars = [];
+        for(var i = 0; i < codeArray.length; i++){
+            var globalScope = true;
+            var localVars = [];
+            for(var j = 0; j < codeArray[i].length; j++){
+                switch(codeArray[i][j].meaning){
+                    case "function-def":
+                    case "condition-def":
+                        globalScope = false;
+                        break;
+                    case "global":
+                        j++;
+                        if(codeArray[i][j] !== undefined && codeArray[i][j].meaning == "kw-var"){
+                            codeArray[i].splice(j, 1);
+                        }
+                        if(codeArray[i][j] !== undefined && codeArray[i][j].meaning == "identifier"){
+                            if(names.commands.concat(names.conditions).includes(codeArray[i][j].value)){
+                                errors.push({error: this.dictionary["checkerErrorMessages"]["redefinition"], token: codeArray[i][j]});
+                            }
+                            if(globalScope){
+                                if(!globalVars.includes(codeArray[i][j].value)){
+                                    globalVars.push(codeArray[i][j].value);
+                                }
+                                codeArray[i][j].meaning = "expression";
+                                codeArray[i][j].psaMeaning = "variable";
+                            } else {
+                                if(!globalVars.includes(codeArray[i][j].value)){
+                                    errors.push({error: this.dictionary["checkerErrorMessages"]["definingGlobalInLocal"], token: codeArray[i][j]});
+                                }
+                                codeArray[i][j].meaning = "expression";
+                                codeArray[i][j].psaMeaning = "variable";
+                            }
+                        } else {
+                            if(codeArray[i][j] === undefined){
+                                errors.push({error: this.dictionary["checkerErrorMessages"]["uncompleteDefinition"], token: codeArray[i][j - 1]});
+                            } else {
+                                errors.push({error: this.dictionary["checkerErrorMessages"]["variableNameError"], token: codeArray[i][j]});
+                            }
+                        }
+                        break;
+                    case "local":
+                        if(globalScope){
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["definingLocalInGlobal"], token: codeArray[i][j]});
+                        }
+                        j++;
+                        if(codeArray[i][j] !== undefined && codeArray[i][j].meaning == "kw-var"){
+                            codeArray[i].splice(j, 1);
+                        }
+                        if(codeArray[i][j] === undefined){
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["uncompleteDefinition"], token: codeArray[i][j - 1]});
+                        } else if(codeArray[i][j].meaning != "identifier"){
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["variableNameError"], token: codeArray[i][j]});
+                        } else if(globalVars.includes(codeArray[i][j].value || names.commands.concat(names.conditions).includes(codeArray[i][j].value))){
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["redefinition"], token: codeArray[i][j]});
+                        } else if(!localVars.includes(codeArray[i][j].value)){
+                            localVars.push(codeArray[i][j].value);
+                        }
+                        codeArray[i][j].meaning = "expression";
+                        codeArray[i][j].psaMeaning = "variable";
+                        break;
+                    case "identifier":
+                        if(globalVars.concat(localVars).includes(codeArray[i][j].value)){
+                            codeArray[i][j].meaning = "expression";
+                            codeArray[i][j].psaMeaning = "variable";
+                        } else if(names.commands.includes(codeArray[i][j].value)){
+                            codeArray[i][j].meaning = "user-command";
+                        } else if(names.conditions.includes(codeArray[i][j].value)){
+                            codeArray[i][j].meaning = "user-condition";
+                        } else {
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["undefinedIdentifier"], token: codeArray[i][j]});
+                        }
+                        break;
+                }
+            }
+        }
     }
 
     /**
@@ -309,13 +442,13 @@ class interpret{
         let rules = [
             /* 0 */     [
                             {item: "function-def",      checks: []}, 
-                            {item: "identifier",        checks: ["define-command"]}, 
+                            {item: "user-command",      checks: ["define-command"]},
                             {item: "<command-block>",   checks: []}, 
                             {item: "end",               checks: []}
                         ],
             /* 1 */     [
                             {item: "condition-def",     checks: ["condition-expected"]}, 
-                            {item: "identifier",        checks: ["define-condition"]}, 
+                            {item: "user-condition",    checks: ["define-condition"]}, 
                             {item: "<command-block>",   checks: []}, 
                             {item: "end",               checks: []}
                         ],
@@ -323,7 +456,7 @@ class interpret{
                             {item: "command",           checks: []}, 
                             {item: "<command-block>",   checks: []}],
             /* 3 */     [
-                            {item: "identifier",        checks: ["reachable"]}, 
+                            {item: "user-command",      checks: []}, 
                             {item: "<command-block>",   checks: []}
                         ],
             /* 4 */     [
@@ -354,7 +487,7 @@ class interpret{
                         ],
             /* 8 */     [
                             {item: "do-start",          checks: []}, 
-                            {item: "expression",        checks: ["check-expression", "checkExpressionOut"]}, 
+                            {item: "expression",        checks: ["check-expression", "no-asign"]}, 
                             {item: "times",             checks: []}, 
                             {item: "<command-block>",   checks: []}, 
                             {item: "do-end",            checks: []}, 
@@ -362,7 +495,7 @@ class interpret{
                         ],
             /* 9 */     [],
             /* 10 */    [
-                            {item: "identifier",        checks: ["reachable-condition"]}
+                            {item: "user-condition",    checks: []}
                         ],
             /* 11 */    [
                             {item: "condition",         checks: []}
@@ -372,37 +505,44 @@ class interpret{
                             {item: "<command-block>",   checks: []}
                         ],
             /* 13 */    [
-                            {item: "definition-def",    checks:[]},
-                            {item: "<definition-block>",checks:[]},
-                            {item: "end",               checks:[]}
+                            {item: "global",            checks: []},
+                            {item: "expression",        checks: ["check-expression", "one-asign", "compute-expression"]},
+                            {item: "<start>",           checks: []}
                         ],
             /* 14 */    [
-                            {item: "identifier",        checks:["define-variable", "check-definition-expression"]},
-                            {item: "<definition-block>",checks:[]},
+                            {item: "global",            checks: []},
+                            {item: "expression",        checks: ["check-expression", "one-asign"]},
+                            {item: "<command-block>",   checks: []}
                         ],
             /* 15 */    [
-                            {item: "expression",        checks:["check-expression"]},
-                            {item: "<command-block>",   checks:[]}
+                            {item: "local",             checks: []},
+                            {item: "expression",        checks: ["check-expression", "one-asign"]},
+                            {item: "<command-block>",   checks: []}
                         ],
             /* 16 */    [
-                            {item: "expression",        checks:["check-expression", "checkExpressionOut"]}
+                            {item: "expression",        checks: ["check-expression", "no-asign"]}
                         ]
         ];
-        let xAxisTable = ["function-def", "condition-def", "end", "identifier", "command", "condition", "do-start", "times", 
-            "do-end", "while-start", "while-end", "if-start", "then", "else", "if-end", "condition-prefix", "expression", 
-            "output", "definition-def"]; // all terminals
-        let yAxisTable = ["<start>", "<command-block>", "<end-if>", "<condition-core>", "<definition-block>"]; // all neterminals
+        let xAxisTable = ["function-def", "condition-def", "end", "user-command", "user-condition", "command", "condition", 
+            "do-start", "times", "do-end", "while-start", "while-end", "if-start", "then", "else", "if-end", "condition-prefix", 
+            "expression", "output", "global", "local"]; // all terminals
+        let yAxisTable = ["<start>", "<command-block>", "<end-if>", "<condition-core>"]; // all neterminals
         let table = [
-                        //    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18
-                        //   fud cod end ide com con dos tim doe whs whe ifs the els ife cop exp out def
-            /* start     */ [ 0,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 13],
-            /* com-block */ [-1, -1,  9,  3,  2, -1,  8, -1,  9,  7,  9,  4, -1,  9,  9, -1, 15, 12, -1],
-            /* end-if    */ [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  6,  5, -1, -1, -1, -1],
-            /* cond-core */ [-1, -1, -1, 10, -1, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 16, -1, -1],
-            /* def-block */ [-1, -1,  9, 14, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+                        //    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21
+                        //   fud cod end ucm ucn com con dos tim doe whs whe ifs the els ife cop exp out glo loc [n] 
+            /* start     */ [ 0,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 13, -1,  9],
+            /* com-block */ [-1, -1,  9,  3, -1,  2, -1,  8, -1,  9,  7,  9,  4, -1,  9,  9, -1, -1, 12, 14, 15, -1],
+            /* end-if    */ [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  6,  5, -1, -1, -1, -1, -1, -1],
+            /* cond-core */ [-1, -1, -1, -1, 10, -1, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 16, -1, -1, -1, -1]
         ]   // LL1 table
 
         var errors = [];
+
+        this.preCheckTokenRepair(codeArray, errors);
+
+        if(errors.length > 0){
+            return errors;
+        }
 
         for(var i = 0; i < codeArray.length; i++){
             if(codeArray[i].length <= 0){
@@ -411,65 +551,57 @@ class interpret{
             var stack = [{item: "<start>"}];
             var expected = [];
             var buffer = [];
+            var noError = true;
             while(stack.length > 0){
-                var noError = true;
-                while(stack.length > 0 && stack[0].item == codeArray[i][0].meaning){
+                while(stack.length > 0 && codeArray[i].length > 0 && stack[0].item == codeArray[i][0].meaning){
                     for(var j = 0; j < stack[0].checks.length; j++){
                         switch(stack[0].checks[j]){
                             case "define-command":
-                                noError = this.command.defineCommand(codeArray[i][0], buffer, errors, this.dictionary)
+                                this.command.defineCommand(codeArray[i][0], buffer);
                                 break;
                             case "define-condition":
-                                noError = this.command.defineCondition(codeArray[i][0], buffer, errors, this.dictionary)
+                                this.command.defineCondition(codeArray[i][0], buffer);
                                 break;
                             case "condition-expected":
                                 expected.push(this.dictionary["keywords"]["true"], this.dictionary["keywords"]["false"]);
-                                break;
-                            case "reachable":
-                                if(codeArray[i][0].value in this.math.variables){
-                                    // reachable variable
-                                    codeArray[i][0].meaning = "expression";
-                                    noError = this.math.checkExpression(codeArray[i], errors, this.dictionary);
-                                } else {
-                                    this.command.checkReachable(codeArray[i][0]);
-                                }
-                                break;
-                            case "reachable-condition":
-                                this.command.checkReachableCondition(codeArray[i][0], errors, this.dictionary);
                                 break;
                             case "remove-expected":
                                 if(expected.includes(codeArray[i][0].value)){
                                     expected.splice(expected.indexOf(codeArray[i][0].value), 1);
                                 }
                                 break;
-                            case "define-variable":
-                                this.math.defineVariable(codeArray[i][0], errors, this.dictionary);
+                            case "check-expression":
+                                noError = this.math.checkExpression(codeArray[i], errors, this.dictionary, true);
                                 break;
-                            case "check-definition-expression":
-                                codeArray[i][0].meaning = "expression";
-                                noError = this.math.checkExpression(codeArray[i], errors, this.dictionary);
+                            case "compute-expression":
                                 if(noError){
                                     try{
-                                        this.math.computeExpression(codeArray[i][0]);
+                                        this.math.computeExpression(codeArray[i][0], this.math.globalScopeName, this.math.globalScopeName);
                                     }
                                     catch(err){
-                                        karelConsoleLog("internaError");
-                                        console.log("catched error: ", err);
-                                        if(err = "undefined variable read"){
-                                            noError = false;
-                                        } else {
-                                            throw err;
+                                        switch(err.name){
+                                            case "undefVarRead":
+                                                this.math.createExpressionErrors(codeArray[i][0], this.dictionary["checkerErrorMessages"]["undefVarRead"], errors);
+                                                break;
+                                            case "zeroDivision":
+                                                this.math.createExpressionErrors(codeArray[i][0], this.dictionary["checkerErrorMessages"]["zeroDivisionError"], errors);
+                                                break;
+                                            default:
+                                                throw err;
                                         }
                                     }
                                 }
                                 break;
-                            case "check-expression":
-                                noError = this.math.checkExpression(codeArray[i], errors, this.dictionary);
-                                break;
-                            case "checkExpressionOut":
-                                if(!(codeArray[i][0].meaning == "expression" && codeArray[i][0].type != "assigning")){
-                                    this.math.createExpressionErrors(codeArray[i][0], "Bad expression type used", errors);
+                            case "no-asign":
+                                if(codeArray[i][0].saveTo.length > 0){
                                     noError = false;
+                                    this.math.createExpressionErrors(codeArray[i][0], this.dictionary["checkerErrorMessages"]["illegalAsign"], errors);
+                                }
+                                break;
+                            case "one-asign":
+                                if(codeArray[i][0].saveTo.length != 1){
+                                    noError = false;
+                                    this.math.createExpressionErrors(codeArray[i][0], this.dictionary["checkerErrorMessages"]["oneAsignExpected"], errors);
                                 }
                                 break;
                             default:
@@ -483,27 +615,25 @@ class interpret{
                     }
                     stack.shift();
                     buffer.push(codeArray[i].shift());
-                    if(codeArray[i][0] !== undefined && codeArray[i][0].meaning == "identifier" && codeArray[i][0].value in this.math.variables){
-                        codeArray[i][0].meaning = "expression";
-                    }
                 }
-                if(!noError){
+                if(!noError || stack.length <= 0){
                     break;
                 }
-                if(stack.length <= 0){
-                    break;
-                }
+                
                 if(xAxisTable.includes(stack[0].item)){
-                    errors.push({
-                        error: this.dictionary["checkerErrorMessages"]["unexpectedWord"][0] + 
-                        codeArray[i][0].value + 
-                        this.dictionary["checkerErrorMessages"]["unexpectedWord"][1] + 
-                        stack[0].item, 
-                        token: codeArray[i][0]});
+                    noError = false;
+                    this.createError(codeArray[i], stack, buffer, errors);
                     break;
                 }
-                let searchX = xAxisTable.indexOf(codeArray[i][0].meaning);
+                    
+                var searchX;
+                if(codeArray[i][0] === undefined){
+                    searchX = xAxisTable.length;
+                } else {
+                    searchX = xAxisTable.indexOf(codeArray[i][0].meaning);
+                }
                 let searchY = yAxisTable.indexOf(stack[0].item);
+                    
                 if(searchX == -1 || searchY == -1){
                     karelConsoleLog("internaError");
                     console.log("X: ",searchX, " Y: ",searchY);
@@ -511,31 +641,64 @@ class interpret{
                     console.log("testedCommand: ",codeArray[i]);
                     throw "Table error - bad index";
                 }
+                    
                 if(table[searchY][searchX] != -1){
                     stack.shift()
                     stack = rules[table[searchY][searchX]].concat(stack);
                 } else {
-                    errors.push({
-                        error: this.dictionary["checkerErrorMessages"]["unexpectedWord"][0] + 
-                        codeArray[i][0].value + 
-                        this.dictionary["checkerErrorMessages"]["unexpectedWord"][1] + 
-                        stack[0].item, 
-                        token: codeArray[i][0]});
+                    noError = false;
+                    // when end is missing -- error here TODO
+                    this.createError(codeArray[i], stack, buffer, errors);
                     break;
                 }
             }
+                         
+            if(noError && codeArray[i].length > 0){
+                errors.push({error: "what is that ?", token: codeArray[i][0]});
+            }
+
             if(expected.length > 0 && stack.length == 0){
                 errors.push({error: this.dictionary["checkerErrorMessages"]["missing"] + expected, 
                 token: this.command.getDefiningToken(this.command.getFunctionByToken(buffer[0]))});
             }
         }
-        for(var key in this.command.expectDefinition){
-            for(var i = 0; i < this.command.expectDefinition[key].tokens.length; i++){
-                errors.push({error: this.dictionary["checkerErrorMessages"]["missingDef"] + this.command.expectDefinition[key].type, 
-                token: this.command.expectDefinition[key].tokens[i]})
-            }
-        }
         return errors;
+    }
+
+    /**
+     * Handles errors from the LL1 checking and makes them more readable for the user.
+     * @param {codeArray} codeArray is the code array on which top there is an error.
+     * @param {array} stack is the LL1 checking stack.
+     * @param {array} buffer is the buffer of the function, where error was found.
+     * @param {array} errors is the array of errors.
+     */
+    createError(codeArray, stack, buffer, errors){
+        if(codeArray.length == 0 && stack.length > 0){
+            errors.push({error: this.dictionary["checkerErrorMessages"]["unexpectedEnd"], token: buffer[buffer.length - 1]});
+            return;
+        }
+        switch(stack[0].item){
+            case "<start>":
+                errors.push({error: this.dictionary["checkerErrorMessages"]["definitionStart"], token: codeArray[0]});
+                return;
+            case "<command-block>":
+                errors.push({error: this.dictionary["checkerErrorMessages"]["commandExpected"], token: codeArray[0]});
+                return;
+            case "<end-if>":
+                errors.push({error: this.dictionary["checkerErrorMessages"]["ifEndExpected"], token: codeArray[0]});
+                return;
+            case "<condition-core>":
+                errors.push({error: this.dictionary["checkerErrorMessages"]["conditionCoreExpected"], token: codeArray[0]});
+                return;
+        }
+        console.log(stack[0]);
+        errors.push({
+            error: this.dictionary["checkerErrorMessages"]["unexpectedWord"][0] + 
+            codeArray[0].value + 
+            this.dictionary["checkerErrorMessages"]["unexpectedWord"][1] + 
+            this.dictionary["checkerErrorMessages"]["tokenAliases"][stack[0].item], 
+            token: codeArray[0]}
+        );
     }
 
     /**
@@ -665,7 +828,11 @@ class interpret{
                     this.programQueue.pop();
                 } else {
                     if(this.command.lastConditionResult != "undef"){
-                        console.log(this.command.lastConditionResult);
+                        if(this.command.lastConditionResult == "true"){
+                            karelConsoleLog("logTrue");
+                        } else {
+                            karelConsoleLog("logFalse");
+                        }
                     }
                     return true;
                 }
@@ -674,14 +841,31 @@ class interpret{
             case "output":
                 this.command.executeCommand(this.command.getToken(codePointer).dictKey);
                 break;
-            case "identifier":
+            case "user-command":
                 this.programQueue.push(Object.assign({}, codePointer));
                 codePointer.functionName = this.command.getToken(codePointer).value
                 codePointer.tokenPointer = -1;
                 break;
             case "do-start":
                 codePointer.tokenPointer ++; // iterating to number
-                var number = this.math.computeExpression(this.command.getToken(codePointer));
+                var number = 0;
+                try{
+                    number = this.math.computeExpression(this.command.getToken(codePointer), undefined, codePointer.functionName);
+                }
+                catch(err){
+                    switch(err.name){
+                        case "zeroDivision":
+                            karelConsoleLog("zeroDivisionError");
+                            return true;
+                            break;
+                        case "undefVarRead":
+                            karelConsoleLog("undefinedVariableRead");
+                            return true;
+                            break;
+                        default:
+                            throw err;
+                    }
+                }
                 if(number > 0){
                     this.activeCounters.push(number);
                     codePointer.tokenPointer ++; // skipping keyword times
@@ -701,10 +885,25 @@ class interpret{
                 break;
             case "while-start":
                 codePointer.tokenPointer ++; // skipping to condition prefix
-                var result = this.command.evalCondition(codePointer, this.programQueue);
+                var result;
+                try{
+                    result = this.command.evalCondition(codePointer, this.programQueue);
+                }
+                catch(err){
+                    switch(err.name){
+                        case "zeroDivision":
+                            karelConsoleLog("zeroDivisionError");
+                            return true;
+                        case "undefVarRead":
+                            karelConsoleLog("undefinedVariableRead");
+                            return true;
+                        default:
+                            throw err;
+                    }
+                }   
                 if(result !== undefined){
                     codePointer.tokenPointer ++ ; // skiping to condition core
-                    if(this.command.getToken(codePointer).meaning == "identifier"){
+                    if(this.command.getToken(codePointer).meaning == "user-condition"){
                         this.command.conditionList[this.command.getToken(codePointer).value].result = "undef";
                     }
                     if(!result){
@@ -719,10 +918,25 @@ class interpret{
                 break;
             case "if-start":
                 codePointer.tokenPointer ++; // skipping to condition prefix
-                var result = this.command.evalCondition(codePointer, this.programQueue);
+                var result;
+                try{
+                    result = this.command.evalCondition(codePointer, this.programQueue);
+                }
+                catch(err){
+                    switch(err.name){
+                        case "zeroDivision":
+                            karelConsoleLog("zeroDivisionError");
+                            return true;
+                        case "undefVarRead":
+                            karelConsoleLog("undefinedVariableRead");
+                            return true;
+                        default:
+                            throw err;
+                    }
+                }  
                 if(result !== undefined){
                     codePointer.tokenPointer ++ ; // skiping to condition core
-                    if(this.command.getToken(codePointer).meaning == "identifier"){
+                    if(this.command.getToken(codePointer).meaning == "user-condition"){
                         this.command.conditionList[this.command.getToken(codePointer).value].result = "undef";
                     }
                     if(!result){
@@ -738,22 +952,52 @@ class interpret{
             case "else":
                 this.tokenJumper(codePointer);
                 break;
-            case "expression":
-                this.math.computeExpression(this.command.getToken(codePointer));
+            case "global":
+                codePointer.tokenPointer++;
+                try{
+                    this.math.computeExpression(this.command.getToken(codePointer), this.math.globalScopeName, codePointer.functionName);
+                }
+                catch(err){
+                    switch(err.name){
+                        case "zeroDivision":
+                            karelConsoleLog("zeroDivisionError");
+                            return true;
+                        case "undefVarRead":
+                            karelConsoleLog("undefinedVariableRead");
+                            return true;
+                        default:
+                            throw err;
+                    }
+                }
+                break;
+            case "local":
+                codePointer.tokenPointer++;
+                try{
+                    this.math.computeExpression(this.command.getToken(codePointer), codePointer.functionName, codePointer.functionName);
+                }
+                catch(err){
+                    switch(err.name){
+                        case "zeroDivision":
+                            karelConsoleLog("zeroDivisionError");
+                            return true;
+                        case "undefVarRead":
+                            karelConsoleLog("undefinedVariableRead");
+                            return true;
+                        default:
+                            throw err;
+                    }
+                }
                 break;
             case "condition":
             case "number":
             case "times":
             case "then":
             case "condition-prefix":
+            default:
                 // cannot happen
                 karelConsoleLog("internaError");
                 console.log(this.command.getToken(codePointer));
                 throw "Unexpected token";
-            default:
-                karelConsoleLog("internaError");
-                console.log(this.command.getToken(codePointer));
-                throw "Unknown token";
         }
         codePointer.tokenPointer ++;
         return false;
@@ -888,6 +1132,7 @@ class interpret{
     }
     
     /**
+     * TODO - remake
      * Translates text code to blockly blocks. It generates those blocks by tokens
      * that are expexted to be passed.
      * @param {blockly worspace} workspace is the workspace where the blocks will be created
@@ -896,10 +1141,9 @@ class interpret{
     makeBlocksFromNativeCode(workspace, codeArray){
         var connectTo = [];
         var rules = {
-            "function": {   create: ["base_function"],        action: ["addName", "insertConnection", "setCollapse"],},
-            "condition": {  create: ["base_condition"],       action: ["addName", "insertConnection", "setCollapse"],},
-            "definition": { create: ["base_definition"],      action: ["insertConnection", "setCollapse", "inDefinitionOn"]},
-            "end": {        create: [],                       action: ["popConnectionArray", "collapse", "inDefinitionOff"],},
+            "function": {   create: ["base_function"],        action: ["addName", "clearConnections", "insertConnection", "setCollapse"],},
+            "condition": {  create: ["base_condition"],       action: ["addName", "clearConnections", "insertConnection", "setCollapse"],},
+            "end": {        create: [],                       action: ["popConnectionArray", "collapse"],},
             "forward": {    create: ["function_step"],        action: ["connectBlock"],},
             "right": {      create: ["function_right"],       action: ["connectBlock"],}, 
             "left": {       create: ["function_left"],        action: ["connectBlock"],},
@@ -912,6 +1156,8 @@ class interpret{
             "faster": {     create: ["function_faster"],      action: ["connectBlock"],}, 
             "slower": {     create: ["function_slower"],      action: ["connectBlock"],},
             "beep": {       create: ["function_beep"],        action: ["connectBlock"],},
+            "global":{      create: ["math_global_var"],      action: ["connectBlock", "manageExpression"],},
+            "local":{       create: ["math_local_var"],       action: ["connectBlock", "manageExpression"],},
             "do": {         create: ["control_repeat"],       action: ["connectBlock", "insertConnection", "manageExpression"],},
             "while": {      create: ["control_while"],        action: ["connectBlock", "insertConnection", "manageCondition"],},
             "if": {         create: ["if_creator"],           action: ["connectBlock", "insertConnection", "manageCondition"],},
@@ -921,7 +1167,6 @@ class interpret{
         }
         var currentRule;
         var toCollapse;
-        var inDefinition = false;
         var numOfCollapsedBlocks = 0;
         var variables = [];
 
@@ -929,10 +1174,11 @@ class interpret{
             codeArray[0] = codeArray[0].concat(codeArray[i]);
         }
         codeArray = codeArray[0];
+
         while(codeArray.length > 0){
             currentRule = {};
             if(this.closerRegex.test(codeArray[0].value)){
-                currentRule = {action : ["popConnectionArray"],}
+                currentRule = {action : ["popConnectionArray"]};
             } else if(codeArray[0].dictKey in rules){
                 currentRule = rules[codeArray[0].dictKey];
                 var newBlock;
@@ -953,25 +1199,15 @@ class interpret{
                     }
                 }
             } else {
-                if(inDefinition){
-                    newBlock = workspace.newBlock("math_definevar");
-                    newBlock.setFieldValue(codeArray[0].value, "VAR_NAME");
-                    currentRule = {action: ["connectBlock", "manageExpression"]};
-                } else if(codeArray[1].value == "="){
-                    newBlock = workspace.newBlock("math_setvar");
-                    newBlock.setFieldValue(codeArray[0].value, "VAR_NAME");
-                    variables.push(codeArray[0].value);
-                    currentRule = {action: ["connectBlock", "manageExpression"]};
-                } else {
-                    newBlock = workspace.newBlock("function_userDefined");
-                    variables.push(codeArray[0].value);
-                    currentRule = {action : ["connectBlock", "insertName"]};
-                }
+                newBlock = workspace.newBlock("function_userDefined");
+                variables.push(codeArray[0].value);
+                currentRule = {action : ["connectBlock", "insertName"]};
             }
             if(newBlock !== undefined){
                 newBlock.initSvg();
                 newBlock.render();
             }
+
             for(var i = 0; i < currentRule.action.length; i++){
                 switch(currentRule.action[i]){
                     case "addName":
@@ -994,6 +1230,9 @@ class interpret{
                             connectTo.push(newBlock.getInput('INNER_CODE').connection);
                         }
                         break;
+                    case "clearConnections":
+                        connectTo = [];
+                        break;
                     case "connectBlock":
                         if(connectTo.length > 0){
                             connectTo[connectTo.length - 1].connect(newBlock.previousConnection);
@@ -1004,6 +1243,7 @@ class interpret{
                     case "popConnectionArray":
                         connectTo.pop();
                         break;
+                    // TODO
                     case "manageCondition":
                         codeArray.shift()
                         if(codeArray[0].meaning != "condition-prefix"){
@@ -1016,36 +1256,60 @@ class interpret{
                         }
                         codeArray.shift();
                         var conditionBlock;
-                        if(variables.includes(codeArray[0].value) || codeArray[0].meaning == "expression" || codeArray[1] == "expresion"){
-                            var result = this.math.loadExpression(codeArray);
-                            conditionBlock = workspace.newBlock("math_variable");
-                            conditionBlock.setFieldValue(result.expressionString, 'VAR_NAME');
+                        console.log(codeArray.slice(), (codeArray[1] !== undefined && codeArray[1].meaning == "expression"));
+                        if( (codeArray[0] !== undefined && variables.includes(codeArray[0].value)) || 
+                                codeArray[0].meaning == "expression" || (codeArray[1] !== undefined && codeArray[1].meaning == "expression")){
+                            console.log("hello");
+                            currentRule.action.push("manageExpression");
                             codeArray.unshift({});
                         } else {
                             conditionBlock = workspace.newBlock(this.tellCondBlockByWord(codeArray[0].dictKey));
                             if(conditionBlock.type == "condition_userdefined"){
                                 conditionBlock.getField('FC_NAME').setValue(codeArray[0].value);
                             }
+                            conditionBlock.initSvg();
+                            conditionBlock.render();
+                            newBlock.getInput('COND').connection.connect(conditionBlock.outputConnection);
                         }
-                        conditionBlock.initSvg();
-                        conditionBlock.render();
-                        newBlock.getInput('COND').connection.connect(conditionBlock.outputConnection);
                         break;
                     case "manageExpression":
                         codeArray.shift();
-                        if(codeArray[0].value == "="){
+                        if(codeArray[0].dictKey == "variable"){
                             codeArray.shift();
                         }
-                        var expressionBlock = workspace.newBlock("math_variable");
-                        var result = this.math.loadExpression(codeArray);
-                        expressionBlock.setFieldValue(result.expressionString, "VAR_NAME");
-                        expressionBlock.initSvg();
-                        expressionBlock.render();
-                        newBlock.getInput('EXPRESSION').connection.connect(expressionBlock.outputConnection);
-                        codeArray.unshift({});
-                        break;
-                    case "insertName":
-                        newBlock.getField('FC_NAME').setValue(codeArray[0].value);
+                        var exprConnection = newBlock.getInput('EXPRESSION');
+                        if(exprConnection == null){
+                            exprConnection = newBlock.getInput('COND');
+                        }
+                        exprConnection = exprConnection.connection;
+                        var result = this.math.checkExpression(codeArray, [], this.dictionary, false);
+                        if(result){
+                            if(codeArray[0].saveTo.length > 1){
+                                karelConsoleLog("blockConversionError");
+                            }
+                            if(["math_global_var", "math_local_var"].includes(newBlock.type[0])){
+                                newBlock.getField('VAR_NAME').setValue(codeArray[0].saveTo[0]);
+                            }
+                            this.math.createBlocklyExpression(codeArray[0].expressionTree, exprConnection, workspace);
+                        } else {
+                            karelConsoleLog("blockConversionError");
+                            var expressionBlock = workspace.newBlock("math_variable");
+                            if(codeArray[0].expressionString.indexOf(this.math.assignOps[0]) != -1){
+                                expressionBlock.setFieldValue(
+                                    codeArray[0].expressionString.substring(
+                                        codeArray[0].expressionString.indexOf(this.math.assignOps[0]) + 1, 
+                                        codeArray[0].expressionString.length), 
+                                    "VAR_NAME");
+                                newBlock.getField('VAR_NAME').setValue(codeArray[0].expressionString.substring(
+                                    0, 
+                                    codeArray[0].expressionString.indexOf(this.math.assignOps[0])));
+                            } else {
+                                expressionBlock.setFieldValue(codeArray[0].expressionString, "VAR_NAME");
+                            }
+                            expressionBlock.initSvg();
+                            expressionBlock.render();
+                            exprConnection.connect(expressionBlock.outputConnection);
+                        }
                         break;
                     case "setCollapse":
                         toCollapse = newBlock;
@@ -1058,14 +1322,11 @@ class interpret{
                             toCollapse = undefined;
                         }
                         break;
-                    case "inDefinitionOn":
-                        inDefinition = true;
-                        break;
-                    case "inDefinitionOff":
-                        inDefinition = false;
+                    case "insertName":
+                        newBlock.getField('FC_NAME').setValue(codeArray[0].value);
                         break;
                     default:
-                        karelConsoleLog("blockConversionError");
+                        karelConsoleLog("internaError");
                         console.log(currentRule.action[i]);
                         throw "Unknown action";
                 }
@@ -1210,7 +1471,6 @@ class interpret{
         return;
     }
 
-
     /**
      * Load data from file and sets the app by them
      * This function can run in a different modes:
@@ -1301,7 +1561,7 @@ class interpret{
                     }
                     break;
                 default:
-                    karelConsoleLog("corruptedSaveFile");
+                    karelConsoleLog("internaError");
                     console.log("LoadFromFile error - unsuported mode [" + mode + "]");
                     return;
             } 

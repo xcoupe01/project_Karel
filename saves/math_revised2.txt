@@ -1,0 +1,33 @@
+globalni promena1 = 1
+globalni promena2 = 3
+
+prikaz pokus1
+    udelej promena3*2 krat
+        krok
+    *udelej
+    kdyz je promena3
+    tak
+        poloz
+    *kdyz
+konec
+
+
+prikaz pulka
+    lokalni pocitadlo = 0
+    dokud neni zed
+        krok
+        lokalni pocitadlo = pocitadlo + 1
+    *dokud
+    vlevo
+    vlevo
+    lokalni pocitadlo = pocitadlo / 2
+    udelej pocitadlo krat
+        krok
+    *udelej
+konec
+
+prikaz testmixovani
+    lokalni pocitadlo = (3+3)*((4+2)-8)/5
+konec
+
+globalni promena3 = 2

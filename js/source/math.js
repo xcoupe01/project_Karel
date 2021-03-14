@@ -14,6 +14,7 @@ class math{
         this.compareOps = ["<", "<=", ">", ">=", "==", "!="];
         this.expectingNext = this.binaryOps + this.assignOps + this.compareOps + ["("];
         this.allOperators = this.binaryOps + this.assignOps + this.compareOps + ["(", ")"];
+        this.globalScopeName = "*global*";
     }
 
     /**
@@ -32,34 +33,34 @@ class math{
     }
 
     /**
-     * Defnes variable in the Karel's global scope. The value is checked for redefinition.
-     * @param {token} token is the variable name token.
-     * @param {array} errors all errors are pushed there. 
-     * @param {dictionary} dictionary texts of the errors are defined here.
+     * Sets variable to a given value.
+     * @param {string} name is the name of the variable.
+     * @param {string} scope is the scope of the variable.
+     * @param {number} value is the value of the variable.
      */
-    defineVariable(token, errors, dictionary){
-        if(token.value in this.command.commandList || token.value in this.command.conditionList  || 
-            token.value in this.command.expectDefinition || token.value in this.variables ){
-            errors.push({error: dictionary["checkerErrorMessages"]["redefinition"], token: token});
-                return;
+    setVariable(name, scope, value){
+        if(!(scope in this.variables)){
+            this.variables[scope] = {};
         }
-        this.variables[token.value] = "undefined";
+        this.variables[scope][name] = value;
     }
 
     /**
-     * Tells variable value by a given name.
-     * @param {string} name is the name of a variable we want the value of.
-     * @returns value of the variable. 
+     * Tells value of a given variable. can throw errors if we read undefined variable.
+     * it firstly looks into local scope, the to the global scope.
+     * @param {string} name is the name of the variable. 
+     * @param {string} scope is the scope of the variable.
+     * @returns value of the variable
      */
-    getVariable(name){
-        if(!(name in this.variables)){
-            karelConsoleLog("internaError");
-            console.log(name);
-            throw "undefined variable";
+    getVariable(name, scope){
+        if(scope in this.variables && name in this.variables[scope]){
+            return this.variables[scope][name];
+        } else if(this.globalScopeName in this.variables && name in this.variables[this.globalScopeName]){
+            return this.variables[this.globalScopeName][name];
         }
-        return this.variables[name];
+        console.log(name, this.variables);
+        throw {name: "undefVarRead", message: "Undefined variable read"};
     }
-
 
     /**
      * ACE sometimes produces tokens that are expresion but presented as identifiers (like "((+").
@@ -115,43 +116,44 @@ class math{
      *  - expressionArray - array of tokens that belong to the current expression.
      *  - assignNum - number of assigning operators.
      *  - expressionString - is the text representation of the expression.
-     * @param {*} codeArray is the code array to scan the expression from
+     * This function ca run in the strict mode. When enabled, it takes only expression
+     * tokens as part of the expression, if turned off, it loads also identifier tokens, 
+     * if there is a binary operator before them.
+     * @param {codeArray} codeArray is the code array to scan the expression from.
+     * @param {boolean} strict  true enables the strict mode, false turns it off.
      * @returns object containing information about the expression (described above).
      */
-    loadExpression(codeArray){
+    loadExpression(codeArray, strict){
         var expressionArray = [];
         var assignNum = 0;
         var expressionString = "";
 
-        while(codeArray[0].meaning == "expression" || codeArray[0].meaning == "identifier"){
-            if(codeArray[0].meaning == "identifier"){
-                if(this.expectingNext.includes(expressionArray[expressionArray.length - 1].value)){
-                    codeArray[0].meaning = "expression";
-                    codeArray[0].psaMeaning = "variable";
-                } else if(this.checkIdentifiersMixing(codeArray)){
-                    if(this.assignOps.includes(codeArray[0].value)){
-                        assignNum ++;
-                    }
-                } else {
-                    break;
-                }
-            } else {
+        if((!strict) && codeArray[0] !== undefined && codeArray[0].meaning == "identifier"){
+            codeArray[0].meaning = "expression";
+            codeArray[0].psaMeaning = "variable";
+            codeArray[0].psaTerminal = true;
+        }
+
+        while(codeArray[0] !== undefined && codeArray[0].meaning == "expression"){
+            if(codeArray[0].psaMeaning === undefined){
                 if(Number.isInteger(parseInt(codeArray[0].value))){
                     codeArray[0].psaMeaning = "number";
                 } else {
-                    if(codeArray[0].value in this.variables){
-                        codeArray[0].psaMeaning = "variable";
-                    } else {
-                        codeArray[0].psaMeaning = codeArray[0].value;
+                    codeArray[0].psaMeaning = codeArray[0].value;
+                    if(this.assignOps.includes(codeArray[0].value)){
+                        assignNum ++;
                     }
-                }
-                if(this.assignOps.includes(codeArray[0].value)){
-                    assignNum ++;
                 }
             }
             codeArray[0].psaTerminal = true;
             expressionString += codeArray[0].value;
             expressionArray.push(codeArray.shift());
+            if((!strict) && codeArray[0] !== undefined && codeArray[0].meaning == "identifier" && (expressionArray.length == 0 || 
+                    this.expectingNext.includes(expressionArray[expressionArray.length - 1].value))){
+                codeArray[0].meaning = "expression";
+                codeArray[0].psaMeaning = "variable";
+                codeArray[0].psaTerminal = true;
+            }
         }
         return {expressionArray: expressionArray, assignNum: assignNum, expressionString: expressionString};
     }
@@ -169,11 +171,12 @@ class math{
      * @param {codeArray} codeArray is the code array on whichs top, there is the expression
      * @param {array} errors array of errors to be processed. 
      * @param {distionary} dictionary aplication dictionary used to determine error texts.
+     * @param {boolean} strict tells the mode of the expression loader function above.
      * @returns false if any error is found, true otherwise.
      */
-    checkExpression(codeArray, errors, dictionary){
+    checkExpression(codeArray, errors, dictionary, strict){
         var expressionToken = Object.assign({}, codeArray[0]);
-        var loadedExpression = this.loadExpression(codeArray);
+        var loadedExpression = this.loadExpression(codeArray, strict);
         var assignNum = loadedExpression.assignNum;
         var expressionArray = loadedExpression.expressionArray;
         //console.log("codeArray: ",codeArray.slice(), " expression Array: ", expressionArray.slice(), " assignNum: ", assignNum);
@@ -302,15 +305,17 @@ class math{
 
         // creating token folder
         expressionToken.includes = expressionArray.slice();
+        expressionToken.expressionString = loadedExpression.expressionString;
         delete expressionToken.value;
         delete expressionToken.dictKey;
         expressionToken.saveTo = [];
+        expressionToken.meaning = "expression";
         codeArray.unshift(expressionToken);
 
         // telling the expression type
         if(assignNum > 0){
             for(assignNum; assignNum > 0; assignNum --){
-                if(!(expressionArray[0].value in this.variables)){
+                if(!(expressionArray[0].psaMeaning == "variable")){
                     errors.push({error: dictionary["checkerErrorMessages"]["variableExpected"], token: expressionArray[0]});
                     return false;
                 }
@@ -328,7 +333,7 @@ class math{
         expressionArray.push({value: "", meaning: "expression", psaMeaning: "$", psaTerminal: true});
 
         do{
-            switch(table[getTableIndexByToken(stack[getTopTermIndex(stack)], this.variables)][getTableIndexByToken(expressionArray[0], this.variables)]){
+            switch(table[getTableIndexByToken(stack[getTopTermIndex(stack)])][getTableIndexByToken(expressionArray[0])]){
                 case "=":
                     stack.push(expressionArray.shift());
                     break;
@@ -362,12 +367,14 @@ class math{
      * Computes givet token expression folder. It uses recursion processing of the 
      * expression tree described in the `computeToken` function to evaluate the espression.
      * @param {token} expressionToken is the token expression folder.
+     * @param {string} scopeSave in case of saving variable value, it uses this scope.
+     * @param {string} scopeLoad in case of loading a variable, it uses firstly this scope, then global.
      * @returns the value is returned.
      */
-    computeExpression(expressionToken){
-        var result = this.computeToken(expressionToken.expressionTree);
+    computeExpression(expressionToken, scopeSave, scopeLoad){
+        var result = this.computeToken(expressionToken.expressionTree, scopeLoad);
         for(var i = 0; i < expressionToken.saveTo.length; i++){
-            this.variables[expressionToken.saveTo[i]] = result;
+            this.setVariable(expressionToken.saveTo[i], scopeSave, result);
         }
         return result;
     }
@@ -377,76 +384,70 @@ class math{
      * @param {expression tree node} expressionTree is the root node of the expression tree we want to evaluate.
      * @returns value of the expression tree.
      */
-    computeToken(expressionTree){
+    computeToken(expressionTree, scope){
         if(expressionTree.psaTerminal){
             switch(expressionTree.psaMeaning){
                 case "number":
                     return parseInt(expressionTree.value);
                 case "variable":
-                    if(expressionTree.value in this.variables && this.variables[expressionTree.value] != "undefined"){
-                        return this.variables[expressionTree.value];
-                    } else {
-                        karelConsoleLog("internaError");
-                        console.log("variables: ",this.variables);
-                        throw "undefined variable read";
-                    }
+                    return this.getVariable(expressionTree.value, scope);
                 default:
                     karelConsoleLog("internaError");
-                    console.log(expressionTree);
+                    console.log(expressionTree, expressionTree.psaMeaning);
                     throw "Unknown psaMeaning";
             }
         } else {
             if(expressionTree.tokens.length == 1){
-                return this.computeToken(expressionTree.tokens[0]);
+                return this.computeToken(expressionTree.tokens[0], scope);
             } else {
                 switch(expressionTree.tokens[1].psaMeaning){
                     case "E":
-                        return this.computeToken(expressionTree.tokens[1]);
+                        return this.computeToken(expressionTree.tokens[1], scope);
                     case "+":
-                        return this.computeToken(expressionTree.tokens[0]) + this.computeToken(expressionTree.tokens[2]);
+                        return this.computeToken(expressionTree.tokens[0], scope) + this.computeToken(expressionTree.tokens[2], scope);
                     case "-":
-                        return this.computeToken(expressionTree.tokens[0]) - this.computeToken(expressionTree.tokens[2]);
+                        return this.computeToken(expressionTree.tokens[0], scope) - this.computeToken(expressionTree.tokens[2], scope);
                     case "*":
-                        return this.computeToken(expressionTree.tokens[0]) * this.computeToken(expressionTree.tokens[2]);
+                        return this.computeToken(expressionTree.tokens[0], scope) * this.computeToken(expressionTree.tokens[2], scope);
                     case "/":
-                        var divby = this.computeToken(expressionTree.tokens[2]);
+                        var divby = this.computeToken(expressionTree.tokens[2], scope);
                         if(divby == 0){
-                            karelConsoleLog("zeroDivisionError");
+                            throw {name: "zeroDivision", message: "Zero division error"};
                         }
-                        return Math.floor(this.computeToken(expressionTree.tokens[0]) / divby);
+                        return Math.floor(this.computeToken(expressionTree.tokens[0], scope) / divby);
                     case "%":
-                        var divby = this.computeToken(expressionTree.tokens[2]);
+                        var divby = this.computeToken(expressionTree.tokens[2], scope);
                         if(divby == 0){
-                            karelConsoleLog("zeroDivisionError");
+                            throw {name: "zeroDivision", message: "Zero division error"};
                         }
-                        return this.computeToken(expressionTree.tokens[0]) % divby;
+                        return this.computeToken(expressionTree.tokens[0], scope) % divby;
                     case ">":
-                        if(this.computeToken(expressionTree.tokens[0]) > this.computeToken(expressionTree.tokens[2])){
+                        if(this.computeToken(expressionTree.tokens[0], scope) > this.computeToken(expressionTree.tokens[2], scope)){
                             return 1;
                         }
                         return 0;
                     case ">=":
-                        if(this.computeToken(expressionTree.tokens[0]) >= this.computeToken(expressionTree.tokens[2])){
+                        if(this.computeToken(expressionTree.tokens[0], scope) >= this.computeToken(expressionTree.tokens[2], scope)){
                             return 1;
                         }
                         return 0;
                     case "<":
-                        if(this.computeToken(expressionTree.tokens[0]) < this.computeToken(expressionTree.tokens[2])){
+                        if(this.computeToken(expressionTree.tokens[0], scope) < this.computeToken(expressionTree.tokens[2], scope)){
                             return 1;
                         }
                         return 0;
                     case "<=":
-                        if(this.computeToken(expressionTree.tokens[0]) <= this.computeToken(expressionTree.tokens[2])){
+                        if(this.computeToken(expressionTree.tokens[0], scope) <= this.computeToken(expressionTree.tokens[2], scope)){
                             return 1;
                         }
                         return 0;
                     case "==":
-                        if(this.computeToken(expressionTree.tokens[0]) == this.computeToken(expressionTree.tokens[2])){
+                        if(this.computeToken(expressionTree.tokens[0], scope) == this.computeToken(expressionTree.tokens[2], scope)){
                             return 1;
                         }
                         return 0;
                     case "!=":
-                        if(this.computeToken(expressionTree.tokens[0]) != this.computeToken(expressionTree.tokens[2])){
+                        if(this.computeToken(expressionTree.tokens[0], scope) != this.computeToken(expressionTree.tokens[2], scope)){
                             return 1;
                         }
                         return 0;
@@ -482,17 +483,88 @@ class math{
     }
 
     /**
-     * Creates HTML table which tells all the variables and its value. The table is
-     * displayed in the UI.
+     * Creates HTML table which tells all the variables and its value. The table is displayed in the UI.
      * @param {dictionary} dictionary is the app dictionary.
      * @returns string with HTML table with information about variables.
      */
     createVariableOverview(dictionary){
-        var outputText = "<table> <tr><td colspan=\"2\" style=\"text-align: center;\"> " + dictionary["UI"]["varTable"]["variables"] + "</td></tr>";
-        for(var key in this.variables){
-            outputText += "<tr><td>" + key + "</td><td>" + this.variables[key] + "</td></tr>";
+        var outputText = "<table> <tr><td colspan=\"3\" style=\"text-align: center;\"> " + dictionary["UI"]["varTable"]["variables"] + "</td></tr>";
+        outputText += "<tr><td>" + dictionary["UI"]["varTable"]["names"] + "</td><td style=\"text-align:center\">" + dictionary["UI"]["varTable"]["values"] + 
+            "</td><td>" + dictionary["UI"]["varTable"]["scope"] + "</td></tr>";
+        if(this.globalScopeName in this.variables){
+            for(var varname in this.variables[this.globalScopeName]){
+                outputText += "<tr><td>" + varname + "</td><td style=\"text-align:center\">" + this.variables[this.globalScopeName][varname] + "</td><td>" + dictionary["keywords"]["global"] + "</td></tr>";
+            }
+        }
+        for(var scope in this.variables){
+            if(scope != this.globalScopeName){
+                for(var varname in this.variables[scope]){
+                    outputText += "<tr><td>" + varname + "</td><td style=\"text-align:center\">" + this.variables[scope][varname] + "</td><td>" + scope + "</td></tr>";
+                }
+            }
         }
         outputText += "</table>"
         return outputText;
+    }
+
+    /**
+     * Creates blockly representation of expression. It operates in a recursion.
+     * @param {expression tree node} expressionTreeNode is the expression tree node.
+     * @param {connection} connectTo is the connection where we want the result to be connected.
+     * @param {workspace} workspace is the blockly workspace, where the representation will be generated.
+     */
+    createBlocklyExpression(expressionTreeNode, connectTo, workspace){
+        if(expressionTreeNode.tokens.length == 3){
+            switch(expressionTreeNode.tokens[1].psaMeaning){
+                case "E":
+                    var newBlock = workspace.newBlock('math_brackets');
+                    newBlock.initSvg();
+                    newBlock.render();
+                    connectTo.connect(newBlock.outputConnection);
+                    this.createBlocklyExpression(expressionTreeNode.tokens[1], newBlock.getInput('VALUE').connection, workspace);
+                    break;
+                case "+":
+                case "-":
+                case "*":
+                case "/":
+                case "%":
+                    var newBlock = workspace.newBlock("math_operators");
+                    newBlock.initSvg();
+                    newBlock.render();
+                    newBlock.getField('OPERATOR').setValue(expressionTreeNode.tokens[1].psaMeaning);
+                    connectTo.connect(newBlock.outputConnection);
+                    this.createBlocklyExpression(expressionTreeNode.tokens[0], newBlock.getInput('LEFT_SIDE').connection, workspace);
+                    this.createBlocklyExpression(expressionTreeNode.tokens[2], newBlock.getInput('RIGHT_SIDE').connection, workspace);
+                    break;
+                case ">":
+                case ">=":
+                case "<":
+                case "<=":
+                case "==":
+                case "!=":
+                    var newBlock = workspace.newBlock("math_compare");
+                    newBlock.initSvg();
+                    newBlock.render();
+                    newBlock.getField('OPERATOR').setValue(expressionTreeNode.tokens[1].psaMeaning);
+                    connectTo.connect(newBlock.outputConnection);
+                    this.createBlocklyExpression(expressionTreeNode.tokens[0], newBlock.getInput('LEFT_SIDE').connection, workspace);
+                    this.createBlocklyExpression(expressionTreeNode.tokens[2], newBlock.getInput('RIGHT_SIDE').connection, workspace);
+                    break;
+                default:
+                    console.log(expressionTreeNode);
+                    throw "unknown middle token";
+            }
+        } else {
+            if(expressionTreeNode.tokens[0].psaMeaning == "number"){
+                var newBlock = workspace.newBlock('math_number');
+                newBlock.setFieldValue(expressionTreeNode.tokens[0].value , "VALUE");
+            } else {
+                var newBlock = workspace.newBlock('math_variable');
+                newBlock.setFieldValue(expressionTreeNode.tokens[0].value , "VAR_NAME");
+            }
+            newBlock.initSvg();
+            newBlock.render();
+            connectTo.connect(newBlock.outputConnection);
+        }
     }
 }
