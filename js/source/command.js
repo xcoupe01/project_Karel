@@ -10,7 +10,7 @@ class command{
         this.karel = karel;                     // given robot karel to operate with
         this.commandList = {};                  // user defined commands list dictionary
         this.conditionList = {};                // user defined condition list dictionary
-        this.speed = 125;                       // tells the time for interpet step
+        this.speed = 120;                       // tells the time for interpet step (from 20 to 520)
         this.speedStep = 10;                    // is the speed incremet step
         this.lastConditionResult = "undef";     // used for user defined condition evaluation
         this.expectDefinition = {};
@@ -226,11 +226,11 @@ class command{
     }
 
     /**
-     * Sets the speed to given value.
+     * Sets the speed to given value. The value is expected to be from 1 to 100.
      * @param value is the speed we want to set.
      */
     setSpeed(value){
-        this.speed = value;
+        this.speed =  20 + (5 * (100 - value));
     }
 
     /**
@@ -250,7 +250,7 @@ class command{
      * Also sets the iu directly - `speedNumber` and `speedSlider` elements needed.
      */
     slowDownKarel(){
-        if(this.speed <= (1000 - this.speedStep)){
+        if(this.speed <= (520 - this.speedStep)){
             this.speed += this.speedStep;
             document.querySelector('#speedNumber').value = this.speed;
             document.querySelector('#speedSlider').value = this.speed;

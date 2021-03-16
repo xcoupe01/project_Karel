@@ -100,8 +100,8 @@ export function setLang(){
                 "markup.heading" : "global|local"
             },
             "fold" : {
-                "foldStartMarker": /\b(function|condition)\b/,
-                "foldStopMarker": /\bend\b/,
+                "foldStartMarker": /function |condition /,
+                "foldStopMarker": /end /,
                 "indentKeywords": {
                     "function": 1,
                     "condition": 1,
@@ -129,6 +129,7 @@ export function setLang(){
             "showControls": "Controls",
             "resetView": "Reset window",
             "setWindows": "Set windows",
+            "speed": "Speed",
             "changeRoomDialog": {
                 "dialogTitle": "Change room dimensions",
                 "dialogText": "Changes room dimensions in X and Y axis. The currenct room will be erased and replaced with the new one with the specified dimensions.",
@@ -142,7 +143,7 @@ export function setLang(){
                 "roomLabel": "Room",
                 "blocksLabel": "Blocks",
                 "codeLabel": "Code",
-                "fileName": "karel_save",
+                "fileName": "file_name",
                 "button": "Save"
             },
             "loadDialog": {
@@ -181,6 +182,7 @@ export function setLang(){
             "cantReachError": "Cannot reach top of brick stack",
             "badRoomInputError": "Cannot generate this room, numbers from 2 to 100 expected",
             "defaultWindowSizeSet": "New default windows sizes set",
+            "translationIdentifierError": "Colliding identifier name with keyword detected during language conversion",
         }
     };
 }

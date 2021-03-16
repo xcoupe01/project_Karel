@@ -493,10 +493,17 @@ button.ui-button::-moz-focus-inner {
 	left: 0;
 	padding: .2em;
 	outline: 0;
+	font-family: 'Courier New', monospace;
+}
+.ui-dialog p, table, label {
+	font-family: 'Courier New', monospace;
 }
 .ui-dialog .ui-dialog-titlebar {
 	padding: .4em 1em;
 	position: relative;
+	background-color: var(--bg-primary);
+	font-family: 'Courier New', monospace;
+	color: var(--text-primary);
 }
 .ui-dialog .ui-dialog-title {
 	float: left;

@@ -101,7 +101,7 @@ export function setLang(){
             },
             "fold" : {
                 "foldStartMarker": /prikaz |podminka /,
-                "foldStopMarker": /konec/,
+                "foldStopMarker": /konec /,
                 "indentKeywords": {
                     "prikaz": 1,
                     "podminka": 1,
@@ -129,6 +129,7 @@ export function setLang(){
             "showControls": "Ovládání",
             "resetView": "Reset oken",
             "setWindows": "Nastav okna",
+            "speed": "Rychlost",
             "changeRoomDialog": {
                 "dialogTitle": "Změň rozměry místnosti",
                 "dialogText": "Umožňuje změnu rozměrů místnosti. Níže zadejte požadované rozměry místnosti v ose X a ose Y, Tlačítkem 'Změň' bude současná místnost smazána a vytvořena nová se zadanými rozměry.",
@@ -142,7 +143,7 @@ export function setLang(){
                 "roomLabel": "Místnost",
                 "blocksLabel": "Bloky",
                 "codeLabel": "Kód",
-                "fileName": "karel_save",
+                "fileName": "nazev_souboru",
                 "button": "Ulož"
             },
             "loadDialog": {
@@ -181,6 +182,7 @@ export function setLang(){
             "cantReachError": "Nedosáhnu na vrchol cihle před sebou",
             "badRoomInputError": "Nemohu vygenerovat tuto místnost, očekávám čísla od 2 do 100",
             "defaultWindowSizeSet": "Nové výchozí velikosti oken nastaveny",
+            "translationIdentifierError": "Během překladu byl nalezen identifikátor, který koliduje s klíčovým slovem jazyka",
         }
     };
 }

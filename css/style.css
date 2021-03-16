@@ -47,6 +47,17 @@ html, body {
     overflow-y: hidden;
 }
 
+.button {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: none;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    text-align: center;
+}
+
 /*----------- navbar settings -----------*/
 
 .navbar {
@@ -70,8 +81,13 @@ html, body {
     display: inline-block
 }
 
-.nav-item:nth-child(3) {
+.nav-item:nth-child(3), .nav-item:nth-child(4) {
     margin-left: auto;
+}
+
+.nav-item:nth-child(3) a:link {
+    text-decoration: none;
+    padding: 0rem 1rem 0rem 1rem;
 }
   
 .nav-link, .nav-dropdown {
@@ -285,7 +301,7 @@ split-hidden {
 }
 
 .dashboard-buttons > .dashboard-textbox-console {
-    width: calc(50% - 2.2rem);
+    width: calc(50% - 4.3rem);
     background-color: black;
     border-color: var(--bg-secondary);
     border-style: solid;
@@ -294,19 +310,29 @@ split-hidden {
     position: relative;
     overflow: auto;
     line-height: 1.2rem;
+    min-width: 12rem;
+    color: lime;
+    text-align: left;
+    padding: 1rem;
 }
 
 .dashboard-buttons > .dashboard-textbox-console > table {
     color: lime;
     width: 100%;
-    padding: 1rem;
+    border: 1px solid lime;
+    border-collapse: collapse;
 }
 
+.dashboard-buttons > .dashboard-textbox-console > table td,
+.dashboard-buttons > .dashboard-textbox-console > table tr {
+    color: lime;
+    border: 1px solid lime;
+    text-align: center; 
+}
 
 .dashboard-buttons > .dashboard-textbox-console > div {
     white-space: nowrap;
     color: lime;
-    padding: 1rem;
     text-align: left;
 }
 
@@ -405,4 +431,25 @@ split-hidden {
     width: 0.8rem;
     min-width: 0.8rem;
     margin: 0 0.5rem;
+}
+
+/* ----------- blockly ----------- */
+
+.blocklyTreeLabel {
+    color: black;
+    font-family: 'Courier New', monospace;
+}
+
+.blocklyToolboxContents {
+    padding: .3em;
+}
+
+.blocklyTreeRow {
+    margin-bottom: .5em;
+    padding: 5px 3px 0px 3px;
+    border-radius: 4px;
+}
+
+.blocklyToolboxDiv {
+    z-index: 8;
 }

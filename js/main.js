@@ -27,14 +27,6 @@ function start() {
     mainKarel.homeCamera(camera);
     var mainInterpret =  new interpret(editor, blocklyReader, mainKarel);
 
-    /*
-    const geometry = new THREE.BoxGeometry(1, 1, 0);
-    const material = new THREE.MeshBasicMaterial({color : 0xff00ff});
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.y = 2.25;
-    scene.add(cube);
-    */
-
     document.querySelector('#roomCanvas').addEventListener('keydown', function(event) {
         if(!mainInterpret.getRunning()){
             if(event.keyCode == 87){
@@ -78,7 +70,6 @@ function start() {
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
         }
-        //cube.lookAt(camera.position);
         renderer.render(scene, camera);
         requestAnimationFrame(render);
     }
@@ -176,13 +167,26 @@ function createBasicToolboxByLang(Interpret){
 
 /**
  * Changes language of the application by given language file
- * @param {*} langFile is the server path to language file (for example js/source/languages/en.js)
+ * @param {string} langFile is the server path to language file (for example js/source/languages/en.js)
+ * @param firstRun true if we dont want to do translation of code, false otherwise
  */
-function changeLanguage(langFile){
+function changeLanguage(langFile, firstRun){
     import(langFile)
     .then((module) => {
+        var codeArray;
+        if(!firstRun){
+            codeArray = mainInterpret.nativeCodeTokenizer(mainInterpret.textEditor, false);
+        } 
         mainInterpret.languageSetter(module.setLang());
+        window.dictionary = mainInterpret.dictionary["consoleLogs"];
+        karelConsoleClear();
+        karelConsoleLog("greetings");
+        if(!firstRun){
+            mainInterpret.textEditor.setValue(mainInterpret.tokensToStringConvertor(mainInterpret.translate(codeArray)));
+            mainInterpret.textEditor.clearSelection();
+        }
         blocklySetBlockLang(module.setLang());
+        setBlocklyMessageLang(langFile.substring(19, 21));
         workspace.updateToolbox(createBasicToolboxByLang(mainInterpret));
         editor.session.$mode.$highlightRules.setKeywords(mainInterpret.dictionary["ACE"]["highlight"]);
         blocklyReader.session.$mode.$highlightRules.setKeywords(mainInterpret.dictionary["ACE"]["highlight"]);
@@ -209,26 +213,24 @@ function changeLanguage(langFile){
         document.querySelector('#resizeRoomText').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["dialogText"];
         document.querySelector('#xAxisLabel').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["xAxisLabel"]; 
         document.querySelector('#yAxisLabel').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["yAxisLabel"];
-        document.querySelector('#room').value = mainInterpret.dictionary["UI"]["changeRoomDialog"]["button"];
+        document.querySelector('#room').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["button"];
         document.querySelector('#saveDialog').title = mainInterpret.dictionary["UI"]["saveDialog"]["dialogTitle"];
         document.querySelector('#saveText').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["dialogText"];
         document.querySelector('#roomSaveLabel').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["roomLabel"];
         document.querySelector('#blocksSaveLabel').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["blocksLabel"];
         document.querySelector('#codeSaveLabel').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["codeLabel"];
         document.querySelector('#saveName').value = mainInterpret.dictionary["UI"]["saveDialog"]["fileName"];
-        document.querySelector('#saveButton').value = mainInterpret.dictionary["UI"]["saveDialog"]["button"];
+        document.querySelector('#saveButton').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["button"];
         document.querySelector('#LoadDialog').title = mainInterpret.dictionary["UI"]["loadDialog"]["dialogTitle"];
         document.querySelector('#loadText').textContent = mainInterpret.dictionary["UI"]["loadDialog"]["dialogText"];
-        document.querySelector('#loadButton').value = mainInterpret.dictionary["UI"]["loadDialog"]["button"];
+        document.querySelector('#loadButton').textContent = mainInterpret.dictionary["UI"]["loadDialog"]["button"];
         document.querySelector('#showTextCodeTitle').textContent = mainInterpret.dictionary["UI"]["textEditorLabel"];
         document.querySelector('#showBlocklyCodeTitle').textContent = mainInterpret.dictionary["UI"]["blocklyEditorLabel"];
         document.querySelector('#resetView').textContent = mainInterpret.dictionary["UI"]["resetView"];
         document.querySelector('#showControls').textContent = mainInterpret.dictionary["UI"]["showControls"];
         document.querySelector('#setWindows').textContent = mainInterpret.dictionary["UI"]["setWindows"];
+        document.querySelector('#speedSetterWrapper').title = mainInterpret.dictionary["UI"]["speed"];
         mainInterpret.updateVariabeOverview();
-        window.dictionary = mainInterpret.dictionary["consoleLogs"];
-        karelConsoleClear();
-        karelConsoleLog("greetings");
     });
 }
 
@@ -341,7 +343,7 @@ workspace.addChangeListener(myUpdateFunction);
 
 // setting of language
 var mainInterpret = start();
-changeLanguage('./source/languages/cs.js')
+changeLanguage('./source/languages/cs.js', true)
 
 // setting the blockly image listeners for play
 var runMeFunc = function (eventpat){
@@ -373,8 +375,8 @@ document.querySelector('#loadButton').onclick = function() {
 };
 
 // languages menu
-document.querySelector('#setCzech').onclick = function() {changeLanguage('./source/languages/cs.js')};
-document.querySelector('#setEnglish').onclick = function() {changeLanguage('./source/languages/en.js')};
+document.querySelector('#setCzech').onclick = function() {changeLanguage('./source/languages/cs.js', false)};
+document.querySelector('#setEnglish').onclick = function() {changeLanguage('./source/languages/en.js', false)};
 
 // navbar items
 document.querySelector('#runCode').onclick = function() {
@@ -421,7 +423,7 @@ function setSpeed(value){
 };
 document.querySelector('#speedSlider').oninput = function(){setSpeed(document.querySelector('#speedSlider').value)};
 document.querySelector('#speedNumber').addEventListener("change", function(){setSpeed(document.querySelector('#speedNumber').value)});
-setSpeed(150);
+setSpeed(80);
 
 // controls
 document.querySelector('#control-left').onclick = function() {
@@ -484,7 +486,6 @@ document.querySelector('#showBlocklyCode').onclick = function(){
 document.querySelector('#counterDisplay').onclick = function() {mainInterpret.resetCounter()};
 document.querySelector('#runIndikator').onclick = function() {mainInterpret.turnOffInterpret()};
 
-
 document.querySelector('#test').onclick = function() {
-    console.log(mainInterpret.syntaxCheck(editor));
+    console.log(mainInterpret.tokensToStringConvertor(mainInterpret.nativeCodeTokenizer(editor, false)));
 };

@@ -24,11 +24,11 @@
                         </svg>
                     </a>
                     <div class="nav-dropdown-content">
-                        <a href="javascript:void(0)" id="openChangeRoomDialog">Change room</a>
-                        <a href="javascript:void(0)" id="makeBlocks">Make blocks</a>
-                        <a href="javascript:void(0)" id="openSaveDialog">Save</a>
-                        <a href="javascript:void(0)" id="openLoadDialog">Load</a>
-                        <a href="javascript:setDefaultSizes()" id="setWindows">Ulož okna</a>
+                        <a href="javascript:void(0)" id="openChangeRoomDialog"></a>
+                        <a href="javascript:void(0)" id="makeBlocks"></a>
+                        <a href="javascript:void(0)" id="openSaveDialog"></a>
+                        <a href="javascript:void(0)" id="openLoadDialog"></a>
+                        <a href="javascript:setDefaultSizes()" id="setWindows"></a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -48,6 +48,11 @@
                         <a href="javascript:void(0)" id="setCzech">Čeština</a>
                         <a href="javascript:void(0)" id="setEnglish">English</a>
                     </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <img src="img/icon.png" width="32"> &nbsp Karel
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link" title="Run" id="runCode">
@@ -196,16 +201,17 @@
                                 </div>
                             </div>
                             <div class="dashboard-buttons">
+                                <div class="dashboard-textbox-console" style="width: 100%; height: 8rem; display: none" id="exerciceText"></div>
                                 <div id='homeCameraButton' style='cursor:pointer;'></div>
-                                <div id="showControls" style='cursor:pointer;'></div>
                                 <div style='cursor:pointer;' onclick="resetView();" id="resetView"></div>
+                                <div id="showControls" style='cursor:pointer;'></div>
                                 <div id='test' style='cursor:pointer;'>Test</div>
-                                <div class="dashboard-slider">
+                                <div class="dashboard-slider" id="speedSetterWrapper">
                                     <div style="width: 100%; min-width: 6.5rem;">
-                                        <input type="range" min="20" max="1000" value="125" class="slider" id="speedSlider">
+                                        <input type="range" min="1" max="100" value="80" class="slider" id="speedSlider">
                                     </div>
                                     <div style="width: 75px;">
-                                        <input type="number" min="20" max="1000" value="125" class="numberPicker" id="speedNumber">
+                                        <input type="number" min="1" max="100" value="80" class="numberPicker" id="speedNumber">
                                     </div>
                                 </div>
                                 <div class="dashboard-textbox-console" id="consoleWrapper">
@@ -270,7 +276,7 @@
         <script src="js/blockly/blockly_compressed.js"></script>
         <script src="js/blockly/karel_blocks.js"></script>
         <script src="js/blockly/karel_blocks_generator.js"></script>
-        <script src="js/blockly/msg/js/cs.js"></script>
+        <script src="js/blockly/msg/js/langs.js"></script>
 
         <div id="blocklyToolBox">
             <xml id="toolbox" style="display: none">
@@ -355,48 +361,51 @@
             <p id="resizeRoomText"></p>
 
             <table>
-                <tbody>
                 <tr>
-                <td><label for="xVal" id="xAxisLabel"></label></td>
-                <td><input type="number" min="2" max="100" name="xVal" id="xVal"></td>
+                    <td><label for="xVal" id="xAxisLabel"></label></td>
+                    <td><input type="number" min="2" max="100" name="xVal" id="xVal"></td>
+                    <td rowspan="2"><div id="room" class="button"></div></td>
                 </tr>
                 <tr>
-                <td><label for="yVal" id="yAxisLabel"></label></td>
-                <td><input type="number" min="2" max="100" name="yVal" id="yVal"></td>
+                    <td><label for="yVal" id="yAxisLabel"></label></td>
+                    <td><input type="number" min="2" max="100" name="yVal" id="yVal"></td>
                 </tr>
-                </tbody>
             </table>
-            <input type="button" value="room" id="room">
         </div>
 
         <div id="SaveDialog" title="" style="display: none;">
             <p id="saveText"></p>
 
             <table>
-                <tbody>
                 <tr>
-                <td><label for="roomSaveCheckbox" id="roomSaveLabel"></label></td>
-                <td><input type="checkbox" id="roomSaveCheckbox" checked></td>
+                    <td><label for="roomSaveCheckbox" id="roomSaveLabel"></label></td>
+                    <td><input type="checkbox" id="roomSaveCheckbox" checked></td>
                 </tr>
                 <tr>
-                <td><label for="blocksSaveCheckbox" id="blocksSaveLabel"></label></td>
-                <td><input type="checkbox" id="blocksSaveCheckbox" checked></td>
+                    <td><label for="blocksSaveCheckbox" id="blocksSaveLabel"></label></td>
+                    <td><input type="checkbox" id="blocksSaveCheckbox" checked></td>
                 </tr>
                 <tr>
-                <td><label for="blocksSaveCheckbox" id="codeSaveLabel"></label></td>
-                <td><input type="checkbox" id="codeSaveCheckbox" checked></td>
+                    <td><label for="blocksSaveCheckbox" id="codeSaveLabel"></label></td>
+                    <td><input type="checkbox" id="codeSaveCheckbox" checked></td>
                 </tr>
-                </tbody>
             </table>
-            <input type="text" id="saveName">
-            <input type="button" value="save" id="saveButton">
+            <table>
+                <tr>
+                    <td><input type="text" id="saveName"></td>
+                    <td><div id="saveButton" class="button"></div></td>
+                </tr>
+            </table>
         </div>
 
         <div id="LoadDialog" title="" style="display: none;">
             <p id="loadText"></p>
-            <input type="file" id="loadFile">
-            <input type="button" value="load" id="loadButton">
-            <br>
+            <table>
+                <tr>
+                    <td><input type="file" id="loadFile"></td>
+                    <td><div id="loadButton" class="button"></div></td>
+                </tr>
+            </table>
         </div>
           
     </body>

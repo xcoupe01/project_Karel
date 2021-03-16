@@ -98,7 +98,7 @@ class interpret{
 
     /**
      * Inccrements the step counter and updates its display.
-     * Needs div in the html vith `counterDisplay` id !!!
+     * Needs div in the html with `counterDisplay` id !!!
      */
     updateCounter(){
         this.counter ++;
@@ -108,13 +108,17 @@ class interpret{
 
     /**
      * Sets the step counter to zero adn updtaes its display.
-     * Needs div in the html vith `counterDisplay` id !!!
+     * Needs div in the html with `counterDisplay` id !!!
      */
     resetCounter(){
         this.counter = 0;
         document.getElementById('counterDisplay').style.display = "none";
     }
 
+    /**
+     * Updates variable overview in the user interface
+     * Needs div in the html with `variableOverview` id !!!
+     */
     updateVariabeOverview(){
         document.getElementById('variableOverview').innerHTML = this.math.createVariableOverview(this.dictionary);
     }
@@ -135,12 +139,13 @@ class interpret{
      * There are these possible meaning (terminals):
      *  - function-def, condition-def, end, command, condition, identifier, output, expression, do-start, do-end,
      *     times, while-start, while-end, if-start, if-end, then, else, condition-prefix, global, local, kw-var
-     * In the end the global variable definitions are shifted to the start and the mixed expression tokens which
-     * ACE creates.
-     * @param {ACE editor} editor is the editor we want to be tokenized from 
+     * In the end the global variable definitions are shifted to the start if wanted and the mixed expression tokens which
+     * ACE creates are repaired.
+     * @param {ACE editor} editor is the editor we want to be tokenized from.
+     * @param globalDefTop if true, the global definitions are pushed to the begining of codeArray, if false, this operation is skipped.
      * @returns dictionary of functions that contains its tokens.  
      */
-    nativeCodeTokenizer(editor){
+    nativeCodeTokenizer(editor, globalDefTop){
         var TokenIterator = require("ace/token_iterator").TokenIterator;
         var tokenizer = new TokenIterator(editor.session, 0, 0);
     
@@ -264,19 +269,21 @@ class interpret{
             }
             tokenizer.stepForward();
         }
-        // putting definition blocks to the front in the original order
-        var temp = [];
-        for(var i = 0; i < codeArray.length; i++){
-            if(codeArray[i].length == 0){
-                codeArray.splice(i, 1);
-                i --;
-            } else if(codeArray[i][0].dictKey == "global"){
-                var [tempCA] = codeArray.splice(i, 1);
-                temp.push(tempCA);
-                i --;
+        if(globalDefTop){
+            // putting definition blocks to the front in the original order
+            var temp = [];
+            for(var i = 0; i < codeArray.length; i++){
+                if(codeArray[i].length == 0){
+                    codeArray.splice(i, 1);
+                    i --;
+                } else if(codeArray[i][0].dictKey == "global"){
+                    var [tempCA] = codeArray.splice(i, 1);
+                    temp.push(tempCA);
+                    i --;
+                }
             }
+            codeArray = temp.concat(codeArray);
         }
-        codeArray = temp.concat(codeArray);
         // repairing ace mixed operators evaluated as identifiers
         for(var i = 0; i <  codeArray.length; i++){
             for(var j = 0; j < codeArray[i].length; j++){
@@ -438,7 +445,7 @@ class interpret{
     syntaxCheck(editor){
         this.command.prepareCheck();
         this.math.clearMath();
-        var codeArray = this.nativeCodeTokenizer(editor);
+        var codeArray = this.nativeCodeTokenizer(editor, true);
         let rules = [
             /* 0 */     [
                             {item: "function-def",      checks: []}, 
@@ -1256,8 +1263,7 @@ class interpret{
                         }
                         codeArray.shift();
                         var conditionBlock;
-                        console.log(codeArray.slice(), (codeArray[1] !== undefined && codeArray[1].meaning == "expression"));
-                        if( (codeArray[0] !== undefined && variables.includes(codeArray[0].value)) || 
+                        if((codeArray[0] !== undefined && variables.includes(codeArray[0].value)) || 
                                 codeArray[0].meaning == "expression" || (codeArray[1] !== undefined && codeArray[1].meaning == "expression")){
                             console.log("hello");
                             currentRule.action.push("manageExpression");
@@ -1372,10 +1378,12 @@ class interpret{
      * @param {workspace} workspace is the workspace where the blocks will be created
      */
     textToBlocklyConvertor(workspace){
-        this.lockBlocklyTextEditor = true;
-        this.blocklyTextRepresentation.setValue(this.textEditor.getSelectedText());
-        this.makeBlocksFromNativeCode(workspace, this.nativeCodeTokenizer(this.blocklyTextRepresentation));
-        this.lockBlocklyTextEditor = false;
+        if(this.textEditor.getSelectedText() != ""){
+            this.lockBlocklyTextEditor = true;
+            this.blocklyTextRepresentation.setValue(this.textEditor.getSelectedText());
+            this.makeBlocksFromNativeCode(workspace, this.nativeCodeTokenizer(this.blocklyTextRepresentation, true));
+            this.lockBlocklyTextEditor = false;
+        }
     }
 
     /**
@@ -1464,6 +1472,11 @@ class interpret{
                     this.lockBlocklyTextEditor = false;
                     */
                     break;
+                case "exercice":
+                    if(typeof dataJson[item] != "string"){
+                        return item;
+                    }
+                    break;
                 default:
                     return item;
             }
@@ -1489,6 +1502,7 @@ class interpret{
         var fileToLoad = document.getElementById(fileToLoadID).files[0];
         var fileReader = new FileReader();
         var interpret = this;
+        document.getElementById('exerciceText').style.display = "none";
         fileReader.onload = function(fileLoadedEvent) 
         {
             switch(mode){
@@ -1499,7 +1513,7 @@ class interpret{
                     workspace.clear();
                     interpret.lockBlocklyTextEditor = true;
                     interpret.blocklyTextRepresentation.setValue(fileLoadedEvent.target.result);
-                    interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation));
+                    interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation, true));
                     interpret.lockBlocklyTextEditor = false;
                     interpret.blocklyTextRepresentation.setValue("");
                     interpret.blocklyTextRepresentation.setValue(Blockly.Karel.workspaceToCode(workspace));
@@ -1515,7 +1529,7 @@ class interpret{
                     workspace.clear();
                     interpret.lockBlocklyTextEditor = true;
                     interpret.blocklyTextRepresentation.setValue(dataJson["blockly"]);
-                    interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation));
+                    interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation, true));
                     interpret.lockBlocklyTextEditor = false;
                     interpret.textEditor.setValue(dataJson["code"]);
                     break;
@@ -1543,7 +1557,7 @@ class interpret{
                                 workspace.clear();
                                 interpret.lockBlocklyTextEditor = true;
                                 interpret.blocklyTextRepresentation.setValue(dataJson["blockly"]);
-                                interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation));
+                                interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation, true));
                                 interpret.lockBlocklyTextEditor = false;
                                 interpret.blocklyTextRepresentation.setValue("");
                                 interpret.blocklyTextRepresentation.setValue(Blockly.Karel.workspaceToCode(workspace));
@@ -1552,6 +1566,10 @@ class interpret{
                             case "code":
                                 interpret.textEditor.setValue(dataJson["code"]);
                                 interpret.textEditor.clearSelection();
+                                break;
+                            case "exercice":
+                                document.getElementById('exerciceText').textContent = dataJson["exercice"];
+                                document.getElementById('exerciceText').style.display = "block";
                                 break;
                             default:
                                 karelConsoleLog("corruptedSaveFile");
@@ -1571,6 +1589,73 @@ class interpret{
         } catch(err) {
             karelConsoleLog("noFileToLoad");
       };  
+    }
+
+    /**
+     * Converts tokens into string representation of the code.
+     * @param {codeArray} codeArray is the code array we want to represent as a string. 
+     * @returns string representation of given code array.
+     */
+    tokensToStringConvertor(codeArray){
+        var outputString = "";
+        var row = 0;
+        for(var i = 1; i <  codeArray.length; i++){
+            codeArray[0] = codeArray[0].concat(codeArray[i]);
+        }
+        codeArray = codeArray[0];
+
+        if(codeArray[0] !== undefined){
+            for(var i = 0; i < codeArray[0].column; i++){
+                outputString += " ";
+            }
+        }
+
+        while(codeArray.length > 0){
+            while(codeArray[0] !== undefined && codeArray[0].row == row){
+                outputString += codeArray[0].value + " ";
+                codeArray.shift();
+            }
+            if(codeArray[0] !== undefined){
+                while(row != codeArray[0].row){
+                    outputString += "\n";
+                    row ++;
+                }
+                for(var i = 0; i < codeArray[0].column; i++){
+                    outputString += " ";
+                }
+            }
+        }
+        return outputString;
+    }
+
+    /**
+     * Translates given code array token values into current interpret dictionary.
+     * To use tokenize the code before language change, change the language and pass
+     * the previously tokenized code to this function. The output is code array with
+     * translated token values. It can generate warning if keyword colision is detected.
+     * @param {codeArray} codeArray is the code array we want to translate.
+     * @returns translated code array.
+     */
+    translate(codeArray){
+        for(var i = 0; i < codeArray.length; i++){
+            for(var j = 0; j <  codeArray[i].length; j++){
+                if(codeArray[i][j].dictKey !== undefined && codeArray[i][j].dictKey != ""){
+                    if(this.closerRegex.test(codeArray[i][j].value)){
+                        codeArray[i][j].value = this.closer + this.dictionary["keywords"][codeArray[i][j].dictKey];
+                    } else {
+                        codeArray[i][j].value = this.dictionary["keywords"][codeArray[i][j].dictKey];
+                    }
+                } else {
+                    for(var key in this.dictionary["keywords"]){
+                        if(codeArray[i][j].value == this.dictionary["keywords"][key]){
+                            karelConsoleLog("translationIdentifierError");
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return codeArray;
     }
 }
 

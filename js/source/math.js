@@ -488,18 +488,18 @@ class math{
      * @returns string with HTML table with information about variables.
      */
     createVariableOverview(dictionary){
-        var outputText = "<table> <tr><td colspan=\"3\" style=\"text-align: center;\"> " + dictionary["UI"]["varTable"]["variables"] + "</td></tr>";
-        outputText += "<tr><td>" + dictionary["UI"]["varTable"]["names"] + "</td><td style=\"text-align:center\">" + dictionary["UI"]["varTable"]["values"] + 
+        var outputText = "<table> <tr><td colspan=\"3\"> " + dictionary["UI"]["varTable"]["variables"] + "</td></tr>";
+        outputText += "<tr><td>" + dictionary["UI"]["varTable"]["names"] + "</td><td>" + dictionary["UI"]["varTable"]["values"] + 
             "</td><td>" + dictionary["UI"]["varTable"]["scope"] + "</td></tr>";
         if(this.globalScopeName in this.variables){
             for(var varname in this.variables[this.globalScopeName]){
-                outputText += "<tr><td>" + varname + "</td><td style=\"text-align:center\">" + this.variables[this.globalScopeName][varname] + "</td><td>" + dictionary["keywords"]["global"] + "</td></tr>";
+                outputText += "<tr><td>" + varname + "</td><td>" + this.variables[this.globalScopeName][varname] + "</td><td>" + dictionary["keywords"]["global"] + "</td></tr>";
             }
         }
         for(var scope in this.variables){
             if(scope != this.globalScopeName){
                 for(var varname in this.variables[scope]){
-                    outputText += "<tr><td>" + varname + "</td><td style=\"text-align:center\">" + this.variables[scope][varname] + "</td><td>" + scope + "</td></tr>";
+                    outputText += "<tr><td>" + varname + "</td><td>" + this.variables[scope][varname] + "</td><td>" + scope + "</td></tr>";
                 }
             }
         }

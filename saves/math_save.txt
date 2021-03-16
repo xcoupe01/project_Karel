@@ -1,9 +1,0 @@
-definice
-    promena1 = 1
-    promena2 = 3
-    promena3 = 2
-konec
-
-prikaz pokus1
-    promena1 = 8*(4-(3*4))/promena3
-konec
