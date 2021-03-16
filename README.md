@@ -1,4 +1,4 @@
-# Projek Karel 3D
+# Projekt Karel 3D
 ### Autor - Vojtěch Čoupek
 ### Bakalářská práce za podpory VUT FIT Brno a Gymnasium Šlapanice
 
