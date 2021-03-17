@@ -76,7 +76,7 @@ class interpret{
         this.activeCounters = [];
         this.programQueue = [];
         this.command.prepareRun();
-        if(editor !== undefined){
+        if(editor == this.textEditor){
             editor.setReadOnly(true);
         }
     }
@@ -86,14 +86,12 @@ class interpret{
      * If the editor is the blockly representation editor, it wont switch the read only mode.
      * @param editor is the editor to be set to read only mode 
      */
-    turnOffInterpret(editor){
+    turnOffInterpret(){
         this.debug.active = false;
         this.debug.codePointer = {};
         this.debug.run = false;
         this.setRunningFalse();
-        if(editor !== undefined && editor != this.blocklyTextRepresentation){
-            editor.setReadOnly(false);
-        }
+        this.textEditor.setReadOnly(false);
     }
 
     /**
@@ -142,10 +140,12 @@ class interpret{
      * In the end the global variable definitions are shifted to the start if wanted and the mixed expression tokens which
      * ACE creates are repaired.
      * @param {ACE editor} editor is the editor we want to be tokenized from.
-     * @param globalDefTop if true, the global definitions are pushed to the begining of codeArray, if false, this operation is skipped.
+     * @param forInterpretation if true, the global variable definitions are pushed to the top and commentaries are skipped,
+     * if false, the code is tokenized as it it present in the editor and passed with comentaries and global definitions in their
+     * given place which is useful for translation.
      * @returns dictionary of functions that contains its tokens.  
      */
-    nativeCodeTokenizer(editor, globalDefTop){
+    nativeCodeTokenizer(editor, forInterpretation){
         var TokenIterator = require("ace/token_iterator").TokenIterator;
         var tokenizer = new TokenIterator(editor.session, 0, 0);
     
@@ -261,6 +261,15 @@ class interpret{
                 if(token.meaning == "end"){
                     codeArray.push([]);
                 }
+            } else if(!forInterpretation && this.commentary.test(tokenizer.getCurrentToken().value)){
+                var token = {
+                    value: tokenizer.getCurrentToken().value,
+                    meaning: 'commentary',
+                    dictKey: "",
+                    row: tokenizer.getCurrentTokenRow(),
+                    column: tokenizer.getCurrentTokenColumn(),
+                }
+                codeArray[codeArray.length - 1].push(token);
             }
             if(tokenizer.getCurrentToken().value == this.closer){
                 closerLast = true;
@@ -269,7 +278,7 @@ class interpret{
             }
             tokenizer.stepForward();
         }
-        if(globalDefTop){
+        if(forInterpretation){
             // putting definition blocks to the front in the original order
             var temp = [];
             for(var i = 0; i < codeArray.length; i++){
@@ -565,9 +574,11 @@ class interpret{
                         switch(stack[0].checks[j]){
                             case "define-command":
                                 this.command.defineCommand(codeArray[i][0], buffer);
+                                this.math.registerFunctionScopes(codeArray[i][0].value);
                                 break;
                             case "define-condition":
                                 this.command.defineCondition(codeArray[i][0], buffer);
+                                this.math.registerFunctionScopes(codeArray[i][0].value);
                                 break;
                             case "condition-expected":
                                 expected.push(this.dictionary["keywords"]["true"], this.dictionary["keywords"]["false"]);
@@ -824,8 +835,10 @@ class interpret{
             case "function-def":
             case "condition-def":
                 codePointer.tokenPointer ++;
+                this.math.appendScope(codePointer.functionName);
                 break;
             case "end":
+                this.math.deleteScope(codePointer.functionName);
                 if(this.programQueue.length > 0){
                     if(Object.keys(this.command.conditionList).includes(codePointer.functionName)){
                         this.command.conditionList[codePointer.functionName].result = this.command.lastConditionResult;
@@ -1019,7 +1032,7 @@ class interpret{
     async codeInterpret(codePointer, moveCursor, editor){
         while(this.running){
             if(this.interpretToken(codePointer)){
-                this.turnOffInterpret(editor);
+                this.turnOffInterpret();
             } else {
                 this.updateCounter();
                 this.updateVariabeOverview();
@@ -1033,7 +1046,7 @@ class interpret{
                 await sleep(this.command.speed);
             }
         }
-        console.log(this.math.variables);
+        console.log(Object.assign({}, this.math.variables));
     }
 
     /**

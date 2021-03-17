@@ -187,8 +187,8 @@ V horním panelu jsou dostupná následující nástroje aplikace:
 - **Rychlý přístup**
     - Rychlý přístup je dostupný pod místností s robotem, jedná se o jednoduchou sadu nástrojů, které usnadňují práci s aplikací a jednoznačně a rychle dávají najevo aktuální stav aplikace. Mezi prvky patří:
         - `Reset kamery` - Vrátí kameru místosti na základní pozici.
-        - `Ovládání` - Zobrazí tlačítka pro přímé ovládání robota.
         - `Reset oken` - Vrátí velikosti oken aplikace do výchozího nastavení. 
+        - `Ovládání` - Zobrazí tlačítka pro přímé ovládání robota.
         - `Test` - Interní testovací tlačítko.
         - `Posuvník rychlosti` - Nastavuje rychlost interpretu jazyka, na pravé straně lze nastavit i přímo číselně. Číslo reprezentuje procento maximální rychlosti robota. Lze nastavit i v programu pomocí příkazů `rychle` a `pomalu`.
         - `Konzole` - Zde robot vypisuje hlášení o svém aktuálním stavu, nejčastěji chybová hlášení.

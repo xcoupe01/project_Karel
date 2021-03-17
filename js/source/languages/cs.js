@@ -153,9 +153,10 @@ export function setLang(){
             },
             "varTable": {
                 "variables": "Proměnné",
-                "names": "Názvy",
-                "values": "Hodnoty",
-                "scope": "Působnost"
+                "names": "Název",
+                "values": "Hodnota",
+                "scope": "Působnost",
+                "level": "Level"
             }
         },
         "consoleLogs": {

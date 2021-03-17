@@ -30,4 +30,18 @@ prikaz testmixovani
     lokalni pocitadlo = (3+3)*((4+2)-8)/5
 konec
 
+prikaz rekurze_test 
+    krok 
+    krok 
+    lokalni prom1 = 1 
+    kdyz je zed 
+    tak 
+        vlevo 
+        vlevo 
+    jinak 
+        rekurze_test 
+    *kdyz 
+    krok 
+konec 
+
 globalni promena3 = 2

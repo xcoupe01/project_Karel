@@ -1,6 +1,6 @@
 import {karel} from './source/karel.js';
 import * as THREE from './three/three.module.js';
-import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r119/examples/jsm/controls/OrbitControls.js';
+import {OrbitControls} from './three/OrbitControls.js';
 import {interpret} from './source/interpret.js';
 
 /**
@@ -470,7 +470,7 @@ document.querySelector('#showTextCode').onclick = function() {
     document.getElementById('showTextCode').style.color = 'var(--text-primary)';
     document.getElementById('blocklyReader').style.display = 'none';
     document.getElementById('textEditor').style.display = 'block';
-    document.getElementById('textEditor').focus();
+    editor.renderer.updateFull();
 };
 document.querySelector('#showBlocklyCode').onclick = function(){
     document.getElementById('showTextCode').style.backgroundColor = 'var(--bg-terciary)';
@@ -479,7 +479,7 @@ document.querySelector('#showBlocklyCode').onclick = function(){
     document.getElementById('showBlocklyCode').style.color = 'var(--text-primary)';
     document.getElementById('textEditor').style.display = 'none';
     document.getElementById('blocklyReader').style.display = 'block';
-    document.getElementById('blocklyReader').focus();
+    blocklyReader.renderer.updateFull();
 };
 
 // room overlay
@@ -487,5 +487,6 @@ document.querySelector('#counterDisplay').onclick = function() {mainInterpret.re
 document.querySelector('#runIndikator').onclick = function() {mainInterpret.turnOffInterpret()};
 
 document.querySelector('#test').onclick = function() {
-    console.log(mainInterpret.tokensToStringConvertor(mainInterpret.nativeCodeTokenizer(editor, false)));
+    console.log(mainInterpret.syntaxCheck(editor));
+    console.log(mainInterpret.math);
 };

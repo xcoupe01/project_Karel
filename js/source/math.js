@@ -6,15 +6,15 @@ export {math}
 class math{
 
     constructor(){
-        this.variables = {};
-        this.numberOfVariables = 10;
-        this.command;
-        this.binaryOps = ["+", "-", "*", "/", "%"];
-        this.assignOps = ["="];
-        this.compareOps = ["<", "<=", ">", ">=", "==", "!="];
-        this.expectingNext = this.binaryOps + this.assignOps + this.compareOps + ["("];
-        this.allOperators = this.binaryOps + this.assignOps + this.compareOps + ["(", ")"];
-        this.globalScopeName = "*global*";
+        this.variables = {};                                                                    // Holds all variables scope and value information
+        this.numberOfVariables = 10;                                                            // Tells the number of variables - not used
+        this.command;                                                                           // Connection to the command object
+        this.binaryOps = ["+", "-", "*", "/", "%"];                                             // List of all binary operators
+        this.assignOps = ["="];                                                                 // List of all asign operators
+        this.compareOps = ["<", "<=", ">", ">=", "==", "!="];                                   // List of all compare operators
+        this.expectingNext = this.binaryOps + this.assignOps + this.compareOps + ["("];         // List of all operators that expect next operand
+        this.allOperators = this.binaryOps + this.assignOps + this.compareOps + ["(", ")"];     // List of all operators
+        this.globalScopeName = "*global*";                                                      // Name of the global scope
     }
 
     /**
@@ -30,32 +30,57 @@ class math{
      */
     clearMath(){
         this.variables = {};
+        this.variables[this.globalScopeName] = [];
+        this.variables[this.globalScopeName].push({});
     }
 
     /**
-     * Sets variable to a given value.
+     * Registers variables scope array for given function
+     * @param {string} name is the name of the function we want to register scope array for.
+     */
+    registerFunctionScopes(name){
+        this.variables[name] = [];
+    }
+
+    /**
+     * Appends scope array for given function - increases the scope level.
+     * @param {string} name is name of the function we want to append scope array for.
+     */
+    appendScope(name){
+        this.variables[name].push({});
+    }
+
+    /**
+     * Pops scope array for given function - lowers the scope level
+     * @param {string} name is name of the function we want to pop scope array for.
+     */
+    deleteScope(name){
+        this.variables[name].pop();
+    }
+
+    /**
+     * Sets variable to a given value in the top scope level.
      * @param {string} name is the name of the variable.
      * @param {string} scope is the scope of the variable.
      * @param {number} value is the value of the variable.
      */
     setVariable(name, scope, value){
-        if(!(scope in this.variables)){
-            this.variables[scope] = {};
-        }
-        this.variables[scope][name] = value;
+        this.variables[scope][this.variables[scope].length - 1][name] = value;
     }
 
     /**
      * Tells value of a given variable. can throw errors if we read undefined variable.
-     * it firstly looks into local scope, the to the global scope.
+     * it firstly looks into local scope, the to the global scope. It always looks at the top
+     * level of the scope.
      * @param {string} name is the name of the variable. 
      * @param {string} scope is the scope of the variable.
      * @returns value of the variable
      */
     getVariable(name, scope){
-        if(scope in this.variables && name in this.variables[scope]){
-            return this.variables[scope][name];
-        } else if(this.globalScopeName in this.variables && name in this.variables[this.globalScopeName]){
+        if(scope in this.variables && this.variables[scope].length > 0 && name in this.variables[scope][this.variables[scope].length - 1]){
+            return this.variables[scope][this.variables[scope].length - 1][name];
+        } else if(this.globalScopeName in this.variables && this.variables[this.globalScopeName].length > 0 && 
+                    name in this.variables[this.globalScopeName][this.variables[this.globalScopeName].length - 1]){
             return this.variables[this.globalScopeName][name];
         }
         console.log(name, this.variables);
@@ -488,18 +513,24 @@ class math{
      * @returns string with HTML table with information about variables.
      */
     createVariableOverview(dictionary){
-        var outputText = "<table> <tr><td colspan=\"3\"> " + dictionary["UI"]["varTable"]["variables"] + "</td></tr>";
+        var outputText = "<table> <tr><td colspan=\"4\"> " + dictionary["UI"]["varTable"]["variables"] + "</td></tr>";
         outputText += "<tr><td>" + dictionary["UI"]["varTable"]["names"] + "</td><td>" + dictionary["UI"]["varTable"]["values"] + 
-            "</td><td>" + dictionary["UI"]["varTable"]["scope"] + "</td></tr>";
+            "</td><td>" + dictionary["UI"]["varTable"]["scope"] + "</td><td>" + dictionary["UI"]["varTable"]["level"] + "</td></tr>";
         if(this.globalScopeName in this.variables){
-            for(var varname in this.variables[this.globalScopeName]){
-                outputText += "<tr><td>" + varname + "</td><td>" + this.variables[this.globalScopeName][varname] + "</td><td>" + dictionary["keywords"]["global"] + "</td></tr>";
+            for(var i = 0; i < this.variables[this.globalScopeName].length; i++){
+                for(var varname in this.variables[this.globalScopeName][i]){
+                    outputText += "<tr><td>" + varname + "</td><td>" + this.variables[this.globalScopeName][i][varname] + 
+                        "</td><td>" + dictionary["keywords"]["global"] + "</td><td> - </td></tr>";
+                }
             }
         }
         for(var scope in this.variables){
             if(scope != this.globalScopeName){
-                for(var varname in this.variables[scope]){
-                    outputText += "<tr><td>" + varname + "</td><td>" + this.variables[scope][varname] + "</td><td>" + scope + "</td></tr>";
+                for(var i = 0; i < this.variables[scope].length; i++){
+                    for(var varname in this.variables[scope][i]){
+                        outputText += "<tr><td>" + varname + "</td><td>" + this.variables[scope][i][varname] + 
+                            "</td><td>" + scope + "</td><td>" + i + "</td></tr>";
+                    }
                 }
             }
         }

@@ -153,9 +153,10 @@ export function setLang(){
             },
             "varTable": {
                 "variables": "Variables",
-                "names": "Names",
-                "values": "Values",
-                "scope": "Scope"
+                "names": "Name",
+                "values": "Value",
+                "scope": "Scope",
+                "level": "Level"
             }
         },
         "consoleLogs": {
