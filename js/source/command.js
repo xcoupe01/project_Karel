@@ -240,8 +240,8 @@ class command{
     speedUpKarel(){
         if(this.speed >= (20 + this.speedStep)){
             this.speed -= this.speedStep;
-            document.querySelector('#speedNumber').value = this.speed;
-            document.querySelector('#speedSlider').value = this.speed;
+            document.querySelector('#speedNumber').value = -(((this.speed - 20) / 5) - 100);
+            document.querySelector('#speedSlider').value = -(((this.speed - 20) / 5) - 100);
         }
     }
 
@@ -252,8 +252,8 @@ class command{
     slowDownKarel(){
         if(this.speed <= (520 - this.speedStep)){
             this.speed += this.speedStep;
-            document.querySelector('#speedNumber').value = this.speed;
-            document.querySelector('#speedSlider').value = this.speed;
+            document.querySelector('#speedNumber').value = -(((this.speed - 20) / 5) - 100);
+            document.querySelector('#speedSlider').value = -(((this.speed - 20) / 5) - 100);
         }
     }
 }

@@ -26,42 +26,42 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
 
 ## Plán funkcí projektu
 - 3D prostředí
-    - <span style="color:green"> implementováno pomocí Three.js </span>
-    - <span style="color:green"> implementovány objekty z originálního Karla </span>
+    - <span style="color:green"> implementováno pomocí Three.js 
+    - <span style="color:green"> implementovány objekty z originálního Karla 
 - textový editor kódu
-    - <span style="color:green"> implementováno pomocí ACE.js </span>  
-    - <span style="color:green"> implementováno podbarvování textu </span>
-    - <span style="color:green"> implementováno automatické zalamování textu </span>
-    - <span style="color:green"> implementováno ukaládání a načítání kódu ze souboru </span>
-    - oprava funkcí z knihovny ACE 
+    - <span style="color:green"> implementováno pomocí ACE.js   
+    - <span style="color:green"> implementováno podbarvování textu 
+    - <span style="color:green"> implementováno automatické zalamování textu 
+    - <span style="color:green"> implementováno ukaládání a načítání kódu ze souboru 
+    - <span style="color:green"> opraveny funkce z knihovny ACE 
 - blokový editor kódu
-    - <span style="color:green"> implementováno pomocí Blockly.js </span>
-    - <span style="color:green"> implementovány základní bloky </span>
-    - <span style="color:green"> implementováno generování přepisu do nativního jazyka </span>
-    - <span style="color:green"> implementováno spouštění a propojení s interpretem </span>
-    - <span style="color:green"> implementováno ukládání a načítání bloků ze souboru </span>
+    - <span style="color:green"> implementováno pomocí Blockly.js 
+    - <span style="color:green"> implementovány základní bloky 
+    - <span style="color:green"> implementováno generování přepisu do nativního jazyka 
+    - <span style="color:green"> implementováno spouštění a propojení s interpretem 
+    - <span style="color:green"> implementováno ukládání a načítání bloků ze souboru 
     - v plánu možnost definování vlastních bloků 
 - syntaktická kontrola textu
-    - <span style="color:green"> implementována kontrola pomocí LL1 tabulky a vnitřní tokenové struktury </span>
-    - <span style="color:green"> implementován přehledný interpret vnitřní tokenové struktury zvládající více chyb v kódu najednou </span>
-    - <span style="color:green"> kontrola zobrazuje chyby v ACE </span>
-    - <span style="color:green"> implementována možnost spuštění s krokováním </span>
-    - <span style="color:green"> jednoduchý debugger (možná breakpointy s ACE) </span>
+    - <span style="color:green"> implementována kontrola pomocí LL1 tabulky a vnitřní tokenové struktury 
+    - <span style="color:green"> implementován přehledný interpret vnitřní tokenové struktury zvládající více chyb v kódu najednou 
+    - <span style="color:green"> kontrola zobrazuje chyby v ACE 
+    - <span style="color:green"> implementována možnost spuštění s krokováním 
+    - <span style="color:green"> jednoduchý debugger (možná breakpointy s ACE) 
 - uživatelsky dostupné modifikace místnosti
-    - <span style="color:green"> implementováno nastavení rozměrů místnosti </span>
-    - <span style="color:green"> implementováno ukládání a načítání místosti ze souboru </span>
+    - <span style="color:green"> implementováno nastavení rozměrů místnosti 
+    - <span style="color:green"> implementováno ukládání a načítání místosti ze souboru 
 - mutace jazyka Karel
     - mutace programovacího jazyka karel do podoby C lang
     - mutace programovacího jazyka karel do podoby Python
 - přidání čísel a proměnných do programu
-    - <span style="color:green"> navrženy proměnné v jazyku </span>
-    - <span style="color:green"> implementovány jednoduché operace s čísly </span>
-    - <span style="color:green"> implementovány lokální a globální proměnné v jazyku </span>
-    - <span style="color:green"> implementován jednoduchá přehled dostupných promenných </span>
+    - <span style="color:green"> navrženy proměnné v jazyku 
+    - <span style="color:green"> implementovány jednoduché operace s čísly 
+    - <span style="color:green"> implementovány lokální a globální proměnné v jazyku 
+    - <span style="color:green"> implementován jednoduchá přehled dostupných promenných 
 - jazykové mutace
-    - <span style="color:green"> implementováno pomocí js lang file </span>
-    - <span style="color:green"> v plánu mutace do anglického jazyka </span>
-    - možná překládání kódu do cizího jazyka
+    - <span style="color:green"> implementováno pomocí js lang file 
+    - <span style="color:green"> v plánu mutace do anglického jazyka 
+    - <span style="color:green"> implementováno překládání kódu do cizího jazyka
 - ukládání na google disku
     - v plánu propojení s google účtem
     - v plánu načítat a ukládat z google disku
@@ -69,13 +69,13 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - v plánu kampaň s popisem funkcí Karla a základních myšlenek programování
     - v plánu seznam a kontrola příkladů
 - vlastní grafické modely pro místnost
-    - <span style="color:green"> implementován vlastní model pro robota Karla </span>
+    - <span style="color:green"> implementován vlastní model pro robota Karla 
     - v plánu vlastní grafické modely pro objekty v místnosti
 - přehledné GUI
-    - <span style="color:green"> implementovaná možnost změny velikosti oken - split.js </span>
-    - <span style="color:green"> implementována druhá verze uživatelského prostředí </span>
-    - <span style="color:green"> implementováno modifikovatelné prostředí </span>
-    - v plánu různá témata
+    - <span style="color:green"> implementovaná možnost změny velikosti oken - split.js 
+    - <span style="color:green"> implementována druhá verze uživatelského prostředí 
+    - <span style="color:green"> implementováno modifikovatelné prostředí 
+    - <span style="color:red"> v plánu různá témata - nejde, není podporováno blockly
 
 ## Spuštění
 Je potřeba spouštět přes lokální server, nejlépe v adresáři projektu spustit server pomocí PHP například přes command `php -S 127.0.0.1:8080` a prozatím je potřeba mít dostupný internet pro stuštění. Je možno spouštět buď `index.html`, který poskytuje kompletně funkční aplikaci, nebo `index.php`, kde se do aplikace navíc automaticky donačtou jednoduché testovací příkazy z `saves/initial_test_save.txt`.

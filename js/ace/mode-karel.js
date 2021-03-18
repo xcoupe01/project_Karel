@@ -77,81 +77,36 @@ oop.inherits(FoldMode, BaseFoldMode);
 
     this.foldingStartMarker = /\bnone\b/;
     this.foldingStopMarker = /\bnone\b/;
+    this.indentKeywords = {};
 
     this.getFoldWidget = function(session, foldStyle, row) {
         var line = session.getLine(row);
-        // console.log(this.foldingStartMarker, this.foldingStopMarker);
         var isStart = this.foldingStartMarker.test(line);
         var isEnd = this.foldingStopMarker.test(line);
-
         if (isStart && !isEnd) {
             var match = line.match(this.foldingStartMarker);
-            // console.log(match);
             if (match[1]) {
-                if (session.getTokenAt(row, match.index + 1).type === "keyword")
-                return "start";
-            } else if (match[2]) {
-                var type = session.bgTokenizer.getState(row) || "";
-                if (type[0] == "bracketedComment" || type[0] == "bracketedString")
-                return "start";
-            } else {
                 return "start";
             }
         }
-        if (foldStyle != "markbeginend" || !isEnd || isStart && isEnd){
-            return "";
-        }
-
-        var match = line.match(this.foldingStopMarker);
-        console.log(match);
-        if (match[0] === "end") {
-            if (session.getTokenAt(row, match.index + 1).type === "keyword")
-                return "end";
-        } else if (match[0][0] === "]") {
-            var type = session.bgTokenizer.getState(row - 1) || "";
-            if (type[0] == "bracketedComment" || type[0] == "bracketedString")
-                return "end";
-        } else
-            return "end";
+        return "";
     };
 
     this.getFoldWidgetRange = function(session, foldStyle, row) {
         var line = session.doc.getLine(row);
         var match = this.foldingStartMarker.exec(line);
-        if (match) {
-            console.log(match,match[1], match[2]);
-            if (match[1]){
-                return this.karelBlock(session, row, match.index + 1);
-            }
-            if (match[2]){
-                return session.getCommentFoldRange(row, match.index + 1);
-            }
-            
-            return this.openingBracketBlock(session, "{", row, match.index);
+        if (match[1]){
+            return this.karelBlock(session, row, match.index + 1);
         }
         
-        var match = this.foldingStopMarker.exec(line);
-        if (match) {
-            if (match[0] === "end") {
-                if (session.getTokenAt(row, match.index + 1).type === "keyword")
-                    return this.karelBlock(session, row, match.index + 1);
-            }
-
-            if (match[0][0] === "]")
-                return session.getCommentFoldRange(row, match.index + 1);
-
-            return this.closingBracketBlock(session, "}", row, match.index + match[0].length);
-        }
     };
-
-    this.indentKeywords = {};
 
     this.karelBlock = function(session, row, column) {
         var stream = new TokenIterator(session, row, column);
 
         var token = stream.getCurrentToken();
-        if (!token || token.type != "keyword")
-            return;
+        
+        if (!token) return;
 
         var val = token.value;
         var stack = [val];
@@ -165,19 +120,21 @@ oop.inherits(FoldMode, BaseFoldMode);
 
         stream.step = dir === -1 ? stream.stepBackward : stream.stepForward;
         while(token = stream.step()) {
-            if (token.type !== "keyword")
-                continue;
             var level = dir * this.indentKeywords[token.value];
 
             if (level > 0) {
                 stack.unshift(token.value);
             } else if (level <= 0) {
                 stack.shift();
-                if (!stack.length && token.value != "elseif")
+                if (!stack.length)
                     break;
                 if (level === 0)
                     stack.unshift(token.value);
             }
+        }
+
+        if(!token){
+            return;
         }
 
         var row = stream.getCurrentTokenRow();
@@ -203,40 +160,28 @@ var Range = require("../range").Range;
 var Mode = function() {
     this.HighlightRules = KarelHighlightRules;
     this.foldingRules = new KarelFoldMode();
+
+    this.outdentKeywords = [];
+
+    this.indentKeywords = {};
+
+
 };
 oop.inherits(Mode, TextMode);
 
 (function() {
    
     this.lineCommentStart = "#";
-    //this.blockComment = {start: "--[", end: "]--"};
+    // this.blockComment = {start: "--[", end: "]--"};
     // tells when the editor should automaticaly indent and dedent
-    var indentKeywords = {
-        "prikaz": 1,
-        "tak": 1,
-        "jinak": 1,
-        "\*kdyz": -1,
-        "dokud": 1,
-        "\*dokud": -1,
-        "udelej": 1,
-        "\*udelej": -1
-    };
-    var outdentKeywords = [
-        "konec",
-        "jinak",
-        "\*kdyz",
-        "\*dokud",
-        "\*udelej"
-    ];
 
-    function getNetIndentLevel(tokens) {
+    this.getNetIndentLevel = function(tokens) {
         var level = 0;
-        for (var i = 0; i < tokens.length; i++) {
-            var token = tokens[i];
-            if (token.type == "keyword") {
-                if (token.value in indentKeywords) {
-                    level += indentKeywords[token.value];
-                }
+        for (var i = 0; i < tokens.length; i++){
+            if(tokens[i - 1] !== undefined && tokens[i - 1].value + tokens[i].value in this.indentKeywords){
+                level += this.indentKeywords[tokens[i - 1].value + tokens[i].value];
+            } else if (tokens[i].value in this.indentKeywords) {
+                level += this.indentKeywords[tokens[i].value];
             }
         }
         if (level < 0) {
@@ -256,7 +201,7 @@ oop.inherits(Mode, TextMode);
         var tokens = tokenizedLine.tokens;
 
         if (state == "start") {
-            level = getNetIndentLevel(tokens);
+            level = this.getNetIndentLevel(tokens);
         }
         if (level > 0) {
             return indent + tab;
@@ -272,15 +217,16 @@ oop.inherits(Mode, TextMode);
         if (input != "\n" && input != "\r" && input != "\r\n")
             return false;
 
-        if (line.match(/^\s*[\)\}\]]$/))
-            return true;
-
         var tokens = this.getTokenizer().getLineTokens(line.trim(), state).tokens;
 
         if (!tokens || !tokens.length)
             return false;
+        
+        if(tokens.length > 1 && tokens[tokens.length - 2].value == "*"){
+            tokens[tokens.length - 1].value = "*" + tokens[tokens.length - 1].value;
+        }
 
-        return (tokens[0].type == "keyword" && outdentKeywords.indexOf(tokens[0].value) != -1);
+        return (this.outdentKeywords.indexOf(tokens[tokens.length - 1].value) != -1);
     };
 
     this.autoOutdent = function(state, session, row) {
@@ -288,7 +234,7 @@ oop.inherits(Mode, TextMode);
         var prevIndent = this.$getIndent(prevLine).length;
         var prevTokens = this.getTokenizer().getLineTokens(prevLine, "start").tokens;
         var tabLength = session.getTabString().length;
-        var expectedIndent = prevIndent + tabLength * getNetIndentLevel(prevTokens);
+        var expectedIndent = prevIndent + tabLength * this.getNetIndentLevel(prevTokens);
         var curIndent = this.$getIndent(session.getLine(row)).length;
         if (curIndent < expectedIndent) {
             return;

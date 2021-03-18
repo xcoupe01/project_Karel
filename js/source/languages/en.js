@@ -100,12 +100,33 @@ export function setLang(){
                 "markup.heading" : "global|local"
             },
             "fold" : {
-                "foldStartMarker": /function |condition /,
+                "foldStartMarker": /\b(function|condition)\b/,
                 "foldStopMarker": /end /,
                 "indentKeywords": {
                     "function": 1,
                     "condition": 1,
                     "end": -1,
+                }
+            },
+            "indentation": {
+                "outdentKeywords": [
+                    "end",
+                    "else",
+                    "\*if",
+                    "\*while",
+                    "\*do"
+                ],
+                "indentKeywords": {
+                    "function": 1,
+                    "condition": 1,
+                    "then": 1,
+                    "else": 1,
+                    "\*if": -1,
+                    "while": 1,
+                    "\*while": -1,
+                    "do": 1,
+                    "\*do": -1,
+                    "end": -1
                 }
             }
         },

@@ -100,12 +100,33 @@ export function setLang(){
                 "markup.heading" : "globalni|lokalni"
             },
             "fold" : {
-                "foldStartMarker": /prikaz |podminka /,
-                "foldStopMarker": /konec /,
+                "foldStartMarker": /\b(prikaz|podminka)\b/,
+                "foldStopMarker": /\bkonec\b/,
                 "indentKeywords": {
                     "prikaz": 1,
                     "podminka": 1,
                     "konec": -1,
+                }
+            },
+            "indentation": {
+                "outdentKeywords": [
+                    "konec",
+                    "jinak",
+                    "\*kdyz",
+                    "\*dokud",
+                    "\*udelej"
+                ],
+                "indentKeywords": {
+                    "prikaz": 1,
+                    "podminka": 1,
+                    "tak": 1,
+                    "jinak": 1,
+                    "\*kdyz": -1,
+                    "dokud": 1,
+                    "\*dokud": -1,
+                    "udelej": 1,
+                    "\*udelej": -1,
+                    "konec": -1
                 }
             }
         },
@@ -156,7 +177,7 @@ export function setLang(){
                 "names": "Název",
                 "values": "Hodnota",
                 "scope": "Působnost",
-                "level": "Level"
+                "level": "Zanoření"
             }
         },
         "consoleLogs": {

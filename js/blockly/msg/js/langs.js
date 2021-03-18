@@ -433,6 +433,7 @@ function setBlocklyMessageLang(lang){
             Blockly.Msg["VARIABLES_DYNAMIC_HUE"] = "310";
             break;
         case "en":
+        default:
             Blockly.Msg["ADD_COMMENT"] = "Add Comment";
             Blockly.Msg["CANNOT_DELETE_VARIABLE_PROCEDURE"] = "Can't delete the variable '%1' because it's part of the definition of the function '%2'";
             Blockly.Msg["CHANGE_VALUE_TITLE"] = "Change value:";

@@ -1686,7 +1686,7 @@ function sleep(ms) {
  * @param {string} textToWrite is the string to be saved
  * @param {string} fileNameToSaveAs is the name of the file that will be downalded
  */
-function saveTextAsFile(textToWrite,fileNameToSaveAs){
+function saveTextAsFile(textToWrite, fileNameToSaveAs){
 
     var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
     

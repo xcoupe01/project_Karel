@@ -80,7 +80,7 @@ function start() {
 
 /**
  * Creates basic tool box in blockly environment while using given language pack assigned to interpret
- * @param {*} Interpret is the interpret which language pack will be used
+ * @param {Interpret Object} Interpret is the interpret which language pack will be used
  * @returns Json ready for blocky toolbox
  */
 function createBasicToolboxByLang(Interpret){
@@ -193,6 +193,8 @@ function changeLanguage(langFile, firstRun){
         editor.session.$foldMode.__proto__.foldingStartMarker = mainInterpret.dictionary["ACE"]["fold"]["foldStartMarker"];
         editor.session.$foldMode.__proto__.foldingStopMarker = mainInterpret.dictionary["ACE"]["fold"]["foldStopMarker"];
         editor.session.$foldMode.indentKeywords = mainInterpret.dictionary["ACE"]["fold"]["indentKeywords"];
+        editor.session.$mode.indentKeywords = mainInterpret.dictionary["ACE"]["indentation"]["indentKeywords"];
+        editor.session.$mode.outdentKeywords = mainInterpret.dictionary["ACE"]["indentation"]["outdentKeywords"];
         editor.session.bgTokenizer.start(0);
         blocklyReader.session.bgTokenizer.start(0);
 
@@ -298,16 +300,18 @@ blocklyReader.on("guttermousedown", function (event) {manageBreakpoint (event)})
 // Blockly settings
 var blocklyArea = document.getElementById('blocklyArea');
 var blocklyDiv = document.getElementById('blocklyDiv');
-var workspace = Blockly.inject(blocklyDiv, {toolbox: document.getElementById('toolbox'),
-                                            zoom:{
-                                                controls: true,
-                                                wheel: true,
-                                                startScale: 1.0,
-                                                maxScale: 3,
-                                                minScale: 0.3,
-                                                scaleSpeed: 1.2
-                                            },
-                                            trashcan: true});
+var workspace = Blockly.inject(blocklyDiv, {
+    toolbox: document.getElementById('toolbox'),
+    zoom:{
+        controls: true,
+        wheel: true,
+        startScale: 1.0,
+        maxScale: 3,
+        minScale: 0.3,
+        scaleSpeed: 1.2
+    },
+    trashcan: true}
+);
 var onresize = function(e) {
     // Compute the absolute coordinates and dimensions of blocklyArea.
     var element = blocklyArea;
