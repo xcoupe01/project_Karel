@@ -1,7 +1,7 @@
 export function setLang(){
     return {
         "keywords" : {
-            "function"      : "function",
+            "function"      : "command",
             "condition"     : "condition",
             "end"           : "end",
             "forward"       : "forward",
@@ -151,6 +151,9 @@ export function setLang(){
             "resetView": "Reset window",
             "setWindows": "Set windows",
             "speed": "Speed",
+            "removeBreakpoints": "Remove breakpoints",
+            "autocompleteToggle": "Live autocomplete",
+            "autoindentToggle": "Automatic indentation",
             "changeRoomDialog": {
                 "dialogTitle": "Change room dimensions",
                 "dialogText": "Changes room dimensions in X and Y axis. The currenct room will be erased and replaced with the new one with the specified dimensions.",

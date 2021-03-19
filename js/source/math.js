@@ -81,7 +81,7 @@ class math{
             return this.variables[scope][this.variables[scope].length - 1][name];
         } else if(this.globalScopeName in this.variables && this.variables[this.globalScopeName].length > 0 && 
                     name in this.variables[this.globalScopeName][this.variables[this.globalScopeName].length - 1]){
-            return this.variables[this.globalScopeName][name];
+            return this.variables[this.globalScopeName][this.variables[this.globalScopeName].length - 1][name];
         }
         console.log(name, this.variables);
         throw {name: "undefVarRead", message: "Undefined variable read"};

@@ -164,6 +164,7 @@ var Mode = function() {
     this.outdentKeywords = [];
 
     this.indentKeywords = {};
+    this.indentationHelperOn = true;
 
 
 };
@@ -195,6 +196,9 @@ oop.inherits(Mode, TextMode);
 
     this.getNextLineIndent = function(state, line, tab) {
         var indent = this.$getIndent(line);
+        if(!this.indentationHelperOn){
+            return indent;
+        }
         var level = 0;
 
         var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
@@ -216,6 +220,8 @@ oop.inherits(Mode, TextMode);
     this.checkOutdent = function(state, line, input) {
         if (input != "\n" && input != "\r" && input != "\r\n")
             return false;
+
+        if(!this.indentationHelperOn) return false;
 
         var tokens = this.getTokenizer().getLineTokens(line.trim(), state).tokens;
 

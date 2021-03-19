@@ -232,6 +232,9 @@ function changeLanguage(langFile, firstRun){
         document.querySelector('#showControls').textContent = mainInterpret.dictionary["UI"]["showControls"];
         document.querySelector('#setWindows').textContent = mainInterpret.dictionary["UI"]["setWindows"];
         document.querySelector('#speedSetterWrapper').title = mainInterpret.dictionary["UI"]["speed"];
+        document.querySelector('#deleteAllBreakpoints').text = mainInterpret.dictionary["UI"]["removeBreakpoints"];
+        document.querySelector('#autocompleteLable').textContent = mainInterpret.dictionary["UI"]["autocompleteToggle"];
+        document.querySelector('#autoindentLable').textContent = mainInterpret.dictionary["UI"]["autoindentToggle"];
         mainInterpret.updateVariabeOverview();
     });
 }
@@ -278,10 +281,11 @@ editor.setOptions({
     mode: 'ace/mode/karel',
     scrollPastEnd: 0.5,
 });
+var autocompleteEnabeled = true;
 editor.setTheme('ace/theme/chrome');
 editor.commands.on("afterExec", function (event) {
-    if (event.command.name == "insertstring" && /^[\w.]$/.test(event.args)) {
-        editor.execCommand("startAutocomplete");
+    if (event.command.name == "insertstring" && /^[\w.]$/.test(event.args) && autocompleteEnabeled) {
+            editor.execCommand("startAutocomplete");
     }
 });
 editor.on("guttermousedown", function (event) {manageBreakpoint(event)});
@@ -405,7 +409,6 @@ document.querySelector('#openChangeRoomDialog').onclick = function() {
     document.getElementById('xVal').value = mainInterpret.command.karel.room.roomDataArray.length;
     document.getElementById('yVal').value = mainInterpret.command.karel.room.roomDataArray[0].length;
 };
-document.querySelector('#makeBlocks').onclick = function() {mainInterpret.textToBlocklyConvertor(workspace)};
 document.querySelector('#openSaveDialog').onclick = function() {$('#SaveDialog').dialog({width: 400});};
 document.querySelector('#openLoadDialog').onclick = function() {$('#LoadDialog').dialog({width: 400});};
 
@@ -485,6 +488,31 @@ document.querySelector('#showBlocklyCode').onclick = function(){
     document.getElementById('blocklyReader').style.display = 'block';
     blocklyReader.renderer.updateFull();
 };
+
+// code settings
+
+document.querySelector('#makeBlocks').onclick = function() {mainInterpret.textToBlocklyConvertor(workspace)};
+document.querySelector('#deleteAllBreakpoints').onclick = function() {
+    if(document.querySelector('#textEditor').style.display == "block"){
+        editor.session.clearBreakpoints();
+    } else {
+        blocklyReader.session.clearBreakpoints();
+    }
+};
+document.querySelector('#autocompleteCheckbox').addEventListener('change', function (event){
+    if(event.currentTarget.checked){
+        autocompleteEnabeled = true;
+    } else {
+        autocompleteEnabeled = false;
+    }
+});
+document.querySelector('#autoindentCheckbox').addEventListener('change', function (event){
+    if(event.currentTarget.checked){
+        editor.session.$mode.indentationHelperOn = true;
+    } else {
+        editor.session.$mode.indentationHelperOn = false;
+    }
+});
 
 // room overlay
 document.querySelector('#counterDisplay').onclick = function() {mainInterpret.resetCounter()};

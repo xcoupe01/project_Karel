@@ -151,6 +151,9 @@ export function setLang(){
             "resetView": "Reset oken",
             "setWindows": "Nastav okna",
             "speed": "Rychlost",
+            "removeBreakpoints": "Vymaž breakpointy",
+            "autocompleteToggle": "Napovídání slov",
+            "autoindentToggle": "Automatické odsazování",
             "changeRoomDialog": {
                 "dialogTitle": "Změň rozměry místnosti",
                 "dialogText": "Umožňuje změnu rozměrů místnosti. Níže zadejte požadované rozměry místnosti v ose X a ose Y, Tlačítkem 'Změň' bude současná místnost smazána a vytvořena nová se zadanými rozměry.",

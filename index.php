@@ -25,7 +25,6 @@
                     </a>
                     <div class="nav-dropdown-content">
                         <a href="javascript:void(0)" id="openChangeRoomDialog"></a>
-                        <a href="javascript:void(0)" id="makeBlocks"></a>
                         <a href="javascript:void(0)" id="openSaveDialog"></a>
                         <a href="javascript:void(0)" id="openLoadDialog"></a>
                         <a href="javascript:setDefaultSizes()" id="setWindows"></a>
@@ -235,7 +234,7 @@
             <div id="c" class="split split-horizontal">
                 <div class="content">
                     <div class="codeNavbar" style="height: 2.25rem">
-                        <div id="showTextCode" style="background-color: var(--bg-secondary); color: var(--text-primary);">
+                        <div class="tab" id="showTextCode" style="background-color: var(--bg-secondary); color: var(--text-primary);">
                             <svg aria-hidden="true" 
                                 focusable="false" 
                                 data-prefix="far" 
@@ -248,7 +247,7 @@
                             </svg>
                             <div id="showTextCodeTitle"></div>
                         </div>
-                        <div id="showBlocklyCode">
+                        <div class="tab" id="showBlocklyCode">
                             <svg aria-hidden="true" 
                                 focusable="false" 
                                 data-prefix="fas" 
@@ -261,8 +260,32 @@
                             </svg>
                             <div id="showBlocklyCodeTitle"></div>
                         </div>
+                        <div class="dropdown">
+                            <svg aria-hidden="true" 
+                                focusable="false" 
+                                data-prefix="fas" 
+                                data-icon="ellipsis-v" 
+                                class="dropbtn" 
+                                role="img" xmlns="http://www.w3.org/2000/svg" 
+                                viewBox="0 0 192 512">
+                                <path fill="currentColor" d="M96 184c39.8 0 72 32.2 72 72s-32.2 72-72 72-72-32.2-72-72 32.2-72 72-72zM24 80c0 39.8 32.2 72 72 72s72-32.2 72-72S135.8 8 96 8 24 40.2 24 80zm0 352c0 39.8 32.2 72 72 72s72-32.2 72-72-32.2-72-72-72-72 32.2-72 72z"></path>
+                            </svg> 
+                            <div class="dropdown-content">
+                                <a href="javascript:void(0)" id="makeBlocks"></a>
+                                <a href="javascript:void(0)" id="deleteAllBreakpoints"></a>
+                                <a href="javascript:toggleCheckBox('#autocompleteCheckbox')">
+                                    <input type="checkbox" id="autocompleteCheckbox" checked="true">
+                                    <label id="autocompleteLable"></lable>
+                                </a>
+                                <a href="javascript:toggleCheckBox('#autoindentCheckbox')">
+                                    <input type="checkbox" id="autoindentCheckbox" checked="true">
+                                    <label id="autoindentLable"></lable>
+                                </a>
+                            </div>
+                        </div>
+
                     </div>
-                    <div id="textEditor" style="height:100%"><?php include('saves/math_revised2.txt'); ?></div>
+                    <div id="textEditor" style="height:100%; display:block;"><?php include('saves/math_revised2.txt'); ?></div>
                     <div id="blocklyReader" style="height:100%; display:none;"></div>
                 </div>
             </div>  
@@ -353,6 +376,15 @@
                     window.dictionary[key] + 
                     "<br>";
                 document.querySelector('#consoleWrapper').scrollBy(0, document.querySelector('#consoleWrapper').scrollHeight);
+            }
+
+            function toggleCheckBox(id){
+                if(document.querySelector(id).checked){
+                    document.querySelector(id).checked = false;
+                } else {
+                    document.querySelector(id).checked = true;
+                }
+                document.querySelector(id).dispatchEvent(new Event('change'));
             }
         </script>
 

@@ -9,7 +9,7 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 16.3.2021**
+**Last update - 19.3.2021**
 
 **English version below**
 ___
@@ -168,6 +168,11 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku. Apl
     Umožnujě programování robota textovou formou v nativním jazyce Karel. Disponuje jednoduchým autocompletem, který pomáhá při programování a obarvuje syntax jazyka. Spustit kód je možné nakliknutím do prostoru programu, který uživatel chce spustit a kliknutím na tlačítko `Spusť`. Dostupný je také režim krokování, který se spouští podobým způsobem, akorát pomocí tlačítka `Krokuj`. V režimu krokování se vykoná pouze jeden krok programu při každém stisknutí tlačítka krokuj, pokud jsou ale v editoru nastavené breakpointy, vykonávání je zastaveno pouze na nich. Textový editor má na své horní hraně dvě záložky:
         - `Kód` - textový editor aplikace, kde lze Karlovi psát vlastní kód.
         - `Bloky` - textová reprezentace blokového editoru, nelze do ní psát, ale disponuje všemi ostatními funkcemi regulérního editoru. 
+        - `Další možnosti` - Na konci seznamu jsou tři tečky nad sebou, na které když uživatel najede, zpřístupní se následující možnosti:
+            - `Vytvoř bloky` - Z označeného kódu v textovém editoru vytvoří blokové schéma v blokovém editoru.
+            - `Vymaž Breakpointy` - Vymaže všechny breakpointy v aktuálně zobrazeném editoru.
+            - `Napovídání slov` - Lze vypnout nebo zapnout živé napovídání slov.
+            - `Automatické odsazování` - Lze vypnout nebo zapnout automatické odsazování kódu.
 
 
 V horním panelu jsou dostupná následující nástroje aplikace:
@@ -175,7 +180,6 @@ V horním panelu jsou dostupná následující nástroje aplikace:
 
     Hlavní menu aplikace, obsahuje následující položky:
     - `Změň místnost` - Umožňuje pomocí dialogu změnit rozměry místnosti.
-    - `Vytvoř bloky` - Z označeného kódu v textovém editoru vytvoří blokové schéma v blokovém editoru.
     - `Ulož` - Umožnujě uložit stav aplikace pomocí dialogu.
     - `Načti` - Umožňuje načíst stav aplikace pomocí dialogu.
     - `Nastav okna` - Nastaví výchozí velikosti oken aplikace.
