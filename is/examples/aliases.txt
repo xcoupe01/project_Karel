@@ -1,0 +1,6 @@
+1. Skládání příkazů
+2. Rekurze
+3. Cyklus udělej
+4. Struktura když, struktura dokud
+5. Rekurze a podmínky
+6. Počítáme s čísly

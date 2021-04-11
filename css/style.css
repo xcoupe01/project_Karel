@@ -2,14 +2,15 @@
     font-size: 16px;
     font-family: 'Courier New', monospace;
 
-    /* theme 1*/
+    /* theme 1
     --text-primary: #F0F4EF;
     --text-secondary: #F0F4EF;
     --bg-primary: #0D1821;
     --bg-secondary: #344966;
     --bg-terciary: #B4CDED;
-    --scroll-active: #bbbbbb;
-    --scroll-inactive: #cccccc;
+    --bg-quaternaly: #ffffff;
+    --bg-sidenav: #666666;
+    */
     
     /* theme 2 
     --text-primary: #DEF2F1;
@@ -25,8 +26,23 @@
     --bg-secondary: #AAABB8;
     --bg-terciary: #29648A;
     */
-
-    --bg-quaternaly: #ffffff;
+    /* theme 4 */
+    --text-primary: #F0F4EF;
+    --text-secondary: #F0F4EF;
+    --bg-primary: #212529;
+    --bg-primary-second: #343A40;
+    --bg-secondary: #344966;
+    --bg-secondary-second: #006494;
+    --bg-terciary: #ADB5BD;
+    --bg-terciary-second: #CED4DA;
+    --bg-quaternaly: #E9ECEF;
+    --bg-quaternaly-second: #F8F9FA;
+    
+    
+    --bg-sidenav: #666666;
+    
+    --scroll-active: #bbbbbb;
+    --scroll-inactive: #cccccc;
     --bg-red: #ff6961;
     --bg-orange: #ffb347;
     --bg-green: #77dd77;
@@ -38,16 +54,31 @@ main {
     height: calc(100% - 3rem - 2*0rem);
 }
 
+main.rolable {
+   overflow-y: auto;
+   overflow-x: hidden;
+   padding: 3rem;
+}
+
+div.textual_content{
+   /*font-family: '', monospace;*/
+   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
 html, body {
     height: 100%;
     padding: 0;
     margin: 0;
-    background-color: white; 
+    background-color: var(--bg-quaternaly); 
     box-sizing: border-box;
     overflow-y: hidden;
 }
 
-.button {
+#karelExercices.padded li {
+    line-height: 2.5rem;
+}
+
+#karelExercices.padded a, .button {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     padding: 0.5rem;
@@ -56,6 +87,13 @@ html, body {
     font-family: 'Courier New', monospace;
     cursor: pointer;
     text-align: center;
+    user-select: none;
+    transition: background-color 0.3s ease-in-out;
+    text-decoration: none;
+}
+
+#karelExercices.padded a:hover, .button:hover {
+    background-color: var(--bg-secondary-second);
 }
 
 /*----------- navbar settings -----------*/
@@ -78,10 +116,14 @@ html, body {
 
 .nav-item {
     height: 100%;
-    display: inline-block
+    display: inline-block;
 }
 
-.nav-item:nth-child(3), .nav-item:nth-child(4) {
+.nav-item:nth-child(3) {
+    margin-left: calc(100% / 2 - 4*3.5rem);
+} 
+
+.nav-item:nth-child(4) {
     margin-left: auto;
 }
 
@@ -98,13 +140,15 @@ html, body {
     transition: 200ms;
 }
 
-.nav-item:hover .nav-dropdown-content {
-    display:block;
+.nav-item:hover .nav-dropdown-content,
+.nav-dropdown-content:active .nav-dropdown-content,
+.nav-dropdown-content:focus-within {
+    display: inline-block;
 }
   
 .nav-link:hover, .nav-dropdown:hover {
     filter: grayscale(0%) opacity(1);
-    background: var(--bg-secondary);
+    background: var(--bg-primary-second);
     color: var(--text-secondary);
 }
 
@@ -133,6 +177,7 @@ html, body {
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 10;
+    /*border-radius: 0rem 0rem 0.5rem 0.5rem;*/
 }
 
 .nav-dropdown-content a {
@@ -141,11 +186,27 @@ html, body {
     text-decoration: none;
     display: block;
     text-align: left;
+    /*border-radius: 0rem 0rem 0.5rem 0.5rem;*/
 }
 
 .nav-dropdown-content a:hover {
     color: var(--text-secondary);
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary-second);
+}
+
+.submit-dropdown {
+    color: inherit;
+    background: none; 
+    border-width: 0px;
+    padding: 0px;
+    text-align: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    background-image: none;
+    outline: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    cursor: pointer;
 }
 
 /*----------- splitter settings -----------*/
@@ -167,7 +228,7 @@ split-hidden {
 }
 
 .content {
-    background-color: #fff;
+    background-color: white;
     /*min-height: 50vh;  was there, in case of any problem with split.js return*/
     /*min-height: 100%;*/
 }
@@ -220,6 +281,7 @@ split-hidden {
     margin-left: auto;
     margin-right: auto;
     margin-top: 0.1rem;
+    background-color: var(--bg-quaternaly);
 }
 
 .dashboard-buttons > div, .dashboard-buttons > input {
@@ -232,6 +294,11 @@ split-hidden {
     line-height: 3rem;
     border-radius: 1rem;
     user-select: none;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.dashboard-buttons > div:hover, .dashboard-buttons > input:hover {
+    background-color: var(--bg-secondary-second);
 }
 
 .dashboard-buttons > .dashboard-slider {
@@ -254,15 +321,10 @@ split-hidden {
     background-color: var(--bg-terciary);
     border-radius: 5px;
     height: 0.2rem;
-    opacity: 0.7;
     transition: opacity 0.5s;
     outline: 0;
     outline-color: transparent;
     box-shadow: none;
-}
-
-.slider:hover{
-    opacity: 1;
 }
 
 .slider::-webkit-slider-thumb {
@@ -316,6 +378,10 @@ split-hidden {
     padding: 1rem;
 }
 
+.dashboard-buttons > .dashboard-textbox-console:hover {
+    background-color: black;
+}
+
 .dashboard-buttons > .dashboard-textbox-console > table {
     color: lime;
     width: 100%;
@@ -355,6 +421,11 @@ split-hidden {
     border-radius: 1rem;
     user-select: none;
     cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.controls div:hover {
+    background-color: var(--bg-primary-second);
 }
 
 .controls div svg {
@@ -392,7 +463,7 @@ split-hidden {
 }
 
 .overlay div {
-    background-color: var(--bg-primary);
+    background-color: var(--bg-secondary);
     color: var(--text-primary);
     text-align: center;
     padding: 0.2rem 1rem 0.2rem 1rem;
@@ -400,7 +471,7 @@ split-hidden {
     display: none;
     cursor:pointer;
     margin: 1rem 0rem 0rem 1rem;
-    z-index: 5;
+    z-index: 0;
 }
 
 /* ----------- code nav bar ----------- */
@@ -454,7 +525,7 @@ split-hidden {
     position: absolute;
     right: 0;
     min-width: 300px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0rem 0.5rem 1rem 0rem rgba(0,0,0,0.2);
     z-index: 10;
 }
   
@@ -466,7 +537,9 @@ split-hidden {
     display: block;
 }
   
-.dropdown-content a:hover {background-color: #f1f1f1;}
+.dropdown-content a:hover {
+    background-color: var(--bg-quaternaly-second);
+}
   
 .dropdown:hover .dropdown-content {
     display: block;
@@ -492,4 +565,240 @@ split-hidden {
 
 .blocklyToolboxDiv {
     z-index: 8;
+}
+/* ------- sidenav ------------- */
+
+.sidenav {
+    height: 100%;
+    width: 0px;
+    position: fixed;
+    z-index: 5;
+    top: 0;
+    left: 0;
+    background-color: var(--bg-terciary);
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 3rem;
+    box-shadow: 0rem 0rem 1rem 1rem rgba(0, 0, 0, 0.2);
+    border-right: solid 10px var(--bg-primary);
+}
+  
+.sidenav a {
+    padding: 1rem 1rem 1rem 2rem;
+    text-decoration: none;
+    color: black;
+    display: block;
+    font-family: 'Courier New', monospace;
+    transition: 0.3s;
+}
+
+.sidenav a:hover {
+    background-color: var(--bg-secondary);
+    transform: scale(1.1);
+    color: var(--text-primary);
+}
+  
+#main {
+    transition: margin-left .5s;
+    padding: 0rem;
+    margin-left: 0px;
+    margin-top: 3rem;
+}
+
+#introduction {
+    position: relative;
+    background-image: url("./../is/img/introduction0.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    -webkit-transition: background-image 0.5s ease-in-out;
+    transition: background-image 0.5s ease-in-out;
+    width: 100%;
+    height: 500px;
+    border-bottom: solid 10px var(--bg-primary);
+}
+
+#introductionButton{
+    position: absolute;
+    top: 50%;
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    box-shadow: 0rem 0.5rem 1rem 0rem rgba(0, 0, 0, 0.699);
+}
+
+.padded {
+    padding: 1rem;
+    margin-left: 125px;
+    margin-right: 125px;
+    transition: 0.5s;
+}
+
+h2, #blog > .forceH2 {
+    font-family: 'Courier New', monospace;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 1rem;
+    border-radius: 1rem;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 500;
+    box-shadow: 0rem 1rem 1rem 0rem rgba(0, 0, 0, 0.699);
+    margin-bottom: 4rem;
+}
+
+#blog h2 {
+    color: black;
+    background-color: transparent;
+    padding: 0;
+    text-align: left;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    box-shadow: 0rem 0rem 0rem 0rem rgba(0, 0, 0, 0);
+    margin-bottom: 1rem;
+}
+
+#blog h2 a, #blog h3 a {
+    text-decoration: none;
+}
+
+#blog a {
+    color: var(--bg-secondary-second)
+}
+
+#blog a:visited {
+    color: var(--bg-secondary);
+}
+
+/* --------- acordions --------- */
+
+.container {
+    margin: 10px auto;
+}
+
+.ac-label {
+    font-weight: 700;
+    position: relative;
+    line-height: 1.25em;
+    padding: 0.5em 3em;
+    margin-bottom: 0.5em;
+    display: block;
+    cursor: pointer;
+    background-color: var(--bg-terciary);
+    transition: background-color 0.3s ease-in-out;
+    border-radius: 1em;
+    user-select: none;
+}
+
+.ac-input:checked + label, .ac-label:hover {
+    background-color: var(--bg-terciary-second);
+}
+
+.ac-label:after, .ac-input:checked + .ac-label:after {
+    content: "+";
+    position: absolute;
+    display: block;
+    left: 0;
+    top: 0;
+    width: 2.25em;
+    height: 2.25em;
+    line-height: 2.25em;
+    text-align: center;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease-in-out;
+    transition: transform 0.3s;
+    border-radius: 2.25em;
+}
+
+.ac-input:checked + .ac-label:after {
+    background-color: var(--bg-primary-second);
+    transform: rotate(405deg);
+}
+
+.ac-input {
+    display: none;
+}
+
+.ac-text, .ac-sub-text {
+    opacity: 0;
+    height: 0;
+    margin-bottom: 0.5em;
+    transition: opacity 0.5s ease-in-out;
+    overflow: hidden;
+}
+
+.ac-input:checked ~ .ac-text, .ac-sub .ac-input:checked ~ .ac-sub-text {
+    opacity: 1;
+    height: auto;
+}
+
+.ac-sub .ac-label {
+    background: none;
+    font-weight: 600;
+    padding: 0.5em 3em;
+    margin-bottom: 0;
+}
+
+.ac-sub .ac-label:checked {
+    background: none;
+    border-bottom: 1px solid whitesmoke;
+}
+
+.ac-sub .ac-label:after, .ac-sub .ac-input:checked + .ac-label:after {
+    left: 0;
+    background-color: var(--bg-secondary);
+}
+
+.ac-sub .ac-input:checked + label, .ac-sub .ac-label:hover {
+    background: none;
+}
+
+.ac-sub-text {
+    padding: 0 1em 0 2em;
+}
+
+/* ------ Error dialog ------ */
+
+.Err-dialog {
+    display: block;
+    position: fixed;
+    z-index: 20;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    text-align: center;
+}
+
+.Err-dialog-content {
+    background-color: var(--bg-terciary);
+    margin: auto;
+    padding: 1rem;
+    width: 40%;
+    font-family: 'Courier New', monospace;
+    color: black;
+    border-radius: 2rem;
+}
+
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    background-color: var(--bg-secondary);
+    padding: .5rem;
+    border-radius: 2rem;
+    height: 1.5rem;
+    width: 1.5rem;
+    text-align: center;
+    margin: auto;
+}
+  
+.close:hover,
+.close:focus {
+    text-decoration: none;
+    cursor: pointer;
 }

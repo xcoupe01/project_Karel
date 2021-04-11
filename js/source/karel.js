@@ -34,7 +34,7 @@ class karel{
      * Orientation hint :
      * 0 : down, 1 left, 2 up, 3 right (with base camera)
      */
-    draw(){
+    draw(fun){
         this.orientation = 0;
         this.positionX = 0;
         this.positionY = 0;
@@ -47,7 +47,10 @@ class karel{
             karel.graphicalObject.rotateY(Math.PI);
             karel.graphicalObject.position.y = karel.heightModifier;
             karel.scene.add(karel.graphicalObject);
-            karel.correctHeight()
+            karel.correctHeight();
+            if(fun !== undefined &&  typeof fun === 'function'){
+                fun();
+            }
         }, undefined, function (error){
             console.log(error);
         });
@@ -338,7 +341,7 @@ class karel{
         this.room.erase();
         this.room.draw(this.controls, valueX, valueY);
         this.erase();
-        this.draw();
+        this.draw(undefined);
     }
 
     /**

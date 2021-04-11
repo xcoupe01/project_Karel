@@ -1,444 +1,706 @@
-<html>
-    <head>
-        <title>Karel 3D</title>
-        <link rel="icon" type="image/png" sizes="32x32" href="favicon.ico">
-        <script type="text/javascript" src="js/split/split.min.js"></script>
-        <link rel="stylesheet" href="css/style.css"/>
-        <link rel="stylesheet" href="css/jquery-ui.css">
-        <meta charset="utf-8"/>
-    </head>
-    <body>
-        <!-- App menu bar -->
-        <nav class="navbar">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a href="#" class="nav-dropdown" title="Menu" id="mainMenuIcon">
-                        <svg aria-hidden="true" 
-                            focusable="false" 
-                            data-prefix="fas" 
-                            data-icon="bars" 
-                            class="svg-inline--fa fa-bars fa-w-14" role="img" 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            viewBox="0 0 448 512">
-                            <path fill="currentColor" d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"></path>
-                        </svg>
-                    </a>
-                    <div class="nav-dropdown-content">
-                        <a href="javascript:void(0)" id="openChangeRoomDialog"></a>
-                        <a href="javascript:void(0)" id="openSaveDialog"></a>
-                        <a href="javascript:void(0)" id="openLoadDialog"></a>
-                        <a href="javascript:setDefaultSizes()" id="setWindows"></a>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-dropdown" title="Languages" id="languagesIcon">
-                        <svg aria-hidden="true" 
-                            focusable="false" 
-                            data-prefix="fas" 
-                            data-icon="language" 
-                            class="svg-inline--fa fa-language fa-w-20" 
-                            role="img" 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            viewBox="0 0 640 512">
-                            <path fill="currentColor" d="M152.1 236.2c-3.5-12.1-7.8-33.2-7.8-33.2h-.5s-4.3 21.1-7.8 33.2l-11.1 37.5H163zM616 96H336v320h280c13.3 0 24-10.7 24-24V120c0-13.3-10.7-24-24-24zm-24 120c0 6.6-5.4 12-12 12h-11.4c-6.9 23.6-21.7 47.4-42.7 69.9 8.4 6.4 17.1 12.5 26.1 18 5.5 3.4 7.3 10.5 4.1 16.2l-7.9 13.9c-3.4 5.9-10.9 7.8-16.7 4.3-12.6-7.8-24.5-16.1-35.4-24.9-10.9 8.7-22.7 17.1-35.4 24.9-5.8 3.5-13.3 1.6-16.7-4.3l-7.9-13.9c-3.2-5.6-1.4-12.8 4.2-16.2 9.3-5.7 18-11.7 26.1-18-7.9-8.4-14.9-17-21-25.7-4-5.7-2.2-13.6 3.7-17.1l6.5-3.9 7.3-4.3c5.4-3.2 12.4-1.7 16 3.4 5 7 10.8 14 17.4 20.9 13.5-14.2 23.8-28.9 30-43.2H412c-6.6 0-12-5.4-12-12v-16c0-6.6 5.4-12 12-12h64v-16c0-6.6 5.4-12 12-12h16c6.6 0 12 5.4 12 12v16h64c6.6 0 12 5.4 12 12zM0 120v272c0 13.3 10.7 24 24 24h280V96H24c-13.3 0-24 10.7-24 24zm58.9 216.1L116.4 167c1.7-4.9 6.2-8.1 11.4-8.1h32.5c5.1 0 9.7 3.3 11.4 8.1l57.5 169.1c2.6 7.8-3.1 15.9-11.4 15.9h-22.9a12 12 0 0 1-11.5-8.6l-9.4-31.9h-60.2l-9.1 31.8c-1.5 5.1-6.2 8.7-11.5 8.7H70.3c-8.2 0-14-8.1-11.4-15.9z"></path>
-                        </svg>
-                    </a>
-                    <div class="nav-dropdown-content">
-                        <a href="javascript:void(0)" id="setCzech">Čeština</a>
-                        <a href="javascript:void(0)" id="setEnglish">English</a>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <img src="img/icon.png" width="32"> &nbsp Karel
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" title="Run" id="runCode">
-                        <svg aria-hidden="true" 
-                            focusable="false" 
-                            data-prefix="fas" 
-                            data-icon="play" 
-                            class="svg-inline--fa fa-play fa-w-14" 
-                            role="img" 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            viewBox="0 0 448 512">
-                            <path fill="currentColor" d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"></path>
-                        </svg>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" title="Debug" id="runDebug">
-                        <svg aria-hidden="true" 
-                            focusable="false" 
-                            data-prefix="fas" 
-                            data-icon="bug" 
-                            class="svg-inline--fa fa-bug fa-w-16" 
-                            role="img" 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            viewBox="0 0 512 512">
-                            <path fill="currentColor" d="M511.988 288.9c-.478 17.43-15.217 31.1-32.653 31.1H424v16c0 21.864-4.882 42.584-13.6 61.145l60.228 60.228c12.496 12.497 12.496 32.758 0 45.255-12.498 12.497-32.759 12.496-45.256 0l-54.736-54.736C345.886 467.965 314.351 480 280 480V236c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v244c-34.351 0-65.886-12.035-90.636-32.108l-54.736 54.736c-12.498 12.497-32.759 12.496-45.256 0-12.496-12.497-12.496-32.758 0-45.255l60.228-60.228C92.882 378.584 88 357.864 88 336v-16H32.666C15.23 320 .491 306.33.013 288.9-.484 270.816 14.028 256 32 256h56v-58.745l-46.628-46.628c-12.496-12.497-12.496-32.758 0-45.255 12.498-12.497 32.758-12.497 45.256 0L141.255 160h229.489l54.627-54.627c12.498-12.497 32.758-12.497 45.256 0 12.496 12.497 12.496 32.758 0 45.255L424 197.255V256h56c17.972 0 32.484 14.816 31.988 32.9zM257 0c-61.856 0-112 50.144-112 112h224C369 50.144 318.856 0 257 0z"></path>
-                        </svg>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" title="Stop" id="stop">
-                        <svg aria-hidden="true" 
-                            focusable="false" 
-                            data-prefix="fas" 
-                            data-icon="stop" 
-                            class="svg-inline--fa fa-stop fa-w-14" 
-                            role="img" xmlns="http://www.w3.org/2000/svg" 
-                            viewBox="0 0 448 512">
-                            <path fill="currentColor" d="M400 32H48C21.5 32 0 53.5 0 80v352c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V80c0-26.5-21.5-48-48-48z"></path>
-                        </svg>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+<?php
+/* Minimalisticky blog - varianta Karel
+ * Petr Coupek 
+ * 20.02.2021
+ * 11.03.2020 
+ */ 
+ 
+session_start(); 
 
-       <main>
-            <!-- Room canvas -->
-            <div id="a" class="split split-horizontal">
-                <div id="row1" class="split-hidden"> 
-                    <div class="content">
-                        <div class="overlay">
-                            <div id='counterDisplay'></div>
-                            <div id='runIndikator' style="background-color: var(--bg-red);"></div>
-                            <div id='controlIndikator' style="background-color: var(--bg-red);"></div>
-                        </div>
-                        <canvas id="roomCanvas" style="height:100%; width:100%; outline: 0; outline-color: transparent; box-shadow: none;" onfocus="roomFocus()" onblur="roomUnfocus()"></canvas>
-                    </div>
-                </div>  
-                <div id="row2" class="split" style="position: relative; overflow:auto;">
-                    <div class="content" style="background-color: white">
-                        <div id="dashboard" style="min-width: 15.4rem">
-                            <div class="controls" id="controlButtons" style="display: none;">
-                                <div id="control-left">
-                                    <svg aria-hidden="true" 
-                                        focusable="false" 
-                                        data-prefix="fas" 
-                                        data-icon="chevron-left" 
-                                        class="svg-inline--fa fa-chevron-left fa-w-10" 
-                                        role="img" 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        viewBox="0 0 320 512">
-                                        <path fill="currentColor" d="M34.52 239.03L228.87 44.69c9.37-9.37 24.57-9.37 33.94 0l22.67 22.67c9.36 9.36 9.37 24.52.04 33.9L131.49 256l154.02 154.75c9.34 9.38 9.32 24.54-.04 33.9l-22.67 22.67c-9.37 9.37-24.57 9.37-33.94 0L34.52 272.97c-9.37-9.37-9.37-24.57 0-33.94z"></path>
-                                    </svg>
-                                </div>
-                                <div id="control-forward">
-                                    <svg aria-hidden="true" 
-                                        focusable="false" 
-                                        data-prefix="fas" 
-                                        data-icon="chevron-up" 
-                                        class="svg-inline--fa fa-chevron-up fa-w-14" 
-                                        role="img" 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        viewBox="0 0 448 512">
-                                        <path fill="currentColor" d="M240.971 130.524l194.343 194.343c9.373 9.373 9.373 24.569 0 33.941l-22.667 22.667c-9.357 9.357-24.522 9.375-33.901.04L224 227.495 69.255 381.516c-9.379 9.335-24.544 9.317-33.901-.04l-22.667-22.667c-9.373-9.373-9.373-24.569 0-33.941L207.03 130.525c9.372-9.373 24.568-9.373 33.941-.001z"></path>
-                                    </svg>
-                                </div>
-                                <div id="control-right">
-                                    <svg aria-hidden="true" 
-                                        focusable="false" 
-                                        data-prefix="fas" 
-                                        data-icon="chevron-right" 
-                                        class="svg-inline--fa fa-chevron-right fa-w-10" 
-                                        role="img" 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        viewBox="0 0 320 512">
-                                        <path fill="currentColor" d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"></path>
-                                    </svg>
-                                </div>
-                                <div id="control-place">
-                                    <svg aria-hidden="true" 
-                                        focusable="false" 
-                                        data-prefix="fas" 
-                                        data-icon="level-down-alt" 
-                                        class="svg-inline--fa fa-level-down-alt fa-w-10" 
-                                        role="img" 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        viewBox="0 0 320 512">
-                                        <path fill="currentColor" d="M313.553 392.331L209.587 504.334c-9.485 10.214-25.676 10.229-35.174 0L70.438 392.331C56.232 377.031 67.062 352 88.025 352H152V80H68.024a11.996 11.996 0 0 1-8.485-3.515l-56-56C-4.021 12.926 1.333 0 12.024 0H208c13.255 0 24 10.745 24 24v328h63.966c20.878 0 31.851 24.969 17.587 40.331z"></path>
-                                    </svg>
-                                </div>
-                                <div id="control-pick">
-                                    <svg aria-hidden="true" 
-                                        focusable="false" 
-                                        data-prefix="fas" 
-                                        data-icon="level-up-alt"
-                                        class="svg-inline--fa fa-level-up-alt fa-w-10"
-                                        role="img"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 320 512">
-                                        <path fill="currentColor" d="M313.553 119.669L209.587 7.666c-9.485-10.214-25.676-10.229-35.174 0L70.438 119.669C56.232 134.969 67.062 160 88.025 160H152v272H68.024a11.996 11.996 0 0 0-8.485 3.515l-56 56C-4.021 499.074 1.333 512 12.024 512H208c13.255 0 24-10.745 24-24V160h63.966c20.878 0 31.851-24.969 17.587-40.331z"></path>
-                                    </svg>
-                                </div>
-                                <div id="control-mark">
-                                    <svg aria-hidden="true" 
-                                        focusable="false" 
-                                        data-prefix="fas" 
-                                        data-icon="flag" 
-                                        class="svg-inline--fa fa-flag fa-w-16" 
-                                        role="img" 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        viewBox="0 0 512 512">
-                                        <path fill="currentColor" d="M349.565 98.783C295.978 98.783 251.721 64 184.348 64c-24.955 0-47.309 4.384-68.045 12.013a55.947 55.947 0 0 0 3.586-23.562C118.117 24.015 94.806 1.206 66.338.048 34.345-1.254 8 24.296 8 56c0 19.026 9.497 35.825 24 45.945V488c0 13.255 10.745 24 24 24h16c13.255 0 24-10.745 24-24v-94.4c28.311-12.064 63.582-22.122 114.435-22.122 53.588 0 97.844 34.783 165.217 34.783 48.169 0 86.667-16.294 122.505-40.858C506.84 359.452 512 349.571 512 339.045v-243.1c0-23.393-24.269-38.87-45.485-29.016-34.338 15.948-76.454 31.854-116.95 31.854z"></path>
-                                    </svg>
-                                </div>
-                                <div id="control-delete">
-                                    <svg aria-hidden="true" 
-                                        focusable="false" 
-                                        data-prefix="fas" 
-                                        data-icon="times" 
-                                        class="svg-inline--fa fa-times fa-w-11" 
-                                        role="img" 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        viewBox="0 0 352 512">
-                                        <path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="dashboard-buttons">
-                                <div class="dashboard-textbox-console" style="width: 100%; height: 8rem; display: none" id="exerciceText"></div>
-                                <div id='homeCameraButton' style='cursor:pointer;'></div>
-                                <div style='cursor:pointer;' onclick="resetView();" id="resetView"></div>
-                                <div id="showControls" style='cursor:pointer;'></div>
-                                <div id='test' style='cursor:pointer;'>Test</div>
-                                <div class="dashboard-slider" id="speedSetterWrapper">
-                                    <div style="width: 100%; min-width: 6.5rem;">
-                                        <input type="range" min="1" max="100" value="80" class="slider" id="speedSlider">
-                                    </div>
-                                    <div style="width: 75px;">
-                                        <input type="number" min="1" max="100" value="80" class="numberPicker" id="speedNumber">
-                                    </div>
-                                </div>
-                                <div class="dashboard-textbox-console" id="consoleWrapper">
-                                    <div id="console"></div>
-                                </div>
-                                <div class="dashboard-textbox-console" id="variableOverview"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Blockly editor -->
-            <div id="b" class="split split-horizontal"> 
-                <div class="content" >
-                    <div id="blocklyArea" style="position: relative;  width: 100%; height:100%; ">
-                        <div id="blocklyDiv" style="width:100%;"></div>
-                    </div>  
-                </div> 
-            </div>
-            <!-- ACE code editor -->
-            <div id="c" class="split split-horizontal">
-                <div class="content">
-                    <div class="codeNavbar" style="height: 2.25rem">
-                        <div class="tab" id="showTextCode" style="background-color: var(--bg-secondary); color: var(--text-primary);">
-                            <svg aria-hidden="true" 
-                                focusable="false" 
-                                data-prefix="far" 
-                                data-icon="file-code" 
-                                class="svg-inline--fa fa-file-code fa-w-12" 
-                                role="img" 
-                                xmlns="http://www.w3.org/2000/svg" 
-                                viewBox="0 0 384 512">
-                                <path fill="currentColor" d="M149.9 349.1l-.2-.2-32.8-28.9 32.8-28.9c3.6-3.2 4-8.8.8-12.4l-.2-.2-17.4-18.6c-3.4-3.6-9-3.7-12.4-.4l-57.7 54.1c-3.7 3.5-3.7 9.4 0 12.8l57.7 54.1c1.6 1.5 3.8 2.4 6 2.4 2.4 0 4.8-1 6.4-2.8l17.4-18.6c3.3-3.5 3.1-9.1-.4-12.4zm220-251.2L286 14C277 5 264.8-.1 252.1-.1H48C21.5 0 0 21.5 0 48v416c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48V131.9c0-12.7-5.1-25-14.1-34zM256 51.9l76.1 76.1H256zM336 464H48V48h160v104c0 13.3 10.7 24 24 24h104zM209.6 214c-4.7-1.4-9.5 1.3-10.9 6L144 408.1c-1.4 4.7 1.3 9.6 6 10.9l24.4 7.1c4.7 1.4 9.6-1.4 10.9-6L240 231.9c1.4-4.7-1.3-9.6-6-10.9zm24.5 76.9l.2.2 32.8 28.9-32.8 28.9c-3.6 3.2-4 8.8-.8 12.4l.2.2 17.4 18.6c3.3 3.5 8.9 3.7 12.4.4l57.7-54.1c3.7-3.5 3.7-9.4 0-12.8l-57.7-54.1c-3.5-3.3-9.1-3.2-12.4.4l-17.4 18.6c-3.3 3.5-3.1 9.1.4 12.4z"></path>
-                            </svg>
-                            <div id="showTextCodeTitle"></div>
-                        </div>
-                        <div class="tab" id="showBlocklyCode">
-                            <svg aria-hidden="true" 
-                                focusable="false" 
-                                data-prefix="fas" 
-                                data-icon="th-large" 
-                                class="svg-inline--fa fa-th-large fa-w-16" 
-                                role="img" 
-                                xmlns="http://www.w3.org/2000/svg" 
-                                viewBox="0 0 512 512">
-                                <path fill="currentColor" d="M296 32h192c13.255 0 24 10.745 24 24v160c0 13.255-10.745 24-24 24H296c-13.255 0-24-10.745-24-24V56c0-13.255 10.745-24 24-24zm-80 0H24C10.745 32 0 42.745 0 56v160c0 13.255 10.745 24 24 24h192c13.255 0 24-10.745 24-24V56c0-13.255-10.745-24-24-24zM0 296v160c0 13.255 10.745 24 24 24h192c13.255 0 24-10.745 24-24V296c0-13.255-10.745-24-24-24H24c-13.255 0-24 10.745-24 24zm296 184h192c13.255 0 24-10.745 24-24V296c0-13.255-10.745-24-24-24H296c-13.255 0-24 10.745-24 24v160c0 13.255 10.745 24 24 24z"></path>
-                            </svg>
-                            <div id="showBlocklyCodeTitle"></div>
-                        </div>
-                        <div class="dropdown">
-                            <svg aria-hidden="true" 
-                                focusable="false" 
-                                data-prefix="fas" 
-                                data-icon="ellipsis-v" 
-                                class="dropbtn" 
-                                role="img" xmlns="http://www.w3.org/2000/svg" 
-                                viewBox="0 0 192 512">
-                                <path fill="currentColor" d="M96 184c39.8 0 72 32.2 72 72s-32.2 72-72 72-72-32.2-72-72 32.2-72 72-72zM24 80c0 39.8 32.2 72 72 72s72-32.2 72-72S135.8 8 96 8 24 40.2 24 80zm0 352c0 39.8 32.2 72 72 72s72-32.2 72-72-32.2-72-72-72-72 32.2-72 72z"></path>
-                            </svg> 
-                            <div class="dropdown-content">
-                                <a href="javascript:void(0)" id="makeBlocks"></a>
-                                <a href="javascript:void(0)" id="deleteAllBreakpoints"></a>
-                                <a href="javascript:toggleCheckBox('#autocompleteCheckbox')">
-                                    <input type="checkbox" id="autocompleteCheckbox" checked="true">
-                                    <label id="autocompleteLable"></lable>
-                                </a>
-                                <a href="javascript:toggleCheckBox('#autoindentCheckbox')">
-                                    <input type="checkbox" id="autoindentCheckbox" checked="true">
-                                    <label id="autoindentLable"></lable>
-                                </a>
-                            </div>
-                        </div>
+ini_set('default_charset','utf-8');
+include_once 'is/lib/lib.php';
+include_once 'is/lib/lib_bt.php';
+include_once "is/lib/std_ini.php";
+include_once "is/vendor/Parsedown.php";
+/* database wrapper */
+include_once "is/ini.php";
 
-                    </div>
-                    <div id="textEditor" style="height:100%; display:block;"><?php include('saves/math_revised2.txt'); ?></div>
-                    <div id="blocklyReader" style="height:100%; display:none;"></div>
-                </div>
-            </div>  
-        </main>
+/** 
+ * Konstanty spolecne pro oba moduly
+ */ 
+define("TAB_USER",'karel_uziv');
+define("TAB_STAVY",'karel_stavy');
+define("TAB_PRIKLADY",'karel_priklady');
 
-        <!-- ace startup -->
-        <script src="js/ace/ace.js" charset="utf-8"></script>
-        <script src="js/ace/ext-language_tools.js"></script>
+/** Trida/modul realizujici blog vcetne logovani 
+ */
+class Blog {
+    static $db;
+    static $conn = DB_NAPOJENI;
+    static $introductionFolder = "is/introductionTexts/";
+    static $blogFolder = "is/blog/";
+    static $introductionFiles = [
+        "CS" => [
+            "aboutKarel" => "aboutKarelCS.md",
+            "karelControls" => "karelControlsCS.md",
+            "karelAboutApp" => "karelAboutAppCS.md"
+        ],
+        "EN" => [
 
-        <!-- blockly startup -->
-        <script src="js/blockly/blockly_compressed.js"></script>
-        <script src="js/blockly/karel_blocks.js"></script>
-        <script src="js/blockly/karel_blocks_generator.js"></script>
-        <script src="js/blockly/msg/js/langs.js"></script>
+        ]
+    ];
 
-        <div id="blocklyToolBox">
-            <xml id="toolbox" style="display: none">
-                <category name="NULL">
-                </category>
-            </xml>
-        </div>
-
-        <!-- JQuery startup -->
-        <script src="js/jquery/jquery-3.5.1.min.js"></script>
-        <script src="js/jquery/jquery-ui.js"></script>
-
-        <!-- app startup -->
-        <script type="module" src="js/main.js"></script>
-
-        <script type="text/javascript">
-            var mainSplitSizes = [35,40,25];
-            var roomSplitSizes = [85, 15]
-
-            var mainSplit = Split(['#a','#b','#c'], {
-                gutterSize: 8,
-                cursor: 'col-resize',
-                minSize: [1, 1, 1],
-                sizes: mainSplitSizes,
-                onDrag: function(){Blockly.onresize();}
-            });
-
-            var roomSplit = Split(['#row1', '#row2'], {
-                gutterSize: 8,
-                cursor: 'row-resize',
-                direction: 'vertical',
-                sizes: roomSplitSizes,
-                minSize: [1, 1],
-            });
-
-            function resetView(){
-                mainSplit.setSizes(mainSplitSizes);
-                roomSplit.setSizes(roomSplitSizes);
-                Blockly.onresize()
+    static function kostra(){
+        Microbe::set('header', 'Karel 3D');
+        Microbe::set('debug', true);
+        getparm();
+        
+        if(getpar('f') == 'json'){
+            /* predavani parametru f s hodnotou json je REST-API */
+            if (getpar('__ACCOUNT') != ''){
+               /* dotaz na prihlaseni uzivatele pres JSON se dela zcela napred */
+              Zdroje::json_response('{"Account": "'.
+              ((isset($_SESSION['uzivatel']) && $_SESSION['uzivatel'] != '')?$_SESSION['uzivatel']:'').'"}');
+            }elseif (getpar('__LOG') != ''){
+               if ($jmeno = self::check_login()){ 
+                /* prirazeni neni-li check false*/
+                /* dosad uzivatelske jmeno do session */
+                $_SESSION['uzivatel'] = $jmeno;
+                /* misto linku na prihlaseni bude figurovat jmeno uzivatele */
+              } else {
+                Zdroje::json_response('{"Err":"Přihlášení se nezdařilo"}');
+              }
+            
+            }else{
+              self::$db = new OpenDB(self::$conn);
+              Zdroje::json_kostra();
+              self::$db->Close();          
+            }  
+            return 0;
+        }
+        
+        /* zpracovani potvrzeni hesla ve formulari prihlaseni */
+        if(getpar('__LOG') != ''){
+            if ($jmeno = self::check_login()){ 
+                /* prirazeni neni-li check false*/
+                /* dosad uzivatelske jmeno do session */
+                $_SESSION['uzivatel'] = $jmeno;
+                /* misto linku na prihlaseni bude figurovat jmeno uzivatele */
+            } else {
+                htpr(self::dialog('Přihlášení se nezdařilo'));
             }
+        }
+        /* zpracovani logout */
+        if (getpar('LOGOUT') == '1'){
+            self::logout();   
+        }   
 
-            function setDefaultSizes(){
-                mainSplitSizes = mainSplit.getSizes();
-                roomSplitSizes = roomSplit.getSizes();
-                karelConsoleLog("defaultWindowSizeSet");
+        /* tyto akce vylucuji soucasne zobrazeni s blogem */  
+        if(getpar('__CRE') != ''){
+            self::form_create_user();   
+        } elseif(getpar('__CUS') != ''){
+            self::create_user();
+        } elseif(getpar('__KAR') == '1'){
+            /* predavani parametru slabel pak signalizuje praci se zaznamy stavu */
+            self::$db = new OpenDB(self::$conn);
+            Zdroje::kostra();
+            self::$db->Close();
+        } elseif(isset($_SESSION['uzivatel']) && $_SESSION['uzivatel'] != '' && getpar('__USD') != ''){
+            self::create_user_dashboard();
+        } else {    
+            self::mainPage();
+        } 
+    
+        /* nahrazeni hlavicky podle prihlaseni */
+        Microbe::$htptemp = str_replace(
+            '#LOGIN#',
+            isset($_SESSION['uzivatel']) && $_SESSION['uzivatel'] != '' ?
+                tg('a', 'href="javascript:void(0)" class="nav-dropdown" style="text-decoration: none; padding-right: 1rem;"',
+                    tg('svg', 'aria-hidden="true" focusable="false" data-prefix="fas" data-icon="user-circle" class="svg-inline--fa fa-user-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"',
+                        tg('path', 'fill="currentColor" d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.6-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 42.9 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"')
+                    ).$_SESSION['uzivatel']
+                ).
+                tg('div', 'class="nav-dropdown-content" style="right: 0px;"', 
+                    tg('a', 'href="?__USD=1"', 'Uložené stavy').
+                    tg('a', 'href="?LOGOUT=1"', 'Odhlásit')
+                )
+                : 
+                tg('a', 'href="javascript:void(0)" class="nav-dropdown"',
+                    tg('svg', 'aria-hidden="true" focusable="false" data-prefix="far" data-icon="user-circle" class="svg-inline--fa fa-user-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"',
+                        tg('path', 'fill="currentColor" d="M248 104c-53 0-96 43-96 96s43 96 96 96 96-43 96-96-43-96-96-96zm0 144c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48zm0-240C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 448c-49.7 0-95.1-18.3-130.1-48.4 14.9-23 40.4-38.6 69.6-39.5 20.8 6.4 40.6 9.6 60.5 9.6s39.7-3.1 60.5-9.6c29.2 1 54.7 16.5 69.6 39.5-35 30.1-80.4 48.4-130.1 48.4zm162.7-84.1c-24.4-31.4-62.1-51.9-105.1-51.9-10.2 0-26 9.6-57.6 9.6-31.5 0-47.4-9.6-57.6-9.6-42.9 0-80.6 20.5-105.1 51.9C61.9 339.2 48 299.2 48 256c0-110.3 89.7-200 200-200s200 89.7 200 200c0 43.2-13.9 83.2-37.3 115.9z"')
+                    )
+                ).
+                tg('div', 'class="nav-dropdown-content" style="right: 0px"', 
+                    tg('form', 'method="post" action="?" id="loginForm"',
+                        tg('a', 'href="javascript:void(0)" style="cursor: default"', 
+                            tg('table', 'style="border-spacing:1rem"', 
+                                ta('tr',
+                                    ta('td',
+                                        'Účet'
+                                    ).
+                                    ta('td',
+                                        textfield('', 'LUSER', 20, 20, getpar('LUSER'), ' class="active-dropdown"')
+                                    )
+                                ).
+                                ta('tr',
+                                    ta('td',
+                                        'Heslo'
+                                    ).
+                                    ta('td',
+                                        tg('input', 'type="password" name="LPASS" class="active-dropdown"', '')
+                                    )
+                                )
+                            )
+                        ).
+                        tg('a', 'href="javascript:document.getElementById(\'loginButton\').click();"',
+                            tg('input', 'type="submit" name="__LOG" id="loginButton" value="Přihlášení" class="submit-dropdown"', 'noslash')
+                        )  
+                    ).
+                    ahref('?__CRE=1', 'Založení účtu', '')        
+                ),
+            Microbe::$htptemp
+        );
+        if (getpar('f') != 'json') {
+            htpr_all();
+        };   
+    }
+
+    static function mainPageIntroduction(){
+        htpr(
+            tg('div', 'id="introduction"',
+                tg('div', 'class="button" id="introductionButton" onclick="window.location.href = \'karel.html\'"', 'Programuj!')
+            )
+        );
+    }
+
+    static function karelIntroduction(){
+        htpr(
+            tg('div', 'id="aboutKarel" class="padded"',
+                Parsedown::instance()->text(file_get_contents(self::$introductionFolder.self::$introductionFiles["CS"]["aboutKarel"]))
+            )
+        );
+    }
+
+    static function karelControls(){
+        htpr(
+            tg('div', 'id="karelControls" class="padded"',
+                Parsedown::instance()->text(file_get_contents(self::$introductionFolder.self::$introductionFiles["CS"]["karelControls"]))
+            )
+        );
+    }
+
+    static function karelExercices(){
+        $afile='aliases.txt';
+        htpr('<div id="karelExercices" class="padded">');
+        htpr(ta('h2', 'Příklady'));
+        htpr('<section class="container">');
+        $exerciceMainDirName = "is/examples";
+        $exerciceMainDir = array_diff(scandir($exerciceMainDirName), ['..', '.',$afile]);
+        if (is_file($exerciceMainDirName.'/'.$afile)){
+          $aliases=file($exerciceMainDirName.'/'.$afile);
+          $al=array();
+          for($i=0;$i<count($aliases);$i++){
+            $aliases[$i]=rtrim($aliases[$i]);            
+            if (preg_match("/(.+)\. (.+)/", $aliases[$i],$m)){
+              $al[$m[1]]=$m[2];
             }
+          }
+        }  
+        sort($exerciceMainDir);
+        foreach($exerciceMainDir as $exercicesDir){
+            htpr('<div class="ac">');
+            
+            htpr(
+                tg('input', 'class="ac-input" id="ac-'.$exercicesDir.'" name="ac-'.$exercicesDir.'" type="checkbox"', ''). 
+                tg('label', 'class="ac-label" for="ac-'.$exercicesDir.'"', isset($al[$exercicesDir])?$al[$exercicesDir]:$exercicesDir)
+            );
+            htpr('<article class="ac-text">');
+            
+            $currentExerciceDir = array_diff(scandir($exerciceMainDirName.'/'.$exercicesDir), ['..', '.', 'intro.md']);
+            sort($currentExerciceDir);
+            if (is_file($fintro=$exerciceMainDirName.'/'.$exercicesDir.'/intro.md')){
+              htpr(ta('p',Parsedown::instance()->text(file_get_contents($fintro))));
+            }  
+            foreach($currentExerciceDir as $exercice){
+            
+                if (!preg_match("/.+\.md/",$exercice)) continue;
+                $exerciceName = substr($exercice, 0, strlen($exercice) - 3);
+                $exerciceFile=file($exerciceMainDirName.'/'.$exercicesDir.'/'.$exercice);
+                $header=$exerciceFile[0];
+                unset($exerciceFile[0]);
+                htpr(
+                    tg('div', 'class="ac-sub"',
+                        tg('input', 'class="ac-input" id="ac-'.$exerciceName.'" name="ac-'.$exerciceName.'" type="checkbox"', '').
+                        tg('label', 'class="ac-label" for="ac-'.$exerciceName.'"', str_replace('#','',$header)).
+                        tg('article', 'class="ac-sub-text"',
+                            Parsedown::instance()->text(implode($exerciceFile))
+                        )
+                    )
+                );
+            }
+            htpr('</article>');
+            htpr('</div>');
+        }
+        htpr('</section>');
+        htpr('</div>');
+    }
 
-            function roomFocus(){
-                if(document.querySelector('#runIndikator').style.display != "block"){
-                    document.querySelector('#controlIndikator').style.display = 'block';
-                    document.querySelector('#roomCanvas').focus();
+    static function karelAboutApp(){
+        htpr(
+            tg('div', 'id="karelAboutApp" class="padded"',
+                Parsedown::instance()->text(file_get_contents(self::$introductionFolder.self::$introductionFiles["CS"]["karelAboutApp"]))
+            )
+        );
+    }
+
+    static function createMainPage(){
+        self::mainPageIntroduction();
+        self::karelIntroduction();
+        self::karelControls();
+        self::karelExercices();
+        self::karelAboutApp();
+        self::createBlog();
+    }
+
+    /* zpracovani bud hlavni stranky a nebo konkretniho clanku */
+    static function mainPage(){
+        global $Zdroje;
+        $r = $_REQUEST;
+        if(count($r) == 0){
+            self::createMainPage();
+        } else {
+            $k = array_keys($r);
+            if(!self::clanek($k[0])){
+                self::createMainPage();
+            }
+        }
+    }
+  
+    static function createBlog(){
+        htpr(
+            tg('div', 'class="padded" id="blog"', 'noslash').
+            tg('h2', 'class="forceH2"', 'Blog')
+        );
+        $a = scandir('is/clanky');
+        $b = array();
+        for($i = 0; $i < count($a); $i++){
+            if(preg_match("/^(.+)\.md$/", $a[$i], $m)){
+                if(is_file('is/clanky/'.$a[$i]) && is_readable('is/clanky/'.$a[$i])){
+                    $b[$m[1]] = filectime('is/clanky/'.$a[$i]);
+                }
+            }    
+        }
+        /* b obsahuje vsechny pristupne md soubory ve slozce, 
+            a casy jejich posledni upravy */
+        //print_r($b);
+        arsort($b,SORT_NUMERIC);
+        //print_r($b);
+        foreach($b as $k => $v){
+            $f = fopen('is/clanky/'.$k.'.md','r');
+            $n = 0;
+            $text = '';
+            /* nacti jen 5 radku */
+            if ($f){
+                while(($line = fgets($f)) !== false && $n++ < 5){
+                    if($n == 1){
+                        /* prvni radek - pridej link do nadpisu */
+                        if (preg_match("/^(#+)(.*)$/",rtrim($line),$m)){
+                            $line = $m[1].'['.$m[2].']'.'(?'.$k.')'."\n".
+                            date("j.n.Y")."\n\n";
+                        }
+                    }
+                    if(rtrim($line) != '') $text .= $line;
+                }   
+                fclose($f);
+                $text .= '[celý text ...](?'.$k.')';
+                htpr(Parsedown::instance()->text($text),br(),ta('hr', ''));
+            }  
+        }
+        htpr(
+            tg('/div', '', 'noslash')
+        );
+    }
+  
+    static function clanek($jm){
+        $clanek = 'is/clanky/'.$jm.'.md';
+        if(is_readable('is/clanky/'.$jm.'.md')){
+            htpr(
+                tg('div', 'class="padded" id="blog"', 
+                    Parsedown::instance()->text(file_get_contents($clanek))
+                )
+            );
+            return true;
+        }
+        return false;  
+    }
+  
+    /** overi predane uzivatelske heslo */
+    static function check_login(){
+        $u = strtoupper(getpar('LUSER'));
+        if($u != ''){
+            self::$db = new OpenDB(self::$conn);
+            /* try local database - sha1 imprints */
+            self::$db->Sql(
+            "select lpass, jmeno, prijmeni, aktivni from ".TAB_USER." "."where luser='$u'");
+            if(self::$db->FetchRow()){   
+                $DB=self::$db->DataHash();        
+                self::$db->Close();
+                if($DB['AKTIVNI'] == 0){
+                    htpr(self::dialog('Váš účet není aktivní'));
+                    return false;
+                }
+                if (strcmp(sha1(getpar('LPASS')),$DB['LPASS'])===0){
+                    $_SESSION['prihlasen']=$DB['JMENO'].' '.$DB['PRIJMENI'];
+                    return $u;
                 }
             }
+            self::$db->Close();
+        }
+        return false;  
+    }
+  
+    static function logout(){
+        $_SESSION['prihlasen'] = '';
+        $_SESSION['uzivatel'] = '';
+    }
 
-            function roomUnfocus(){
-                document.querySelector('#controlIndikator').style.display = 'none';
+    /** formular zalozeni uzivatele */
+    static function form_create_user(){
+        htpr(
+            tg('div', 'class="padded"', 
+                ta('h2', 'Založení uživatele').
+                tg('form', 'method="post" action="?"',
+                    tg('table', 'style="margin-right: auto; margin-left: auto"', 
+                        ta('tr',
+                            ta('td',
+                                tg('label', 'for="JMENO"', 'Jméno ')
+                            ).
+                            ta('td',
+                                textfield('', 'JMENO', 20, 40, getpar('JMENO'))
+                            )
+                        ).
+                        ta('tr',
+                            ta('td',
+                                tg('label', 'for="PRIJMENI"', 'Příjmení')
+                            ).
+                            ta('td',
+                                textfield('', 'PRIJMENI', 20, 20, getpar('PRIJMENI'))
+                            )
+                        ).
+                        ta('tr',
+                            ta('td',
+                                tg('label', 'for="LUSER" ', 'Jméno účtu')
+                            ).
+                            ta('td',
+                                textfield('', 'LUSER', 20, 20, getpar('LUSER'))
+                            )
+                        ).
+                        ta('tr',
+                            ta('td',
+                                tg('label', 'for="LPASS"', 'Heslo ')
+                            ).
+                            ta('td',
+                                tg('input', 'type="password" name="LPASS"', '')
+                            )
+                        ).
+                        ta('tr',
+                            ta('td',
+                                tg('label', 'for="KEMAIL"', 'E-mail')
+                            ).
+                            ta('td',
+                                textfield('', 'KEMAIL', 20, 40, getpar('KEMAIL'))
+                            )
+                        ).
+                        ta('tr',
+                            tg('td', 'colspan="2" style="text-align: center; padding: 1rem"',
+                            submit('__CUS','Založení účtu','button')
+                            )
+                        )
+                    )
+                )
+            )
+        );
+    } 
+  
+    /** zalozi uzivatele do DB */
+    static function create_user(){
+        self::$db = new OpenDB(self::$conn);
+        if (($s=self::checking_input())!=''){
+           htpr(self::dialog($s));
+           self::form_create_user();
+        }else{
+           $prik = "insert into ".TAB_USER.
+            " (luser,lpass,jmeno,prijmeni,kemail,aktivni) values (".         
+            "'".strtoupper(getpar('LUSER'))."',".
+            "'".sha1(getpar('LPASS'))."',".
+            "'".getpar('JMENO')."',".
+            "'".getpar('PRIJMENI')."',".
+            "'".getpar('KEMAIL')."',1)";
+           $ch = self::$db->Sql($prik);
+           if($ch){
+              htpr(self::dialog('Nepodařilo se vytvořit zadaného uživatele'));
+              self::form_create_user();
+           } else {
+              htpr(self::dialog('Uživatel založen'));
+              $_SESSION['uzivatel'] = strtoupper(getpar('LUSER'));
+              self::mainPage();
+           }
+          self::$db->Close();     
+        }  
+    }
+
+    static function checking_input(){
+       $s='';
+       if (getpar('LUSER')=='') $s.='Je třeba uvést uživatelské jméno. '.br();
+       if (strlen(getpar('LPASS'))<5) $s.='Heslo musí mít alespoň pět znaků. '.br();
+       if (getpar('JMENO')=='' || getpar('PRIJMENI')=='') $s.='Je třeba uvést jméno a příjmeni. '.br();
+       if (!filter_var(getpar('KEMAIL'), FILTER_VALIDATE_EMAIL)) $s.='Neplatný e-mail.'.br();
+       return $s;
+    }
+  
+    static function dialog($text, $err=true){  
+        return
+            tg('div', 'class="Err-dialog" id="dialog"', 
+                tg('div', 'class="Err-dialog-content"', 
+                    tg('span', 'class="close" id="dialogClose"', '&times;').
+                    ta('p', $text)
+                )
+            );            
+    }   
+    
+    static function create_user_dashboard(){
+        htpr('<div class="padded">',
+            ta('h2', 'Uložené pozice uživatele '.$_SESSION['uzivatel'])
+        );
+        if (isset($_SESSION['uzivatel']) && $_SESSION['uzivatel']!=''){
+            self::$db = new OpenDB(self::$conn);
+            Zdroje::kostra();
+            self::$db->Close();       
+        }
+        htpr('</div>');
+    }
+} 
+
+/** 
+ * Trida realizujici zapis a cteni stavu hry Karel
+ */
+class Zdroje{
+    /** 
+     * @param $db link na databazi, kde jsou udaje ulozene (trida OpenDB)
+     */ 
+    static $db;
+  
+    /**  
+     * Tato metoda se vola pro routovani stavu objektu
+     */
+    static function kostra(){
+        self::$db=Blog::$db;
+        
+        if(isset($_SESSION['uzivatel']) && $_SESSION['uzivatel'] != ''){  
+            if (getpar('__STO') != '' && getpar('slabel') != ''){
+                self::put_item(getpar('slabel'),getpar('SSOURCE'),'u');
+            } elseif(getpar('__INS') != '' && getpar('slabel') != ''){
+                self::put_item(getpar('slabel'),getpar('SSOURCE'),'i');  
+            } elseif(getpar('__DEL') != '' && getpar('slabel') != ''){
+                self::delete_item(getpar('slabel'));
+            } elseif(getpar('__NEW') != ''){
+                self::get_item('', true);          
+            } elseif(getpar('slabel') != ''){
+                self::get_item(getpar('slabel'), false);
+            } elseif(getpar('__LIST') != ''){
+                self::list_saves();
+            } elseif(getpar('__LOG') != '') {
+               if ($jmeno = Blog::check_login()){ 
+                 /* prirazeni neni-li check false*/
+                 /* dosad uzivatelske jmeno do session */
+                 $_SESSION['uzivatel'] = $jmeno;
+                 /* misto linku na prihlaseni bude figurovat jmeno uzivatele */
+                 self::list_saves(); 
+               } else {
+                  self::json_response('{"Err":"Přihlášení se nepodařilo."}');
+               } 
+            } else {
+                /* jen odkazy na jednotlive funkce */
+                self::list_saves();
             }
+        }
+    } 
+  
+    static function json_kostra(){
+        self::$db=Blog::$db;
+        if (getpar('prid')){
+            /* dotaz na verejne dostupny priklad */
+            self::json_response(self::get_example(getpar('prid')));
+            return 0;
+        }
 
-            window.dictionary;
-
-            function karelConsoleClear(){
-                document.querySelector('#console').innerHTML = "";
+        /* ostatni polozky vyzaduji prihlaseni */
+        if(isset($_SESSION['uzivatel']) && $_SESSION['uzivatel'] != ''){
+            if(getpar('slabel') != '' && getpar('store') == '1'){
+                self::json_response(self::put_item(getpar('slabel'), getpar('JSON'), '?', true));
+            } elseif(getpar('slabel') != ''){
+                self::json_response(self::get_item(getpar('slabel'), false, true));
+            } else {
+                self::json_response(self::list_saves('json'));
             }
-
-            function karelConsoleLog(key){
-                var date = new Date();
-                document.querySelector('#console').innerHTML += 
-                    String("0" + date.getHours()).slice(-2) + 
-                    ":" + 
-                    String("0" + date.getMinutes()).slice(-2) + 
-                    ":" +
-                    String("0" + date.getSeconds()).slice(-2) +
-                    " - " + 
-                    window.dictionary[key] + 
-                    "<br>";
-                document.querySelector('#consoleWrapper').scrollBy(0, document.querySelector('#consoleWrapper').scrollHeight);
-            }
-
-            function toggleCheckBox(id){
-                if(document.querySelector(id).checked){
-                    document.querySelector(id).checked = false;
-                } else {
-                    document.querySelector(id).checked = true;
+        } else {
+            self::json_response('{"Err":"Musíte být přihlášeni."}');    
+        } 
+    }
+  
+    static function json_response($text){
+        header('Cache-Control: private, must-revalidate, max-age=0');
+        header('Content-Encoding: gzip');
+        header('Content-Type: application/json;charset=UTF-8'); /* jediny dovoleny format pro CORS*/ 
+        echo gzencode($text);
+    }
+  
+    /** 
+     * zobrazi seznam ulozenych stavu
+     */
+    static function list_saves($format = ''){
+        $stavy = self::$db->SqlFetchArray(
+            "select slabel,strftime('%d.%m.%Y %H:%M',stime,'unixepoch') as TEXTTIME ".
+            "from ".TAB_STAVY." ".
+            "where luser='".$_SESSION['uzivatel']."' ".
+            "order by stime desc");
+        //htpr(ht_table('Uložené stavy',array('SLABEL'=>'Jméno','STIME'=>'Datum'),$stavy));
+        if($format == 'json'){
+            if (PHP_MAJOR_VERSION > 5){
+                return json_encode($stavy, JSON_PRETTY_PRINT);
+            } else {
+                return json_encode($stavy);
+            }       
+        } else {
+            if(count($stavy) > 0){
+                for($i = 0; $i < count($stavy); $i++){
+                    htpr($stavy[$i]['TEXTTIME'],nbsp(2),ahref('?__KAR=1&amp;slabel='.$stavy[$i]['SLABEL'], $stavy[$i]['SLABEL']), br());   
                 }
-                document.querySelector(id).dispatchEvent(new Event('change'));
+            } else {
+                htpr("Žádné pozice nebyly nalezeny.");
             }
-        </script>
+        }    
+    }
+ 
+    /** 
+     * ulozi stav pod nazvem 
+     */ 
+    static function put_item($item_label, $ssource, $action, $json=false){
+        if($action = '?'){  /* over, zda vlozit novy stav nebo aktualizovat existujici */
+            $je = self::$db->SqlFetch("select SLABEL ".
+                "from ".TAB_STAVY." ".
+                "where luser='".$_SESSION['uzivatel']."' ".
+                "and slabel='$item_label'");
+            $action = ($je == '') ? 'i' : 'u';            
+        } 
+        if($json){
+        setpar('SSOURCE',file_get_contents('php://input'));
+        /* viz https://stackoverflow.com/questions/18866571/receive-json-post-with-php */
+        }
+        if($action == 'u'){
+            $prik = "update ".TAB_STAVY." ".
+                "set ssource='".getpar('SSOURCE')."', stime=strftime('%s', 'now') ".
+                "where slabel='".getpar('slabel')."' and luser='".$_SESSION['uzivatel']."'"; 
+        } else {
+            $prik = "insert into ".TAB_STAVY." ".
+                "(luser, slabel, stime, ssource ) ".
+                "values ('".$_SESSION['uzivatel']."','".getpar('slabel')."',".
+                "strftime('%s', 'now'),'".getpar('SSOURCE')."')";
+        }
+        $res = self::$db->Sql($prik);
+        if($res){
+            //deb($prik);
+            if($json){
+                return '{"status": "Nastala chyba "'.self::$db->Error.'"}';     
+            } else {
+                htpr(Blog::dialog('Nastala chyba '.self::$db->Error));
+            }  
+        } else {
+            if($json){
+                return '{"status": "OK '.($action == 'u' ? 'Uloženo ' : 'Vloženo ').'}';
+            } else {
+                htpr(Blog::dialog($action == 'u' ? 'Uloženo ' : 'Vloženo ', false));
+            }  
+            $action = 'u';
+        }
+        if($json){
+            return "{}";
+        }
+        self::get_item($item_label,$action == 'i');
+    }
+ 
+    /** 
+     * smaze stav pod nazvem
+     */
+    static function delete_item($item_label){
+        // TODO ??
+    }
+ 
+    /** 
+     * nacte stav pod nazvem ja
+     */
+    static function get_item($item_label,$new=false,$json=false){
+        if(!$new){
+            $DB = self::$db->SqlFetchArray(
+                "select stime,ssource,slabel ".
+                "from ".TAB_STAVY." ".
+                "where slabel='$item_label' ".
+                "and luser='".$_SESSION['uzivatel']."'");
+            $jsoudata = (count($DB) > 0);
+        } else {
+            /* tato vetev pocita se zobrazein prazdneho formulare */
+            $jsoudata = false;
+        }     
+        if($json){
+            if($jsoudata){
+                return $DB[0]['SSOURCE'];
+            }
+            return '{}';
+        }
+    
+        /* zobrazeni formulare */
+        htpr('<div class="padded">');
+        htpr(ta('h3', $jsoudata?$DB[0]['SLABEL'] : 'Nový stav'.' '),
+            tg('form', 'method="post" action="?"',
+                tg('div', 'class="container"',
+                    ($new ?
+                        tg('div', 'class="row"',
+                            tg('div', 'class="col-6 text-left" ', 'Označení ').
+                            tg('div', 'class="col-6 text-left" ',
+                                textfield('', 'slabel', 20, 50, getpar('slabel')
+                            )
+                        )
+                    ) 
+                    : 
+                    '').
+                    tg('div', 'class="row"',
+                        tg('div', 'class="col-12 text-left" ', 'Zdrojový kód ')
+                    ).
+                    tg('div', 'class="row"',    
+                        tg('div', 'class="col-12"',   
+                            textarea('', 'SSOURCE', 20, 40, $jsoudata?$DB[0]['SSOURCE']:getpar('SSOURCE'),'class="form-control"')
+                        )
+                    ).
+                    tg('div', 'class="row"',     
+                        tg('div', 'class="col-10 text-right"',
+                            ($jsoudata ? submit('__STO','Uložit','btn btn-primary') : submit('__INS', 'Vložit', 'btn btn-primary')).
+                            ($jsoudata ? para('slabel',getpar('slabel')) : '').
+                            para('__KAR', '1')          
+                        )
+                    )
+                )
+            )
+        );     
+        htpr('</div>');           
+    }
+  
+    /** 
+     * vrati json prikladu pro nacteni do stranky Karla 
+     */  
+    static function get_example($prid){
+        $DB = self::$db->SqlFetch(
+            "select ssource ".
+            "from ".TAB_PRIKLADY." ".
+            "where ".(is_numeric($prid) ? "id=$prid " : "slabel='$prid'"));
+        if($DB != ''){
+            return $DB;
+        }else{
+            return '{}';
+        }   
+    } 
+} 
 
-        <!-- dialogs -->
-        <div id="resizeRoomDialog" title="" style="display: none;">
-            <p id="resizeRoomText"></p>
 
-            <table>
-                <tr>
-                    <td><label for="xVal" id="xAxisLabel"></label></td>
-                    <td><input type="number" min="2" max="100" name="xVal" id="xVal"></td>
-                    <td rowspan="2"><div id="room" class="button"></div></td>
-                </tr>
-                <tr>
-                    <td><label for="yVal" id="yAxisLabel"></label></td>
-                    <td><input type="number" min="2" max="100" name="yVal" id="yVal"></td>
-                </tr>
-            </table>
-        </div>
-
-        <div id="SaveDialog" title="" style="display: none;">
-            <p id="saveText"></p>
-
-            <table>
-                <tr>
-                    <td><label for="roomSaveCheckbox" id="roomSaveLabel"></label></td>
-                    <td><input type="checkbox" id="roomSaveCheckbox" checked></td>
-                </tr>
-                <tr>
-                    <td><label for="blocksSaveCheckbox" id="blocksSaveLabel"></label></td>
-                    <td><input type="checkbox" id="blocksSaveCheckbox" checked></td>
-                </tr>
-                <tr>
-                    <td><label for="blocksSaveCheckbox" id="codeSaveLabel"></label></td>
-                    <td><input type="checkbox" id="codeSaveCheckbox" checked></td>
-                </tr>
-            </table>
-            <table>
-                <tr>
-                    <td><input type="text" id="saveName"></td>
-                    <td><div id="saveButton" class="button"></div></td>
-                </tr>
-            </table>
-        </div>
-
-        <div id="LoadDialog" title="" style="display: none;">
-            <p id="loadText"></p>
-            <table>
-                <tr>
-                    <td><input type="file" id="loadFile"></td>
-                    <td><div id="loadButton" class="button"></div></td>
-                </tr>
-            </table>
-        </div>
-          
-    </body>
-</html>
+Blog::kostra();
+  
+?>

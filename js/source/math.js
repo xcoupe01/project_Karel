@@ -143,7 +143,8 @@ class math{
      *  - expressionString - is the text representation of the expression.
      * This function ca run in the strict mode. When enabled, it takes only expression
      * tokens as part of the expression, if turned off, it loads also identifier tokens, 
-     * if there is a binary operator before them.
+     * if there is a binary operator before them. If any commentary token is found in non
+     * strict mode, it is skipped.
      * @param {codeArray} codeArray is the code array to scan the expression from.
      * @param {boolean} strict  true enables the strict mode, false turns it off.
      * @returns object containing information about the expression (described above).
@@ -153,6 +154,9 @@ class math{
         var assignNum = 0;
         var expressionString = "";
 
+        while((!strict) && codeArray[0] !== undefined && codeArray[0].meaning == "commentary"){
+            codeArray.shift();
+        }
         if((!strict) && codeArray[0] !== undefined && codeArray[0].meaning == "identifier"){
             codeArray[0].meaning = "expression";
             codeArray[0].psaMeaning = "variable";
@@ -173,6 +177,9 @@ class math{
             codeArray[0].psaTerminal = true;
             expressionString += codeArray[0].value;
             expressionArray.push(codeArray.shift());
+            while((!strict) && codeArray[0] !== undefined && codeArray[0].meaning == "commentary"){
+                codeArray.shift();
+            }
             if((!strict) && codeArray[0] !== undefined && codeArray[0].meaning == "identifier" && (expressionArray.length == 0 || 
                     this.expectingNext.includes(expressionArray[expressionArray.length - 1].value))){
                 codeArray[0].meaning = "expression";

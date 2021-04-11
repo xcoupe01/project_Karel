@@ -28,6 +28,7 @@ class interpret{
         this.commentary = new RegExp(/^#/);                 // Regular expression of comments (default is '#')
         this.lockBlocklyTextEditor = false;                 // Blocks Blockly from writing to blockly text representation editor if true
         this.counter = 0;                                   // Step counter
+        this.moveCursor = true;                             // Tells if to move cursor in the text editor
         this.resetCounter();
     }
     
@@ -1025,11 +1026,11 @@ class interpret{
 
     /**
      * Interprets function in Karel's language. The code must be processed before it can be interpreted.
+     * The cursor is moved with the interpret if the value of this.moveCursor in true.
      * @param {codePointer structure} codePointer is the codePointer which will define which function will be interpreted.
-     * @param {boolean} moveCursor true to move the cursor in the given editor, false otherwise.
      * @param {ACE editor} editor is teh editor where the code is written.
      */
-    async codeInterpret(codePointer, moveCursor, editor){
+    async codeInterpret(codePointer, editor){
         while(this.running){
             if(this.interpretToken(codePointer)){
                 this.turnOffInterpret();
@@ -1037,7 +1038,7 @@ class interpret{
                 this.updateCounter();
                 this.updateVariabeOverview();
             }
-            if(moveCursor){
+            if(this.moveCursor){
                 editor.gotoLine(this.command.getToken(codePointer).row + 1);
             }
             if(this.debug.active && !(this.debug.run && editor.session.getBreakpoints()[this.command.getToken(codePointer).row] === undefined)){
@@ -1046,7 +1047,6 @@ class interpret{
                 await sleep(this.command.speed);
             }
         }
-        console.log(Object.assign({}, this.math.variables));
     }
 
     /**
@@ -1071,7 +1071,7 @@ class interpret{
         this.setRunningTrue();
         this.debug.active = false;
         var codePointer = {functionName: toRun, tokenPointer: 0};
-        this.codeInterpret(codePointer, true, editor);
+        this.codeInterpret(codePointer, editor);
     }
 
     /**
@@ -1095,7 +1095,7 @@ class interpret{
         this.setRunningTrue();
         this.debug.active = false;
         var codePointer = {functionName: toRun, tokenPointer: 0};
-        this.codeInterpret(codePointer, true, this.blocklyTextRepresentation);
+        this.codeInterpret(codePointer, this.blocklyTextRepresentation);
     }
 
     /**
@@ -1128,7 +1128,7 @@ class interpret{
             this.debug.active = true;
             this.debug.codePointer = {functionName: toRun, tokenPointer: 0};
         }
-        this.codeInterpret(this.debug.codePointer, true, editor);
+        this.codeInterpret(this.debug.codePointer, editor);
     }
 
     /**
@@ -1154,7 +1154,8 @@ class interpret{
     /**
      * TODO - remake
      * Translates text code to blockly blocks. It generates those blocks by tokens
-     * that are expexted to be passed.
+     * that are expexted to be passed. The function tryes to save as many commentaries as possible,
+     * but some are deleted, especiali in math expressions.
      * @param {blockly worspace} workspace is the workspace where the blocks will be created
      * @param {array of tokens} codeArray is array of tokens to be converted
      */
@@ -1189,14 +1190,23 @@ class interpret{
         var toCollapse;
         var numOfCollapsedBlocks = 0;
         var variables = [];
+        var commentText = "";
 
         for(var i = 1; i <  codeArray.length; i++){
             codeArray[0] = codeArray[0].concat(codeArray[i]);
         }
         codeArray = codeArray[0];
 
+        if(codeArray === undefined){
+            return;
+        }
+
         while(codeArray.length > 0){
             currentRule = {};
+            while(codeArray[0] !== undefined && codeArray[0].meaning == "commentary"){
+                commentText += codeArray[0].value.substring(1);
+                codeArray.shift();
+            }
             if(this.closerRegex.test(codeArray[0].value)){
                 currentRule = {action : ["popConnectionArray"]};
             } else if(codeArray[0].dictKey in rules){
@@ -1226,13 +1236,20 @@ class interpret{
             if(newBlock !== undefined){
                 newBlock.initSvg();
                 newBlock.render();
+                if(commentText != ""){
+                    newBlock.setCommentText(commentText);
+                    commentText = "";
+                }
             }
 
             for(var i = 0; i < currentRule.action.length; i++){
                 switch(currentRule.action[i]){
                     case "addName":
-                        codeArray.shift()
-                        if(codeArray[0].meaning == "identifier"){
+                        codeArray.shift();
+                        while(codeArray[0] !== undefined && codeArray[0].meaning == "commentary"){
+                            codeArray.shift();
+                        }
+                        if(codeArray[0] !== undefined && codeArray[0].meaning == "identifier"){
                             newBlock.setFieldValue(codeArray[0].value, "NAME");
                         } else {
                             karelConsoleLog("blockConversionError");
@@ -1263,10 +1280,14 @@ class interpret{
                     case "popConnectionArray":
                         connectTo.pop();
                         break;
-                    // TODO
                     case "manageCondition":
-                        codeArray.shift()
-                        if(codeArray[0].meaning != "condition-prefix"){
+                        codeArray.shift();
+                        var conditionComment = "";
+                        while(codeArray[0] !== undefined && codeArray[0].meaning == "commentary"){
+                            conditionComment += codeArray[0].value.substring(1);
+                            codeArray.shift();
+                        }
+                        if(codeArray[0] === undefined || codeArray[0].meaning != "condition-prefix"){
                             karelConsoleLog("blockConversionError");
                             console.log("error - condtion prefix expected");
                             return;
@@ -1275,10 +1296,18 @@ class interpret{
                             newBlock.getField('COND_PREF').setValue("optionIsNot");
                         }
                         codeArray.shift();
+                        while(codeArray[0] !== undefined && codeArray[0].meaning == "commentary"){
+                            conditionComment += codeArray[0].value.substring(1);
+                            codeArray.shift();
+                        }
                         var conditionBlock;
+                        if(codeArray[0] === undefined){
+                            karelConsoleLog("blockConversionError");
+                            console.log("error - condtion expected");
+                            return;
+                        }
                         if((codeArray[0] !== undefined && variables.includes(codeArray[0].value)) || 
                                 codeArray[0].meaning == "expression" || (codeArray[1] !== undefined && codeArray[1].meaning == "expression")){
-                            console.log("hello");
                             currentRule.action.push("manageExpression");
                             codeArray.unshift({});
                         } else {
@@ -1288,12 +1317,15 @@ class interpret{
                             }
                             conditionBlock.initSvg();
                             conditionBlock.render();
+                            if(conditionComment != ""){
+                                conditionBlock.setCommentText(conditionComment);
+                            }
                             newBlock.getInput('COND').connection.connect(conditionBlock.outputConnection);
                         }
                         break;
                     case "manageExpression":
                         codeArray.shift();
-                        if(codeArray[0].dictKey == "variable"){
+                        if(codeArray[0] !== undefined && codeArray[0].dictKey == "variable"){
                             codeArray.shift();
                         }
                         var exprConnection = newBlock.getInput('EXPRESSION');
@@ -1394,13 +1426,13 @@ class interpret{
         if(this.textEditor.getSelectedText() != ""){
             this.lockBlocklyTextEditor = true;
             this.blocklyTextRepresentation.setValue(this.textEditor.getSelectedText());
-            this.makeBlocksFromNativeCode(workspace, this.nativeCodeTokenizer(this.blocklyTextRepresentation, true));
+            this.makeBlocksFromNativeCode(workspace, this.nativeCodeTokenizer(this.blocklyTextRepresentation, false));
             this.lockBlocklyTextEditor = false;
         }
     }
 
     /**
-     * Creates and downoalds specified save file
+     * Creates specified save file
      * This function can run in different modes:
      *  `room`: makes save file that saves actual room configuration
      *  `blockly`: makes save file that saves actual blocks in blockly workspace
@@ -1415,10 +1447,10 @@ class interpret{
      *  "code": contains data abot code editor
      * @param {string} mode is the mode the function will execute
      * @param {workspace} workspace is the blockly workspace
-     * @param {string} name is the name of the file that will be generated
      */
-    saveFile(mode, name, workspace){
+    createSaveFileText(mode, workspace){
         var saveJson = {};
+        saveJson["lang"] = localStorage['language'];
         switch(mode){
             case "room":
                 saveJson["karelAndRoom"] = this.command.karel.saveRoomWithKarel();
@@ -1433,7 +1465,6 @@ class interpret{
                 saveJson["karelAndRoom"] = this.command.karel.saveRoomWithKarel();
                 saveJson["blockly"] = Blockly.Karel.workspaceToCode(workspace);
                 saveJson["code"] = this.textEditor.getValue();
-                this.saveTextAsFile(JSON.stringify(saveJson), "allSaveTest");
             case "byChoice":
                 if(document.getElementById('roomSaveCheckbox').checked){
                     saveJson["karelAndRoom"] = this.command.karel.saveRoomWithKarel();
@@ -1448,9 +1479,19 @@ class interpret{
             default:
                 karelConsoleLog("internaError");
                 console.log("saveFile - unsuported mode [" + mode + "]");
-                return; 
+                throw "unsuported save mode"; 
         }
-        saveTextAsFile(JSON.stringify(saveJson), name);
+        return saveJson;
+    }
+
+    /**
+     * Creates save file and downloads it.
+     * @param {string} mode is the save mode described in function `createSaveFileText`.
+     * @param {string} name is the file name without the file suffix.
+     * @param {workspace} workspace is the blockly workspace.
+     */
+    saveFile(mode, name, workspace){
+        saveTextAsFile(JSON.stringify(this.createSaveFileText(mode, workspace)), name + '.karel');
     }
 
     /**
@@ -1459,6 +1500,9 @@ class interpret{
      * @returns item that failed, undefined otherwise
      */
     checkLoadedFile(dataJson){
+        if(dataJson['lang'] === undefined){
+            return 'lang';
+        }
         for(var item in dataJson){
             switch(item){
                 case "karelAndRoom":
@@ -1490,11 +1534,149 @@ class interpret{
                         return item;
                     }
                     break;
+                case "lang":
+                    if(dataJson[item] === undefined || 
+                        typeof dataJson[item] != "string" || 
+                        !['cs', 'en'].includes(dataJson[item])){
+                        return item;
+                    }
+                    break;
                 default:
                     return item;
             }
         }
         return;
+    }
+
+    /**
+     * Load data from file and sets the app by them
+     * This function can run in a different modes:
+     *  `room`: loads and applyes only data that specifies the room and karel's position in it
+     *  `blockly`: loads and applyes only data that specifies blockly workspace
+     *  `code`: loads and applyes only data that specifies code editor
+     *  `all`: loads and applyes all informations (all above, no contorl) 
+     *  `byFile`: loads and applyes only mentioned data (some of above)
+     * Use check loader fucntion before loading file to prevent bugs.
+     * The save format is expected the save as desribed in `saveFile` function
+     * @param {string} mode is the mode which the function will run 
+     * @param {workspace} workspace is the blockly workspace
+     * @param {elementID} dataJson is the JSON load structure
+     */
+    performLoad(dataJson, mode, workspace){
+        switch(mode){
+            case "room":
+                if(this.command.karel.checkLoadFileKarelAndRoom(dataJson)){
+                    this.command.karel.loadRoomWithKarel(dataJson);
+                }
+                break;
+            case "blockly":
+                workspace.clear();
+                this.lockBlocklyTextEditor = true;
+                this.blocklyTextRepresentation.setValue(fileLoadedEvent.target.result);
+                this.makeBlocksFromNativeCode(workspace, this.nativeCodeTokenizer(this.blocklyTextRepresentation, false));
+                this.lockBlocklyTextEditor = false;
+                this.blocklyTextRepresentation.setValue("");
+                this.blocklyTextRepresentation.setValue(Blockly.Karel.workspaceToCode(workspace));
+                this.blocklyTextRepresentation.clearSelection();
+                break;
+            case "code":
+                this.textEditor.setValue(fileLoadedEvent.target.result);
+                this.textEditor.clearSelection();
+                break;
+            case "all":
+                this.command.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
+                workspace.clear();
+                this.lockBlocklyTextEditor = true;
+                this.blocklyTextRepresentation.setValue(dataJson["blockly"]);
+                this.makeBlocksFromNativeCode(workspace, this.nativeCodeTokenizer(this.blocklyTextRepresentation, false));
+                this.lockBlocklyTextEditor = false;
+                this.textEditor.setValue(dataJson["code"]);
+                break;
+            case "byFile":
+                try{
+                    let result = this.checkLoadedFile(dataJson);
+                    if(result !== undefined){
+                        karelConsoleLog("corruptedSaveFile");
+                        console.log("Checking failed at: ",result);
+                        throw "Corrupted save file";
+                    }
+                }
+                catch(err){
+                    karelConsoleLog("corruptedSaveFile");
+                    console.log("loadFromFile error - Corupted save file")
+                    return;
+                }
+                for(var key in dataJson){
+                    switch(key){
+                        case "karelAndRoom":
+                            this.command.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
+                            break;
+                        case "blockly":
+                            workspace.clear();
+                            this.lockBlocklyTextEditor = true;
+                            this.blocklyTextRepresentation.setValue(dataJson["blockly"]);
+                            this.makeBlocksFromNativeCode(workspace, this.nativeCodeTokenizer(this.blocklyTextRepresentation, false));
+                            this.lockBlocklyTextEditor = false;
+                            this.blocklyTextRepresentation.setValue("");
+                            this.blocklyTextRepresentation.setValue(Blockly.Karel.workspaceToCode(workspace));
+                            this.blocklyTextRepresentation.clearSelection();
+                            break;
+                        case "code":
+                            this.textEditor.setValue(dataJson["code"]);
+                            this.textEditor.clearSelection();
+                            break;
+                        case "exercice":
+                            document.getElementById('exerciceText').innerHTML = 
+                                dataJson["exercice"] +
+                                '<br><br><a href="javascript:closeExerciceWindow()" style="float: left; color: lime" id="closeExercice">' + 
+                                this.dictionary['UI']['close'] + 
+                                '</a>';
+                            document.getElementById('exerciceText').style.display = "block";
+                            break;
+                        case "lang":
+                            break;
+                        default:
+                            karelConsoleLog("corruptedSaveFile");
+                            console.log("LoadFromFile warning - unknown save tree [" + key + "]");
+                            break;
+                    }
+                }
+                break;
+            default:
+                karelConsoleLog("internaError");
+                console.log("LoadFromFile error - unsuported mode [" + mode + "]");
+                return;
+        }
+    }
+
+    /**
+     * Triggers the load sequens which checks the current language
+     * to the save language and it tryes to load and translate the loadfile
+     * to the correct currently used language.
+     * @param {JSON} dataJson is the data to be loaded in a JSON format.
+     * @param {string} mode is the loader mode - descibed in `performLoad` function.
+     * @param {workspace} workspace is the blockly workspace
+     */
+    loadSequence(dataJson, mode, workspace){
+        if(dataJson['lang'] != localStorage['language']){
+            var tempDict = this.dictionary;
+            var interpret = this;
+            if(dataJson['lang'] === undefined){
+                karelConsoleLog("corruptedSaveFile");
+                console.log('no lang specified for save');
+                return;
+            }
+            import('./languages/' + dataJson['lang'] + '.js').then((module) => {
+                interpret.dictionary = module.setLang();
+                this.performLoad(dataJson, mode, workspace);
+                var codeArray = interpret.nativeCodeTokenizer(interpret.textEditor, false);
+                interpret.dictionary = tempDict;
+                interpret.textEditor.setValue(interpret.tokensToStringConvertor(interpret.translate(codeArray)));
+                interpret.textEditor.clearSelection();
+            });
+        } else {
+            this.performLoad(dataJson, mode, workspace);
+        }
     }
 
     /**
@@ -1517,91 +1699,24 @@ class interpret{
         var interpret = this;
         document.getElementById('exerciceText').style.display = "none";
         fileReader.onload = function(fileLoadedEvent) 
-        {
-            switch(mode){
-                case "room":
-                    interpret.command.karel.loadRoomWithKarel(JSON.parse(fileLoadedEvent.target.result));
-                    break;
-                case "blockly":
-                    workspace.clear();
-                    interpret.lockBlocklyTextEditor = true;
-                    interpret.blocklyTextRepresentation.setValue(fileLoadedEvent.target.result);
-                    interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation, true));
-                    interpret.lockBlocklyTextEditor = false;
-                    interpret.blocklyTextRepresentation.setValue("");
-                    interpret.blocklyTextRepresentation.setValue(Blockly.Karel.workspaceToCode(workspace));
-                    interpret.blocklyTextRepresentation.clearSelection();
-                    break;
-                case "code":
-                    interpret.textEditor.setValue(fileLoadedEvent.target.result);
-                    interpret.textEditor.clearSelection();
-                    break;
-                case "all":
-                    var dataJson = JSON.parse(fileLoadedEvent.target.result);
-                    interpret.command.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
-                    workspace.clear();
-                    interpret.lockBlocklyTextEditor = true;
-                    interpret.blocklyTextRepresentation.setValue(dataJson["blockly"]);
-                    interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation, true));
-                    interpret.lockBlocklyTextEditor = false;
-                    interpret.textEditor.setValue(dataJson["code"]);
-                    break;
-                case "byFile":
-                    try{
-                        var dataJson = JSON.parse(fileLoadedEvent.target.result);
-                        let result = interpret.checkLoadedFile(dataJson);
-                        if(result !== undefined){
-                            karelConsoleLog("corruptedSaveFile");
-                            console.log("Checking failed at: ",result);
-                            throw "Corrupted save file";
-                        }
-                    }
-                    catch(err){
-                        karelConsoleLog("corruptedSaveFile");
-                        console.log("loadFromFile error - Corupted save file")
-                        return;
-                    }
-                    for(var key in dataJson){
-                        switch(key){
-                            case "karelAndRoom":
-                                interpret.command.karel.loadRoomWithKarel(dataJson["karelAndRoom"]);
-                                break;
-                            case "blockly":
-                                workspace.clear();
-                                interpret.lockBlocklyTextEditor = true;
-                                interpret.blocklyTextRepresentation.setValue(dataJson["blockly"]);
-                                interpret.makeBlocksFromNativeCode(workspace, interpret.nativeCodeTokenizer(interpret.blocklyTextRepresentation, true));
-                                interpret.lockBlocklyTextEditor = false;
-                                interpret.blocklyTextRepresentation.setValue("");
-                                interpret.blocklyTextRepresentation.setValue(Blockly.Karel.workspaceToCode(workspace));
-                                interpret.blocklyTextRepresentation.clearSelection();
-                                break;
-                            case "code":
-                                interpret.textEditor.setValue(dataJson["code"]);
-                                interpret.textEditor.clearSelection();
-                                break;
-                            case "exercice":
-                                document.getElementById('exerciceText').textContent = dataJson["exercice"];
-                                document.getElementById('exerciceText').style.display = "block";
-                                break;
-                            default:
-                                karelConsoleLog("corruptedSaveFile");
-                                console.log("LoadFromFile warning - unknown save tree [" + key + "]");
-                                break;
-                        }
-                    }
-                    break;
-                default:
-                    karelConsoleLog("internaError");
-                    console.log("LoadFromFile error - unsuported mode [" + mode + "]");
-                    return;
-            } 
+        {   
+            var dataJson = JSON.parse(fileLoadedEvent.target.result);
+            interpret.loadSequence(dataJson, mode, workspace);
         };
         try {
             fileReader.readAsText(fileToLoad, "UTF-8");
         } catch(err) {
             karelConsoleLog("noFileToLoad");
       };  
+    }
+    
+    /**
+     * Loader directly from JSON used in server loads.
+     * @param {JSON} dataJson the data file in JSON format.
+     * @param {workspace} workspace blockly workspace
+     */
+    loadFromJSON(dataJson, workspace){
+        this.loadSequence(dataJson, "byFile", workspace);
     }
 
     /**

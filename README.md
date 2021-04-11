@@ -9,12 +9,12 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 19.3.2021**
+**Last update - 11.4.2021**
 
 **English version below**
 ___
 ## Téma projektu
-Cílem projektu je implementovat pedagogický nástroj, které by hravým způsobem seznámil žáky druhých stupňů a nišších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána [této adrese](http://karel.webz.cz/uvodni-strana), kde je i originální verze dostupná a například pomocí emulátoru `DOSBox` spustitelná. Zkráceně aplikace `Robot Karel 3D` umožnuje převzetí kontroly nad robotem v místnosti, a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na předělání originálu do moderního prostředí a zapojit moderní prvky, které jsou dnes již běžnou součástí při vyučování. Detailnější popis vylepnšení níže.
+Cílem projektu je implementovat pedagogický nástroj, které by hravým způsobem seznámil žáky druhých stupňů a nišších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána [této adrese](http://karel.webz.cz/uvodni-strana), kde je i originální verze dostupná a například pomocí emulátoru `DOSBox` spustitelná. Zkráceně aplikace `Robot Karel 3D` umožnuje převzetí kontroly nad robotem v místnosti, a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na přetvoření originálu do moderního prostředí a zapojit moderní prvky, které jsou dnes již běžnou součástí při vyučování. Detailnější popis vylepšení níže.
 
 ## Použité zdroje:
 - [ACE code editor](https://ace.c9.io/)
@@ -63,9 +63,11 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> v plánu mutace do anglického jazyka 
     - <span style="color:green"> implementováno překládání kódu do cizího jazyka
 - ukládání na google disku
-    - v plánu propojení s google účtem
-    - v plánu načítat a ukládat z google disku
+    - <span style="color:red"> v plánu propojení s google účtem
+    - <span style="color:red"> v plánu načítat a ukládat z google disku
+    - <span style="color:green"> implementováno vlastní ukládání a načítání ze serveru
 - kampaň pro začátečníka a seznam příkladů
+    - <span style="color:green"> implementovány první jednoduché příklady pro robota v systému
     - v plánu kampaň s popisem funkcí Karla a základních myšlenek programování
     - v plánu seznam a kontrola příkladů
 - vlastní grafické modely pro místnost
@@ -156,16 +158,16 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku. Apl
 
     V levém horním rohu místnosti se mohou objevovat kontextové bubliny upozorňující na konkrétní stav aplikace. Mohou to být tyto:
         - `Počítadlo` - Pokud je spuštěn program, zobrazuje, kolik iterací interpretu bylo třeba pro vykonání programu udělat. Kliknutím se vymaže
-        - `Ovládáš` - Pokud je místnost aktivována a je možné robota napřímo ovládat, zobrazí se toto upozornění. Po kluknutí na něj se přímý režim vypne.
+        - `Ovládáš` - Pokud je místnost aktivována a je možné robota napřímo ovládat, zobrazí se toto upozornění. Po kliknutí na něj se přímý režim vypne.
         - `Běží` - Pokud je prováděn program, zobrazí se toto upozornění. Po kliknutí na něj se provádění příkazu zastaví (podobně jako klinutím na tlačítko `stop`).
 
 - **Blokový editor**
 
-    Slouží k vytváření kódu pomocí blokového přístupu programování. Pohyb po ploše je možná pomocí myši, včetně přibližování a oddalování, které je dále dostupné pomocí tlačítek v pravém spodním rohu. Tlačítko terče slouží k vystředění blokové pracovní plochy. Pod těmito tlačítky se nachází ikona koše, která zpřístupňuje smazané struktury. Struktury se mažou uchopením a buďto přetažením do toolboxu a nebo právě na tuto ikonu koše.
+    Slouží k vytváření kódu pomocí blokového přístupu programování. Pohyb po ploše je možný pomocí myši, včetně přibližování a oddalování, které je dále dostupné pomocí tlačítek v pravém spodním rohu. Tlačítko terče slouží k vystředění blokové pracovní plochy. Pod těmito tlačítky se nachází ikona koše, která zpřístupňuje smazané struktury. Struktury se mažou uchopením a buďto přetažením do toolboxu a nebo právě na tuto ikonu koše.
 
 - **Textový editor**
 
-    Umožnujě programování robota textovou formou v nativním jazyce Karel. Disponuje jednoduchým autocompletem, který pomáhá při programování a obarvuje syntax jazyka. Spustit kód je možné nakliknutím do prostoru programu, který uživatel chce spustit a kliknutím na tlačítko `Spusť`. Dostupný je také režim krokování, který se spouští podobým způsobem, akorát pomocí tlačítka `Krokuj`. V režimu krokování se vykoná pouze jeden krok programu při každém stisknutí tlačítka krokuj, pokud jsou ale v editoru nastavené breakpointy, vykonávání je zastaveno pouze na nich. Textový editor má na své horní hraně dvě záložky:
+    Umožňuje programování robota textovou formou v nativním jazyce Karel. Disponuje jednoduchým autocompletem, který pomáhá při programování a obarvuje syntax jazyka. Spustit kód je možné nakliknutím do prostoru programu, který uživatel chce spustit a kliknutím na tlačítko `Spusť`. Dostupný je také režim krokování, který se spouští podobým způsobem, akorát pomocí tlačítka `Krokuj`. V režimu krokování se vykoná pouze jeden krok programu při každém stisknutí tlačítka krokuj, pokud jsou ale v editoru nastavené breakpointy, vykonávání je zastaveno pouze na nich. Textový editor má na své horní hraně dvě záložky:
         - `Kód` - textový editor aplikace, kde lze Karlovi psát vlastní kód.
         - `Bloky` - textová reprezentace blokového editoru, nelze do ní psát, ale disponuje všemi ostatními funkcemi regulérního editoru. 
         - `Další možnosti` - Na konci seznamu jsou tři tečky nad sebou, na které když uživatel najede, zpřístupní se následující možnosti:
@@ -173,6 +175,7 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku. Apl
             - `Vymaž Breakpointy` - Vymaže všechny breakpointy v aktuálně zobrazeném editoru.
             - `Napovídání slov` - Lze vypnout nebo zapnout živé napovídání slov.
             - `Automatické odsazování` - Lze vypnout nebo zapnout automatické odsazování kódu.
+            - `Ukazuj pozici` - Lze vypnout nebo zapnout pohyb kurzoru při interetaci.
 
 
 V horním panelu jsou dostupná následující nástroje aplikace:
@@ -183,6 +186,9 @@ V horním panelu jsou dostupná následující nástroje aplikace:
     - `Ulož` - Umožnujě uložit stav aplikace pomocí dialogu.
     - `Načti` - Umožňuje načíst stav aplikace pomocí dialogu.
     - `Nastav okna` - Nastaví výchozí velikosti oken aplikace.
+    - Pokud je uživatel přihlášený v systému, jsou zpřístupněny dvě další položky:
+        - `Ulož na server` - přístupné uložení pozice na server.
+        - `Načti ze serveru` - přístupné načtení pozice ze serveru.
 - **Jazyky** - umoňuje změnu jazyků z nabídky.
 - **Spusť** - spustí vybraný program v textovém editoru v běžném režimu.
 - **Krokuj** - spustí vybraný program v textovém editoru v krokovacím režimu.
@@ -278,8 +284,7 @@ konec
 ## Režim debugování
 Pokud nechceme spouštět celý program v Karlovi najednou, ale chceme program krokovat, využijeme tlačítko "brouka", které interpret spustí v debugovacím režimu. Nyní Karel bude porvádět jeden příkaz na jedno kliknutí debug tlařítka. Pokud je kód příliš dlouhý a nechce se nám proklikávat až do potřebého bodu, je možné do míst vložit breakpoint kliknutím na číslo řádku na levé straně editoru. Poté debugovací rozhraní provede interpretaci do tohoto bodu, zde se zastaví a čeká na opětovné zmáčknutí debug tlačítka pro další postup.
 ## Upozornění
-- Nejedná se o finální produkt a aplikace je pouze v ranné fázi vývoje.
-- Grafika obsahuje placeholder objekty, opravdové modely budou doplněny v budoucnu.
+- Aplikace je sice v pokročilé fázi vývoje, ovšem stále může obsahovat chyby.
 ___
 
 # English Version - Full english descritpion will be added after English language mutation will be implemented properly

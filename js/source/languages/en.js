@@ -41,7 +41,7 @@ export function setLang(){
             "name"              : "name",
             "userDefinedFunc"   : "command",
             "userDefinedCond"   : "condition",
-            "varName"           : "name",
+            "varName"           : "variable name",
         },
         "checkerErrorMessages" : {
             "redefinition": "Redefinition",
@@ -92,7 +92,7 @@ export function setLang(){
         },
         "ACE" : {
             "highlight" : {
-                "entity.name.function" : "function|condition|end",
+                "entity.name.function" : "command|condition|end",
                 "keyword.control" : "if|then|else|\*if|do|\*do|while|\*while|times",
                 "variable.parameter" : "wall|brick|marked|is|not|vacant",
                 "constant.language" : "true|false",
@@ -100,10 +100,10 @@ export function setLang(){
                 "markup.heading" : "global|local"
             },
             "fold" : {
-                "foldStartMarker": /\b(function|condition)\b/,
-                "foldStopMarker": /end /,
+                "foldStartMarker": /\b(command|condition)\b/,
+                "foldStopMarker": /\bend\b/,
                 "indentKeywords": {
-                    "function": 1,
+                    "command": 1,
                     "condition": 1,
                     "end": -1,
                 }
@@ -117,7 +117,7 @@ export function setLang(){
                     "\*do"
                 ],
                 "indentKeywords": {
-                    "function": 1,
+                    "command": 1,
                     "condition": 1,
                     "then": 1,
                     "else": 1,
@@ -142,8 +142,10 @@ export function setLang(){
             "runningIndicator": "Running",
             "ACEeditorToggle": "Toggle ACE",
             "makeBlocks": "Make blocks",
-            "save": "Save",
-            "load": "Load",
+            "saveToPC": "Save to PC",
+            "loadFromPC": "Load from PC",
+            "saveToCloud": "Save to cloud",
+            "loadFromCloud": "Load from cloud",
             "counter": "Counter",
             "textEditorLabel": "Code",
             "blocklyEditorLabel": "Blocks",
@@ -154,6 +156,11 @@ export function setLang(){
             "removeBreakpoints": "Remove breakpoints",
             "autocompleteToggle": "Live autocomplete",
             "autoindentToggle": "Automatic indentation",
+            "loadFromCloud": "Load from server",
+            "saveToCloud": "Save to server",
+            "moveCursor": "Show position",
+            "resetConsole": "Clear console",
+            "close": "close",
             "changeRoomDialog": {
                 "dialogTitle": "Change room dimensions",
                 "dialogText": "Changes room dimensions in X and Y axis. The currenct room will be erased and replaced with the new one with the specified dimensions.",
@@ -162,7 +169,7 @@ export function setLang(){
                 "button": "Change"
             },
             "saveDialog": {
-                "dialogTitle": "Save work",
+                "dialogTitle": "Save work to PC",
                 "dialogText": "Creates and downloads save of the app state. Lower you can select what will be saved.",
                 "roomLabel": "Room",
                 "blocksLabel": "Blocks",
@@ -171,7 +178,7 @@ export function setLang(){
                 "button": "Save"
             },
             "loadDialog": {
-                "dialogTitle": "Load work",
+                "dialogTitle": "Load work from PC",
                 "dialogText": "Loads given file with save position.",
                 "button": "Load"
             },
@@ -181,6 +188,17 @@ export function setLang(){
                 "values": "Value",
                 "scope": "Scope",
                 "level": "Level"
+            },
+            "LoadFromCloudDialog": {
+                "dialogTitle": "Load from server",
+                "dialogText": "You can load positions by clicking on the red text of the save position you want to be loaded.",
+                "noAvalibleSaves": "There are no avalible saves yet"
+            },
+            "SaveToCloudDialog": {
+                "dialogTitle": "Save to server",
+                "dialogText": "Save your position to the cloud. If you choose the same name as any previous save, it will be overwrited.",
+                "saveButton": "Save",
+                "saveComplete": "Save successfuly completed",
             }
         },
         "consoleLogs": {

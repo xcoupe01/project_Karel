@@ -13,7 +13,6 @@ class command{
         this.speed = 120;                       // tells the time for interpet step (from 20 to 520)
         this.speedStep = 10;                    // is the speed incremet step
         this.lastConditionResult = "undef";     // used for user defined condition evaluation
-        this.expectDefinition = {};
         this.math = math;
         this.math.assignCommand(this);
     }
@@ -24,7 +23,6 @@ class command{
     prepareCheck(){
         this.commandList = {};
         this.conditionList = {};
-        this.expectDefinition = {};
     }
 
     /**

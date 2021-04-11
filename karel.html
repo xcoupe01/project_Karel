@@ -27,7 +27,9 @@
                         <a href="javascript:void(0)" id="openChangeRoomDialog"></a>
                         <a href="javascript:void(0)" id="openSaveDialog"></a>
                         <a href="javascript:void(0)" id="openLoadDialog"></a>
-                        <a href="javascript:setDefaultSizes()" id="setWindows"></a>
+                        <a href="javascript:void(0)" id="saveToCloud"></a>
+                        <a href="javascript:void(0)" id="loadFromCloud"></a>
+                        <a href="javascript:setDefaultSizes(); document.querySelector('#setWindows').blur()" id="setWindows"></a>
                     </div>
                 </li>
                 <li class="nav-item">
@@ -49,7 +51,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="index.php" class="nav-link">
                         <img src="img/icon.png" width="32"> &nbsp Karel
                     </a>
                 </li>
@@ -203,8 +205,8 @@
                                 <div class="dashboard-textbox-console" style="width: 100%; height: 8rem; display: none" id="exerciceText"></div>
                                 <div id='homeCameraButton' style='cursor:pointer;'></div>
                                 <div style='cursor:pointer;' onclick="resetView();" id="resetView"></div>
+                                <div id='resetConsole' style='cursor:pointer;'></div>
                                 <div id="showControls" style='cursor:pointer;'></div>
-                                <div id='test' style='cursor:pointer;'>Test</div>
                                 <div class="dashboard-slider" id="speedSetterWrapper">
                                     <div style="width: 100%; min-width: 6.5rem;">
                                         <input type="range" min="1" max="100" value="80" class="slider" id="speedSlider">
@@ -281,6 +283,10 @@
                                     <input type="checkbox" id="autoindentCheckbox" checked="true">
                                     <label id="autoindentLable"></lable>
                                 </a>
+                                <a href="javascript:toggleCheckBox('#interpretMoveCursorCheckbox')">
+                                    <input type="checkbox" id="interpretMoveCursorCheckbox" checked="true">
+                                    <label id="interpretMovesCursorLabel"></label>
+                                </a>
                             </div>
                         </div>
 
@@ -316,8 +322,15 @@
         <script type="module" src="js/main.js"></script>
 
         <script type="text/javascript">
-            var mainSplitSizes = [35,40,25];
-            var roomSplitSizes = [85, 15]
+            var mainSplitSizes; 
+            var roomSplitSizes;
+            if(window.localStorage.getItem("splitSizes") !== null){
+                mainSplitSizes = JSON.parse(window.localStorage.getItem("splitSizes")).mainSplit;
+                roomSplitSizes = JSON.parse(window.localStorage.getItem("splitSizes")).roomSplit;
+            } else {
+                mainSplitSizes = [35, 40, 25];
+                roomSplitSizes = [85, 15]; 
+            }
 
             var mainSplit = Split(['#a','#b','#c'], {
                 gutterSize: 8,
@@ -344,6 +357,7 @@
             function setDefaultSizes(){
                 mainSplitSizes = mainSplit.getSizes();
                 roomSplitSizes = roomSplit.getSizes();
+                window.localStorage.setItem("splitSizes", JSON.stringify({mainSplit: mainSplitSizes, roomSplit: roomSplitSizes}))
                 karelConsoleLog("defaultWindowSizeSet");
             }
 
@@ -385,6 +399,10 @@
                     document.querySelector(id).checked = true;
                 }
                 document.querySelector(id).dispatchEvent(new Event('change'));
+            }
+
+            function closeExerciceWindow(){
+                document.querySelector('#exerciceText').style.display = "none";
             }
         </script>
 
@@ -434,11 +452,31 @@
             <p id="loadText"></p>
             <table>
                 <tr>
-                    <td><input type="file" id="loadFile"></td>
+                    <td><input type="file" accept=".karel" id="loadFile"></td>
                     <td><div id="loadButton" class="button"></div></td>
                 </tr>
             </table>
         </div>
           
+        <div id="LoadFromCloudDialog" title="" style="display: none;">
+            <p id="loadCloudText"></p>
+            <p id="ListFromCloud"></p>
+        </div>
+        
+        <div id="SaveToCloudDialog" title="" style="display: none;">
+            <p id='saveCloudText'></p>
+            <p id="listOfSaves"></p>
+            <p id="SaveToCloud"> 
+            <input type="hidden" id="ssource" name="ssource" value=""><br>
+            <table>
+                <tr>
+                    <td><input type="text" id="slabel" name="slabel" value=""></td>
+                    <td><input type="button" value="" id="saveCloudButton" class="button"></div></td>
+                </tr>
+            </table>
+            <span id="saveCloudResponse"></span>           
+            </p>
+        </div>
+
     </body>
 </html>

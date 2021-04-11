@@ -23,7 +23,7 @@ function start() {
     scene.background = new THREE.Color('gray'); 
 
     var mainKarel = new karel(scene, controls);
-    mainKarel.draw();
+    mainKarel.draw(tryLoad);
     mainKarel.homeCamera(camera);
     var mainInterpret =  new interpret(editor, blocklyReader, mainKarel);
 
@@ -171,6 +171,8 @@ function createBasicToolboxByLang(Interpret){
  * @param firstRun true if we dont want to do translation of code, false otherwise
  */
 function changeLanguage(langFile, firstRun){
+    window.localStorage.setItem('language', langFile);
+    langFile = './source/languages/' + langFile + '.js';
     import(langFile)
     .then((module) => {
         var codeArray;
@@ -209,33 +211,48 @@ function changeLanguage(langFile, firstRun){
         document.querySelector('#controlIndikator').textContent = mainInterpret.dictionary["UI"]["roomFocusIndicator"];
         document.querySelector('#runIndikator').textContent = mainInterpret.dictionary["UI"]["runningIndicator"];  
         document.querySelector('#makeBlocks').text = mainInterpret.dictionary["UI"]["makeBlocks"];
-        document.querySelector('#openSaveDialog').text = mainInterpret.dictionary["UI"]["save"];
-        document.querySelector('#openLoadDialog').text = mainInterpret.dictionary["UI"]["load"];
-        document.querySelector('#resizeRoomDialog').title = mainInterpret.dictionary["UI"]["changeRoomDialog"]["dialogTitle"];
+        document.querySelector('#openSaveDialog').text = mainInterpret.dictionary["UI"]["saveToPC"];
+        document.querySelector('#openLoadDialog').text = mainInterpret.dictionary["UI"]["loadFromPC"];
+        $('#resizeRoomDialog').dialog({title: mainInterpret.dictionary["UI"]["changeRoomDialog"]["dialogTitle"]}).dialog('close');
         document.querySelector('#resizeRoomText').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["dialogText"];
         document.querySelector('#xAxisLabel').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["xAxisLabel"]; 
         document.querySelector('#yAxisLabel').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["yAxisLabel"];
         document.querySelector('#room').textContent = mainInterpret.dictionary["UI"]["changeRoomDialog"]["button"];
-        document.querySelector('#saveDialog').title = mainInterpret.dictionary["UI"]["saveDialog"]["dialogTitle"];
+        $('#SaveDialog').dialog({title: mainInterpret.dictionary["UI"]["saveDialog"]["dialogTitle"]}).dialog('close');
         document.querySelector('#saveText').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["dialogText"];
         document.querySelector('#roomSaveLabel').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["roomLabel"];
         document.querySelector('#blocksSaveLabel').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["blocksLabel"];
         document.querySelector('#codeSaveLabel').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["codeLabel"];
         document.querySelector('#saveName').value = mainInterpret.dictionary["UI"]["saveDialog"]["fileName"];
         document.querySelector('#saveButton').textContent = mainInterpret.dictionary["UI"]["saveDialog"]["button"];
-        document.querySelector('#LoadDialog').title = mainInterpret.dictionary["UI"]["loadDialog"]["dialogTitle"];
+        $('#LoadDialog').dialog({title: mainInterpret.dictionary["UI"]["loadDialog"]["dialogTitle"]}).dialog('close');
         document.querySelector('#loadText').textContent = mainInterpret.dictionary["UI"]["loadDialog"]["dialogText"];
         document.querySelector('#loadButton').textContent = mainInterpret.dictionary["UI"]["loadDialog"]["button"];
         document.querySelector('#showTextCodeTitle').textContent = mainInterpret.dictionary["UI"]["textEditorLabel"];
         document.querySelector('#showBlocklyCodeTitle').textContent = mainInterpret.dictionary["UI"]["blocklyEditorLabel"];
         document.querySelector('#resetView').textContent = mainInterpret.dictionary["UI"]["resetView"];
         document.querySelector('#showControls').textContent = mainInterpret.dictionary["UI"]["showControls"];
+        document.querySelector('#resetConsole').textContent = mainInterpret.dictionary["UI"]["resetConsole"];
         document.querySelector('#setWindows').textContent = mainInterpret.dictionary["UI"]["setWindows"];
         document.querySelector('#speedSetterWrapper').title = mainInterpret.dictionary["UI"]["speed"];
         document.querySelector('#deleteAllBreakpoints').text = mainInterpret.dictionary["UI"]["removeBreakpoints"];
         document.querySelector('#autocompleteLable').textContent = mainInterpret.dictionary["UI"]["autocompleteToggle"];
         document.querySelector('#autoindentLable').textContent = mainInterpret.dictionary["UI"]["autoindentToggle"];
+        document.querySelector('#interpretMovesCursorLabel').textContent = mainInterpret.dictionary["UI"]["moveCursor"];
+        document.querySelector('#loadFromCloud').text = mainInterpret.dictionary["UI"]["loadFromCloud"];
+        document.querySelector('#saveToCloud').text = mainInterpret.dictionary["UI"]["saveToCloud"];
+        $('#LoadFromCloudDialog').dialog({title: mainInterpret.dictionary["UI"]["LoadFromCloudDialog"]["dialogTitle"]}).dialog('close');
+        $('#SaveToCloudDialog').dialog({title: mainInterpret.dictionary["UI"]["SaveToCloudDialog"]["dialogTitle"]}).dialog('close');
+        document.querySelector('#loadCloudText').textContent = mainInterpret.dictionary["UI"]["LoadFromCloudDialog"]["dialogText"];
+        document.querySelector('#saveCloudText').textContent = mainInterpret.dictionary["UI"]["SaveToCloudDialog"]["dialogText"];
+        document.querySelector('#saveCloudButton').value = mainInterpret.dictionary["UI"]["SaveToCloudDialog"]["saveButton"];
+
         mainInterpret.updateVariabeOverview();
+        blocklyUpdateFunction();
+        mainInterpret.lockBlocklyTextEditor = true;
+        workspace.clear();
+        mainInterpret.makeBlocksFromNativeCode(workspace, mainInterpret.nativeCodeTokenizer(mainInterpret.blocklyTextRepresentation, false));
+        mainInterpret.lockBlocklyTextEditor = false;
     });
 }
 
@@ -271,6 +288,57 @@ function manageBreakpoint(e) {
     e.stop();
 }
 
+/** 
+ * This is called after the Karel Graphics is ready and tries to load
+ * example if it is in URL otherwise it does nothing
+ */ 
+function tryLoad() {
+    if (window.location.href.indexOf("?")>0){
+        var priklad=window.location.href.substring(window.location.href.indexOf("?")+1);
+        $.ajax({
+            type: 'GET',
+            url: 'index.php?f=json&prid='+priklad,
+            timeout: 2000,
+            success: function(data) {
+                /* data is a json message */
+                if (typeof data['Err'] !== typeof undefined){
+                    console.log(data['Err']);
+                }else{
+                    mainInterpret.loadFromJSON(data,workspace);
+                }  
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                console.log('Timeout contacting server..');
+            }
+        });
+    } else if(window.localStorage.getItem("onUnload") != "undefined"){
+        mainInterpret.loadFromJSON(JSON.parse(window.localStorage.getItem("onUnload")), workspace);
+    }
+};
+
+function processLoad(slabel){
+    $.ajax({
+        type: 'GET',
+        url: 'index.php?f=json&slabel='+slabel,
+        timeout: 2000,
+        success: function(data) {
+            /* data is a json message */
+            //var data = JSON.parse(data);
+            if (typeof data['Err'] !== typeof undefined){
+                $("#ListFromCloud").html(data['Err']);
+            } else {
+                console.log(data);
+                mainInterpret.loadFromJSON(data,workspace);
+            }  
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            $("#ListFromCloud").html('Timeout contacting server..');
+        }
+    });
+}
+
+/*---------------------------------------------------------------------------*/
+
 // ACE settings - editor
 ace.require("ace/ext/language_tools");
 var editor = ace.edit("textEditor");
@@ -280,6 +348,7 @@ editor.setOptions({
     enableLiveAutocompletion: false,
     mode: 'ace/mode/karel',
     scrollPastEnd: 0.5,
+    fixedWidthGutter: true,
 });
 var autocompleteEnabeled = true;
 editor.setTheme('ace/theme/chrome');
@@ -295,6 +364,7 @@ var blocklyReader = ace.edit("blocklyReader");
 blocklyReader.setOptions({
     mode: 'ace/mode/karel',
     readOnly: true,
+    fixedWidthGutter: true,
 });
 blocklyReader.setTheme('ace/theme/chrome');
 blocklyReader.on("guttermousedown", function (event) {manageBreakpoint (event)});
@@ -340,18 +410,22 @@ Blockly.svgResize(workspace);
 Blockly.onresize=onresize;
 
 // setting block listener
-function myUpdateFunction(event) {
+function blocklyUpdateFunction() {
     if(!mainInterpret.lockBlocklyTextEditor){
         blocklyReader.setValue("");
         blocklyReader.setValue(Blockly.Karel.workspaceToCode(workspace));
         blocklyReader.clearSelection();
     }
 }
-workspace.addChangeListener(myUpdateFunction);
+workspace.addChangeListener(blocklyUpdateFunction);
 
 // setting of language
 var mainInterpret = start();
-changeLanguage('./source/languages/cs.js', true)
+if(window.localStorage.getItem('language') != undefined){
+    changeLanguage(window.localStorage.getItem('language'), true);
+} else {
+    changeLanguage('cs', true);
+}
 
 // setting the blockly image listeners for play
 var runMeFunc = function (eventpat){
@@ -383,8 +457,14 @@ document.querySelector('#loadButton').onclick = function() {
 };
 
 // languages menu
-document.querySelector('#setCzech').onclick = function() {changeLanguage('./source/languages/cs.js', false)};
-document.querySelector('#setEnglish').onclick = function() {changeLanguage('./source/languages/en.js', false)};
+document.querySelector('#setCzech').onclick = function() {
+    changeLanguage('cs', false);
+    document.querySelector('#setCzech').blur();
+};
+document.querySelector('#setEnglish').onclick = function() {
+    changeLanguage('en', false);
+    document.querySelector('#setEnglish').blur();
+};
 
 // navbar items
 document.querySelector('#runCode').onclick = function() {
@@ -408,9 +488,120 @@ document.querySelector('#openChangeRoomDialog').onclick = function() {
     $('#resizeRoomDialog').dialog({width: 400});
     document.getElementById('xVal').value = mainInterpret.command.karel.room.roomDataArray.length;
     document.getElementById('yVal').value = mainInterpret.command.karel.room.roomDataArray[0].length;
+    document.querySelector('#openChangeRoomDialog').blur();
 };
-document.querySelector('#openSaveDialog').onclick = function() {$('#SaveDialog').dialog({width: 400});};
-document.querySelector('#openLoadDialog').onclick = function() {$('#LoadDialog').dialog({width: 400});};
+document.querySelector('#openSaveDialog').onclick = function() {
+    $('#SaveDialog').dialog({width: 400});
+    document.querySelector('#openSaveDialog').blur();
+};
+document.querySelector('#openLoadDialog').onclick = function() {
+    $('#LoadDialog').dialog({width: 400});
+    document.querySelector('#openLoadDialog').blur();
+};
+
+document.querySelector('#loadFromCloud').onclick = function() {
+    function getSavesTable (data){
+        if(data.length > 0){
+            var s='<table style="width: 100%">';
+            for(var i = 0; i < data.length; i++){
+                s += '<tr><td><span id="slabel' + i + '" style="color:red; cursor: pointer">' +
+                data[i]["SLABEL"] + '</span></td><td>' + data[i]["TEXTTIME"] + "</td></tr>";
+            }
+            s += '</table>'
+            $("#ListFromCloud").html(s);
+            for(var i = 0; i < data.length; i++){
+                document.querySelector('#slabel' + i).onclick = function() {
+                processLoad(this.innerHTML);
+                };
+            }
+        } else {
+            $("#ListFromCloud").html(mainInterpret.dictionary["UI"]["LoadFromCloudDialog"]["noAvalibleSaves"])
+        }
+    }
+    $('#LoadFromCloudDialog').dialog({width: 400});
+    $.ajax({
+        type: 'GET',
+        url: 'index.php?f=json',
+        timeout: 2000,
+        success: function(data){  getSavesTable(data);},
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            $("#ListFromCloud").html('Timeout contacting server..');
+        }
+    });
+};
+
+document.querySelector('#saveToCloud').onclick = function() {
+    function getSavesTable (data){
+        if(data.length > 0){
+            var s='<table style="width: 100%">';
+            for(var i = 0; i < data.length; i++){
+                s += '<tr><td><span id="savelabel' + i + '" style="color:blue; cursor: pointer">' +
+                data[i]["SLABEL"] + '</span></td><td>' + data[i]["TEXTTIME"] + "</td></tr>";
+            }
+            s += '</table>'
+            $("#listOfSaves").html(s);
+            for(var i = 0; i < data.length; i++){
+                document.querySelector('#savelabel' + i).onclick = function() {
+                    document.querySelector('#slabel').value = (this.innerHTML);
+                };
+            }
+        } else {
+            $("#listOfSaves").html(mainInterpret.dictionary["UI"]["LoadFromCloudDialog"]["noAvalibleSaves"])
+        }
+    }
+    $.ajax({
+        type: 'GET',
+        url: 'index.php?f=json',
+        timeout: 2000,
+        success: function(data){  getSavesTable(data);},
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            $("#listOfSaves").html('Timeout contacting server..');
+        }
+    });
+    $('#SaveToCloudDialog').dialog({width: 400});
+    /* fill the hidden input with the JSON to store*/
+    var saveJson = {};
+    saveJson["karelAndRoom"] = mainInterpret.command.karel.saveRoomWithKarel();
+    saveJson["blockly"] = Blockly.Karel.workspaceToCode(workspace);
+    saveJson["code"] = mainInterpret.textEditor.getValue();
+    saveJson["lang"] = localStorage['language'];
+    $('#ssource').val(JSON.stringify(saveJson)); 
+};
+
+document.querySelector('#saveCloudButton').onclick=function(){
+    /* lets post the data to the server */
+    fetch("index.php?f=json&slabel=" + $('#slabel').val() + '&store=1', {
+            method: "POST", 
+            body: $('#ssource').val()
+        }).then(res => {
+            $('#saveCloudResponse').html(mainInterpret.dictionary["UI"]["SaveToCloudDialog"]["saveComplete"]);
+            function getSavesTable (data){   
+                var s='<table style="width: 100%">';
+                for(var i = 0; i < data.length; i++){
+                    s += '<tr><td><span id="savelabel' + i + '" style="color:blue; cursor: pointer">' +
+                    data[i]["SLABEL"] + '</span></td><td>' + data[i]["TEXTTIME"] + "</td></tr>";
+                }
+                s += '</table>'
+                $("#listOfSaves").html(s);
+                for(var i = 0; i < data.length; i++){
+                    document.querySelector('#savelabel' + i).onclick = function() {
+                        document.querySelector('#slabel').value = (this.innerHTML);
+                    };
+                }
+            }
+            $.ajax({
+                type: 'GET',
+                url: 'index.php?f=json',
+                timeout: 2000,
+                success: function(data){  getSavesTable(data);},
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $("#ListFromCloud").html('Timeout contacting server..');
+                }
+            });
+            document.querySelector('#slabel').value = "";
+        }
+    );
+};
 
 // quick status bar
 document.querySelector('#homeCameraButton').onclick = function() {mainInterpret.command.karel.homeCamera()};
@@ -490,7 +681,6 @@ document.querySelector('#showBlocklyCode').onclick = function(){
 };
 
 // code settings
-
 document.querySelector('#makeBlocks').onclick = function() {mainInterpret.textToBlocklyConvertor(workspace)};
 document.querySelector('#deleteAllBreakpoints').onclick = function() {
     if(document.querySelector('#textEditor').style.display == "block"){
@@ -513,12 +703,36 @@ document.querySelector('#autoindentCheckbox').addEventListener('change', functio
         editor.session.$mode.indentationHelperOn = false;
     }
 });
+document.querySelector('#interpretMoveCursorCheckbox').addEventListener('change', function (event){
+    if(event.currentTarget.checked){
+        mainInterpret.moveCursor = true;
+    } else {
+        mainInterpret.moveCursor = false;
+    }
+});
 
 // room overlay
 document.querySelector('#counterDisplay').onclick = function() {mainInterpret.resetCounter()};
 document.querySelector('#runIndikator').onclick = function() {mainInterpret.turnOffInterpret()};
 
-document.querySelector('#test').onclick = function() {
-    console.log(mainInterpret.syntaxCheck(editor));
-    console.log(mainInterpret.math);
-};
+document.querySelector('#resetConsole').onclick = function() {document.querySelector('#console').innerHTML = ""};
+
+window.onbeforeunload = function(){
+    window.localStorage.setItem("onUnload", JSON.stringify(mainInterpret.createSaveFileText("all", workspace)));
+}
+
+
+$.ajax({
+        type: 'GET',
+        url: 'index.php?f=json&__ACCOUNT=1',
+        timeout: 2000,
+        success: function(data) {
+           if(data['Account'] == ''){
+             document.querySelector('#loadFromCloud').style.display='none';
+             document.querySelector('#saveToCloud').style.display='none';
+           }
+        }
+    }
+);        
+
+

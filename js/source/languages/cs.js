@@ -34,14 +34,14 @@ export function setLang(){
         },
         "blocklyCategory" : {
             "base"            : "Základ",
-            "functions"       : "Funkce",
+            "functions"       : "Příkazy",
             "progFlow"        : "Řízení toku",
             "condition"       : "Podmínky",
             "math"            : "Matematika",
             "name"            : "nazev",
-            "userDefinedFunc" : "funkce",
+            "userDefinedFunc" : "příkaz",
             "userDefinedCond" : "podminka",
-            "varName"         : "nazev",
+            "varName"         : "nazev promenne",
         },
         "checkerErrorMessages" : {
             "redefinition": "Redefinice",
@@ -142,8 +142,10 @@ export function setLang(){
             "runningIndicator": "Běží",
             "ACEeditorToggle": "Změň ACE",
             "makeBlocks": "Vytvoř bloky",
-            "save": "Ulož",
-            "load": "Načti",
+            "saveToPC": "Ulož do PC",
+            "loadFromPC": "Načti z PC",
+            "saveToCloud": "Ulož na server",
+            "loadFromCloud": "Načti ze serveru",
             "counter": "Počítadlo",
             "textEditorLabel": "Kód",
             "blocklyEditorLabel": "Bloky",
@@ -154,6 +156,11 @@ export function setLang(){
             "removeBreakpoints": "Vymaž breakpointy",
             "autocompleteToggle": "Napovídání slov",
             "autoindentToggle": "Automatické odsazování",
+            "loadFromCloud": "Načti ze serveru",
+            "saveToCloud": "Ulož na server",
+            "moveCursor": "Ukazuj pozici",
+            "resetConsole": "Smaž konzoli",
+            "close": "zavři",
             "changeRoomDialog": {
                 "dialogTitle": "Změň rozměry místnosti",
                 "dialogText": "Umožňuje změnu rozměrů místnosti. Níže zadejte požadované rozměry místnosti v ose X a ose Y, Tlačítkem 'Změň' bude současná místnost smazána a vytvořena nová se zadanými rozměry.",
@@ -162,8 +169,8 @@ export function setLang(){
                 "button": "Změň"
             },
             "saveDialog": {
-                "dialogTitle": "Ulož práci",
-                "dialogText": "Uloží současný stav aplikace. Níže můžete zvolit, co vše bude uloženo a vybrat název souboru. Po kliknutí na tlačítko 'Ulož' bude tento sobor uložen do počítače.",
+                "dialogTitle": "Ulož práci do PC",
+                "dialogText": "Uloží současný stav aplikace do počítače. Níže můžete zvolit, co vše bude uloženo a vybrat název souboru. Po kliknutí na tlačítko 'Ulož' bude tento sobor uložen do počítače.",
                 "roomLabel": "Místnost",
                 "blocksLabel": "Bloky",
                 "codeLabel": "Kód",
@@ -171,8 +178,8 @@ export function setLang(){
                 "button": "Ulož"
             },
             "loadDialog": {
-                "dialogTitle": "Načti práci",
-                "dialogText": "Provede načtení zadaného souboru pro načtení uložené pozice.",
+                "dialogTitle": "Načti práci z PC",
+                "dialogText": "Provede načtení zadaného souboru pro načtení uložené pozice z počítače.",
                 "button": "Načti"
             },
             "varTable": {
@@ -181,6 +188,17 @@ export function setLang(){
                 "values": "Hodnota",
                 "scope": "Působnost",
                 "level": "Zanoření"
+            },
+            "LoadFromCloudDialog": {
+                "dialogTitle": "Načti ze serveru",
+                "dialogText": "Provede načtení pozice ze serveru, níže je seznam tvých uložených pozic. Klinknutím na červený text uložení se načte pozice.",
+                "noAvalibleSaves": "Nebyly nalezeny žádné uložené pozice"
+            },
+            "SaveToCloudDialog": {
+                "dialogTitle": "Ulož na server",
+                "dialogText": "Ulož svoji pozici na server. Níže je seznam tvých uložených pozic, Pokud uložís pozici pod stejným návzvem jako je již některá uložená pozice, bude přepsána.",
+                "saveButton": "Ulož",
+                "saveComplete": "Uložení se zdařilo",
             }
         },
         "consoleLogs": {
