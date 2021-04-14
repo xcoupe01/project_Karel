@@ -9,12 +9,12 @@
 Projekt je dostupný na http://smallm.cz/karel2/ !!
 
 
-**Last update - 11.4.2021**
+**Last update - 14.4.2021**
 
 **English version below**
 ___
 ## Téma projektu
-Cílem projektu je implementovat pedagogický nástroj, které by hravým způsobem seznámil žáky druhých stupňů a nišších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána [této adrese](http://karel.webz.cz/uvodni-strana), kde je i originální verze dostupná a například pomocí emulátoru `DOSBox` spustitelná. Zkráceně aplikace `Robot Karel 3D` umožnuje převzetí kontroly nad robotem v místnosti, a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na přetvoření originálu do moderního prostředí a zapojit moderní prvky, které jsou dnes již běžnou součástí při vyučování. Detailnější popis vylepšení níže.
+Cílem projektu je implementovat pedagogický nástroj, které by hravým způsobem seznámil žáky druhých stupňů a nižších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána [této adrese](http://karel.webz.cz/uvodni-strana), kde je i originální verze dostupná a například pomocí emulátoru `DOSBox` spustitelná. Zkráceně aplikace `Robot Karel 3D` umožňuje převzetí kontroly nad robotem v místnosti, a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na přetvoření originálu do moderního prostředí a zapojit moderní prvky, které jsou dnes již běžnou součástí při vyučování. Detailnější popis vylepšení níže.
 
 ## Použité zdroje:
 - [ACE code editor](https://ace.c9.io/)
@@ -32,7 +32,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> implementováno pomocí ACE.js   
     - <span style="color:green"> implementováno podbarvování textu 
     - <span style="color:green"> implementováno automatické zalamování textu 
-    - <span style="color:green"> implementováno ukaládání a načítání kódu ze souboru 
+    - <span style="color:green"> implementováno ukládání a načítání kódu ze souboru 
     - <span style="color:green"> opraveny funkce z knihovny ACE 
 - blokový editor kódu
     - <span style="color:green"> implementováno pomocí Blockly.js 
@@ -49,7 +49,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> jednoduchý debugger (možná breakpointy s ACE) 
 - uživatelsky dostupné modifikace místnosti
     - <span style="color:green"> implementováno nastavení rozměrů místnosti 
-    - <span style="color:green"> implementováno ukládání a načítání místosti ze souboru 
+    - <span style="color:green"> implementováno ukládání a načítání místnosti ze souboru 
 - mutace jazyka Karel
     - mutace programovacího jazyka karel do podoby C lang
     - mutace programovacího jazyka karel do podoby Python
@@ -57,7 +57,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:green"> navrženy proměnné v jazyku 
     - <span style="color:green"> implementovány jednoduché operace s čísly 
     - <span style="color:green"> implementovány lokální a globální proměnné v jazyku 
-    - <span style="color:green"> implementován jednoduchá přehled dostupných promenných 
+    - <span style="color:green"> implementován jednoduchá přehled dostupných proměnných 
 - jazykové mutace
     - <span style="color:green"> implementováno pomocí js lang file 
     - <span style="color:green"> v plánu mutace do anglického jazyka 
@@ -80,7 +80,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
     - <span style="color:red"> v plánu různá témata - nejde, není podporováno blockly
 
 ## Spuštění
-Je potřeba spouštět přes lokální server, nejlépe v adresáři projektu spustit server pomocí PHP například přes command `php -S 127.0.0.1:8080` a prozatím je potřeba mít dostupný internet pro stuštění. Je možno spouštět buď `index.html`, který poskytuje kompletně funkční aplikaci, nebo `index.php`, kde se do aplikace navíc automaticky donačtou jednoduché testovací příkazy z `saves/initial_test_save.txt`.
+Je potřeba spouštět přes lokální server, nejlépe v adresáři projektu spustit server pomocí PHP například přes command `php -S 127.0.0.1:8080` a prozatím je potřeba mít dostupný internet pro spuštění. Na adrese se spustí nejprve informační systém aplikace, odkud jsou přístupné příklady, návody a podobně. Kliknutím na tlačítko `Programuj` se dostanete do aplikace.
 
 ## Popis kódového programování
 Kód pište do nejpravějšího ze tří zobrazených oken - `Editor kódu`. Dostupné kódové programování obsahuje všechny originální příkazy z aplikace `Robot Karel 3D`, jmenovitě to jsou příkazy:
@@ -95,7 +95,7 @@ Kód pište do nejpravějšího ze tří zobrazených oken - `Editor kódu`. Dos
 - `pomalu` - Sníží rychlost robota o 10 ms - posune s posuvníkem rychlosti
 - `pip` - robot přehraje upozornění
 
-Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly.Tyto příkazy lze různě podle potřeby skládat zasebe jako v každém jiném programovacím jazyku, je ale potřeba, **aby na každém řádku byl pouze jeden příkaz**. Příkazy lze vkládat i do strukrur jako jsou:
+Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly.Tyto příkazy lze různě podle potřeby skládat za sebe jako v každém jiném programovacím jazyku, je ale potřeba, **aby na každém řádku byl pouze jeden příkaz**. Příkazy lze vkládat i do struktur jako jsou:
 - `udelej` - struktura, která vykoná daný kód N krát. 
     ```
     udelej [N] krat
@@ -118,7 +118,7 @@ Karel může vylézt pouze na políčko s maximálním převýšením jedné cih
     *kdyz
     ```
 Dále je zapotřebí tvořit vlastní bolky kódu ohraničené těmito způsoby:
-- vytvoření příkazu - je možno vytvořit vlastní příkaz, kterému je nutno přidělit vlastní název nekolidující s jinýmy příkazy (jak vestavěnými tak uživatelsky vytvořenými). Příkaz je pak možné volat v dalších příkazech. 
+- vytvoření příkazu - je možno vytvořit vlastní příkaz, kterému je nutno přidělit vlastní název nekolidující s jinými příkazy (jak vestavěnými tak uživatelsky vytvořenými). Příkaz je pak možné volat v dalších příkazech. 
     ```
     prikaz [nazev]
         [prikazy]
@@ -142,7 +142,7 @@ Pokud je při interpretaci jazyka nalezen nějaký problém, aplikace o tom info
 Blokové programování je syntakticky velmi podobné (ne-li stejné) jako textové programování. Bloky jsou schovány pod svými kategoriemi a funkčností přímo korespondují na textovou reprezentaci. Pro spuštění bloku klikněte na tlačítko, u bloku uvozující příkaz (tlačítko run). Pokud by bylo zapotřebí spouštět blok v nějakém dalším bloku, využijte blok z nabídky `Funkce`, tedy ze zelené sekce, s popiskem `Funkce` a do textového pole vložte název požadovaného bloku. Tím se ze jmenovaného bloku stane podprogram aktuálního bloku. Podobně funguje i volání uživatelských podmínek, ovšem vyberte podobný blok ze sekce `Podmínky`. 
 
 ## Popis UI
-Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku. Aplikace umožňuje horizontálně přizpůsobovat, kolik který prvek na ploše zabírá pomocí táhel mezi prvky.
+Jednotlivé prvky se aktivují kliknutím myší do prostotu daného prvku. Aplikace umožňuje horizontálně přizpůsobovat, kolik který prvek na ploše zabírá pomocí táhel mezi prvky.
 
 - **Místnost s robotem**
 
@@ -158,8 +158,8 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku. Apl
 
     V levém horním rohu místnosti se mohou objevovat kontextové bubliny upozorňující na konkrétní stav aplikace. Mohou to být tyto:
         - `Počítadlo` - Pokud je spuštěn program, zobrazuje, kolik iterací interpretu bylo třeba pro vykonání programu udělat. Kliknutím se vymaže
-        - `Ovládáš` - Pokud je místnost aktivována a je možné robota napřímo ovládat, zobrazí se toto upozornění. Po kliknutí na něj se přímý režim vypne.
-        - `Běží` - Pokud je prováděn program, zobrazí se toto upozornění. Po kliknutí na něj se provádění příkazu zastaví (podobně jako klinutím na tlačítko `stop`).
+        - `Ovládáš` - Pokud je místnost aktivována a je možné robota na přímo ovládat, zobrazí se toto upozornění. Po kliknutí na něj se přímý režim vypne.
+        - `Běží` - Pokud je prováděn program, zobrazí se toto upozornění. Po kliknutí na něj se provádění příkazu zastaví (podobně jako kliknutím na tlačítko `stop`).
 
 - **Blokový editor**
 
@@ -167,7 +167,7 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku. Apl
 
 - **Textový editor**
 
-    Umožňuje programování robota textovou formou v nativním jazyce Karel. Disponuje jednoduchým autocompletem, který pomáhá při programování a obarvuje syntax jazyka. Spustit kód je možné nakliknutím do prostoru programu, který uživatel chce spustit a kliknutím na tlačítko `Spusť`. Dostupný je také režim krokování, který se spouští podobým způsobem, akorát pomocí tlačítka `Krokuj`. V režimu krokování se vykoná pouze jeden krok programu při každém stisknutí tlačítka krokuj, pokud jsou ale v editoru nastavené breakpointy, vykonávání je zastaveno pouze na nich. Textový editor má na své horní hraně dvě záložky:
+    Umožňuje programování robota textovou formou v nativním jazyce Karel. Disponuje jednoduchým autocompletem, který pomáhá při programování a obarvuje syntax jazyka. Spustit kód je možné na kliknutím do prostoru programu, který uživatel chce spustit a kliknutím na tlačítko `Spusť`. Dostupný je také režim krokování, který se spouští podobným způsobem, akorát pomocí tlačítka `Krokuj`. V režimu krokování se vykoná pouze jeden krok programu při každém stisknutí tlačítka krokuj, pokud jsou ale v editoru nastavené breakpointy, vykonávání je zastaveno pouze na nich. Textový editor má na své horní hraně dvě záložky:
         - `Kód` - textový editor aplikace, kde lze Karlovi psát vlastní kód.
         - `Bloky` - textová reprezentace blokového editoru, nelze do ní psát, ale disponuje všemi ostatními funkcemi regulérního editoru. 
         - `Další možnosti` - Na konci seznamu jsou tři tečky nad sebou, na které když uživatel najede, zpřístupní se následující možnosti:
@@ -175,7 +175,7 @@ Jednotlivé prvky se aktivují klíknutím myší do prostotu daného prvku. Apl
             - `Vymaž Breakpointy` - Vymaže všechny breakpointy v aktuálně zobrazeném editoru.
             - `Napovídání slov` - Lze vypnout nebo zapnout živé napovídání slov.
             - `Automatické odsazování` - Lze vypnout nebo zapnout automatické odsazování kódu.
-            - `Ukazuj pozici` - Lze vypnout nebo zapnout pohyb kurzoru při interetaci.
+            - `Ukazuj pozici` - Lze vypnout nebo zapnout pohyb kurzoru při interpretaci.
 
 
 V horním panelu jsou dostupná následující nástroje aplikace:
@@ -183,20 +183,20 @@ V horním panelu jsou dostupná následující nástroje aplikace:
 
     Hlavní menu aplikace, obsahuje následující položky:
     - `Změň místnost` - Umožňuje pomocí dialogu změnit rozměry místnosti.
-    - `Ulož` - Umožnujě uložit stav aplikace pomocí dialogu.
+    - `Ulož` - Umožňuje uložit stav aplikace pomocí dialogu.
     - `Načti` - Umožňuje načíst stav aplikace pomocí dialogu.
     - `Nastav okna` - Nastaví výchozí velikosti oken aplikace.
     - Pokud je uživatel přihlášený v systému, jsou zpřístupněny dvě další položky:
         - `Ulož na server` - přístupné uložení pozice na server.
         - `Načti ze serveru` - přístupné načtení pozice ze serveru.
-- **Jazyky** - umoňuje změnu jazyků z nabídky.
+- **Jazyky** - umožňuje změnu jazyků z nabídky.
 - **Spusť** - spustí vybraný program v textovém editoru v běžném režimu.
 - **Krokuj** - spustí vybraný program v textovém editoru v krokovacím režimu.
 - **Zastav** - zastaví jakýkoliv probíhající program.
 
 - **Rychlý přístup**
     - Rychlý přístup je dostupný pod místností s robotem, jedná se o jednoduchou sadu nástrojů, které usnadňují práci s aplikací a jednoznačně a rychle dávají najevo aktuální stav aplikace. Mezi prvky patří:
-        - `Reset kamery` - Vrátí kameru místosti na základní pozici.
+        - `Reset kamery` - Vrátí kameru místnosti na základní pozici.
         - `Reset oken` - Vrátí velikosti oken aplikace do výchozího nastavení. 
         - `Ovládání` - Zobrazí tlačítka pro přímé ovládání robota.
         - `Test` - Interní testovací tlačítko.
@@ -204,7 +204,7 @@ V horním panelu jsou dostupná následující nástroje aplikace:
         - `Konzole` - Zde robot vypisuje hlášení o svém aktuálním stavu, nejčastěji chybová hlášení.
         - `Proměnné` - Zde robot vypisuje všechny definované proměnné a jejich hodnoty.
 
-    - Po kliknutí na tlačítko `Ovládání` se na vrcholu tohoto okna zobrazí tlačítka pro přímé ovládání robota potřebná napříkald pro dotyková zařízení. Tyto tlačítka jsou z leva do prava následující:
+    - Po kliknutí na tlačítko `Ovládání` se na vrcholu tohoto okna zobrazí tlačítka pro přímé ovládání robota potřebná například pro dotyková zařízení. Tyto tlačítka jsou z leva doprava následující:
         - `Vlevo` pro otočení vlevo 
         - `Krok` pro krok vpřed
         - `Vpravo` pro otočení vpravo
@@ -225,20 +225,20 @@ Do proměnných lze ukládat celočíselné kladné i záporné hodnoty definova
 - `>` - větší než
 - `>=` - větší nebo rovno něž
 - `<` - menší než
-- `<=` - menší nebo rono než
+- `<=` - menší nebo rovno než
 - `==` - rovno
 - `!=` - není rovno
 
 Karel rozumí i uzávorkování výrazů pomocí jednoduchých závorek `(` a `)`.
 - příklad validní konstrukce : `8 * (4 - promenna2)`
 
-Hodnoty těchto výrazů lze poté ukládat do definovaných proměnných. Karel nabízí proměnné dvojího typu - globální a lokální. Globální proměnné je třeba poprvé definovat na úrovni definice příkazů a podmínek následujícím syntaxem:
+Hodnoty těchto výrazů lze poté ukládat do definovaných proměnných. Karel nabízí proměnné dvojího typu - globální a lokální. Globální proměnné je třeba poprvé definovat na úrovni definice příkazů a podmínek následujícím syntaxí:
 
 ```
 globalni promenna mojePromenna = 2
 ```
 
-Následně je možné do ní jakkolv stejným syntaxem zapisovat. Druhé klíčové slovo `promenna` je zde nepovinné, avšak díky němu je zakázáno definovat proměnné s tímto názvem (názvy se nesmí shodovat s klíčovými slovy jazyka, ani s názvem jakéhokoliv příkazu, či podmínky). Dále lze podobně v příkazech či podmínkách definovat lokální proměnná:
+Následně je možné do ní jakkoliv stejnou syntaxí zapisovat. Druhé klíčové slovo `promenna` je zde nepovinné, avšak díky němu je zakázáno definovat proměnné s tímto názvem (názvy se nesmí shodovat s klíčovými slovy jazyka, ani s názvem jakéhokoliv příkazu, či podmínky). Dále lze podobně v příkazech či podmínkách definovat lokální proměnná:
 
 ```
 lokalni promena mojeLokProm = 4
@@ -282,12 +282,12 @@ prikaz pulka_lok
 konec
 ```
 ## Režim debugování
-Pokud nechceme spouštět celý program v Karlovi najednou, ale chceme program krokovat, využijeme tlačítko "brouka", které interpret spustí v debugovacím režimu. Nyní Karel bude porvádět jeden příkaz na jedno kliknutí debug tlařítka. Pokud je kód příliš dlouhý a nechce se nám proklikávat až do potřebého bodu, je možné do míst vložit breakpoint kliknutím na číslo řádku na levé straně editoru. Poté debugovací rozhraní provede interpretaci do tohoto bodu, zde se zastaví a čeká na opětovné zmáčknutí debug tlačítka pro další postup.
+Pokud nechceme spouštět celý program v Karlovi najednou, ale chceme program krokovat, využijeme tlačítko "brouka", které interpret spustí v debugovacím režimu. Nyní Karel bude provádět jeden příkaz na jedno kliknutí debug tlačítka. Pokud je kód příliš dlouhý a nechce se nám proklikávat až do potřebného bodu, je možné do míst vložit breakpoint kliknutím na číslo řádku na levé straně editoru. Poté debugovací rozhraní provede interpretaci do tohoto bodu, zde se zastaví a čeká na opětovné zmáčknutí debug tlačítka pro další postup.
 ## Upozornění
 - Aplikace je sice v pokročilé fázi vývoje, ovšem stále může obsahovat chyby.
 ___
 
-# English Version - Full english descritpion will be added after English language mutation will be implemented properly
+# English Version - Full english description will be added after English language mutation will be implemented properly
 
 ## Subject of this project
 

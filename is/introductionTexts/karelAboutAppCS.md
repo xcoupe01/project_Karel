@@ -1,7 +1,7 @@
 ## O aplikaci
 
 ### Téma projektu
-Cílem projektu je implementovat pedagogický nástroj, které by hravým způsobem seznámil žáky druhých stupňů a nišších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána [této adrese](http://karel.webz.cz/uvodni-strana), kde je i originální verze dostupná a například pomocí emulátoru `DOSBox` spustitelná. Zkráceně aplikace `Robot Karel 3D` umožnuje převzetí kontroly nad robotem v místnosti, a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na přetvoření originálu do moderního prostředí a zapojit moderní prvky, které jsou dnes již běžnou součástí při vyučování. Detailnější popis vylepšení níže.
+Cílem projektu je implementovat pedagogický nástroj, které by hravým způsobem seznámil žáky druhých stupňů a nižších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána [této adrese](http://karel.webz.cz/uvodni-strana), kde je i originální verze dostupná a například pomocí emulátoru `DOSBox` spustitelná. Zkráceně aplikace `Robot Karel 3D` umožňuje převzetí kontroly nad robotem v místnosti, a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na přetvoření originálu do moderního prostředí a zapojit moderní prvky, které jsou dnes již běžnou součástí při vyučování. Detailnější popis vylepšení níže.
 
 ### Použité zdroje:
 - [ACE code editor](https://ace.c9.io/)
@@ -25,7 +25,7 @@ Kód pište do nejpravějšího ze tří zobrazených oken - `Editor kódu`. Dos
 - `pomalu` - Sníží rychlost robota o 10 ms - posune s posuvníkem rychlosti
 - `pip` - robot přehraje upozornění
 
-Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly.Tyto příkazy lze různě podle potřeby skládat zasebe jako v každém jiném programovacím jazyku, je ale potřeba, **aby na každém řádku byl pouze jeden příkaz**. Příkazy lze vkládat i do strukrur jako jsou:
+Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly.Tyto příkazy lze různě podle potřeby skládat za sebe jako v každém jiném programovacím jazyku, je ale potřeba, **aby na každém řádku byl pouze jeden příkaz**. Příkazy lze vkládat i do struktur jako jsou:
 - `udelej` - struktura, která vykoná daný kód N krát. 
     ```
     udelej [N] krat
@@ -48,7 +48,7 @@ Karel může vylézt pouze na políčko s maximálním převýšením jedné cih
     *kdyz
     ```
 Dále je zapotřebí tvořit vlastní bolky kódu ohraničené těmito způsoby:
-- vytvoření příkazu - je možno vytvořit vlastní příkaz, kterému je nutno přidělit vlastní název nekolidující s jinýmy příkazy (jak vestavěnými tak uživatelsky vytvořenými). Příkaz je pak možné volat v dalších příkazech. 
+- vytvoření příkazu - je možno vytvořit vlastní příkaz, kterému je nutno přidělit vlastní název nekolidující s jinými příkazy (jak vestavěnými tak uživatelsky vytvořenými). Příkaz je pak možné volat v dalších příkazech. 
     ```
     prikaz [nazev]
         [prikazy]
@@ -83,14 +83,14 @@ Do proměnných lze ukládat celočíselné kladné i záporné hodnoty definova
 - `>` - větší než
 - `>=` - větší nebo rovno něž
 - `<` - menší než
-- `<=` - menší nebo rono než
+- `<=` - menší nebo rovno než
 - `==` - rovno
 - `!=` - není rovno
 
 Karel rozumí i uzávorkování výrazů pomocí jednoduchých závorek `(` a `)`.
 - příklad validní konstrukce : `8 * (4 - promenna2)`
 
-Hodnoty těchto výrazů lze poté ukládat do definovaných proměnných. Karel nabízí proměnné dvojího typu - globální a lokální. Globální proměnné je třeba poprvé definovat na úrovni definice příkazů a podmínek následujícím syntaxem:
+Hodnoty těchto výrazů lze poté ukládat do definovaných proměnných. Karel nabízí proměnné dvojího typu - globální a lokální. Globální proměnné je třeba poprvé definovat na úrovni definice příkazů a podmínek následujícím syntaxí:
 
 ```
 globalni promenna mojePromenna = 2

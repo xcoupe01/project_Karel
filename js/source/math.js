@@ -18,7 +18,7 @@ class math{
     }
 
     /**
-     * Assings command object.
+     * Assigns command object.
      * @param {command} command is the command object to be assigned.
      */
     assignCommand(command){
@@ -88,8 +88,8 @@ class math{
     }
 
     /**
-     * ACE sometimes produces tokens that are expresion but presented as identifiers (like "((+").
-     * This function can tell the diference between those tokes which should be expressions and the ones that souldnt.
+     * ACE sometimes produces tokens that are expression but presented as identifiers (like "((+").
+     * This function can tell the difference between those tokes which should be expressions and the ones that shouldn't.
      * This function takes the code array and the list of operators we want to be recognized, repairs the code array and
      * tells if the repair was done.
      * @param {codeArray} codeArray is the code array that contains the bad tokens.
@@ -134,8 +134,8 @@ class math{
 
     /**
      * Loads expression and from code array and returns information about it.
-     * This function assumes that there is a expression in begining of code array, the
-     * expression is shifted from the array and the colected information about the 
+     * This function assumes that there is a expression in beginning of code array, the
+     * expression is shifted from the array and the collected information about the 
      * expression is returned in the output object.
      * Return object contains:
      *  - expressionArray - array of tokens that belong to the current expression.
@@ -200,9 +200,9 @@ class math{
      * in to special token that will be pushed to the original spot of the expression in the code array.
      * This special token contains all the expression tokens, its expression tree, expression type and where the 
      * outcome should be saved.
-     * @param {codeArray} codeArray is the code array on whichs top, there is the expression
+     * @param {codeArray} codeArray is the code array on which top, there is the expression
      * @param {array} errors array of errors to be processed. 
-     * @param {distionary} dictionary aplication dictionary used to determine error texts.
+     * @param {dictionary} dictionary application dictionary used to determine error texts.
      * @param {boolean} strict tells the mode of the expression loader function above.
      * @returns false if any error is found, true otherwise.
      */
@@ -214,8 +214,8 @@ class math{
         //console.log("codeArray: ",codeArray.slice(), " expression Array: ", expressionArray.slice(), " assignNum: ", assignNum);
 
         let table = [
-        /*    predical        *    +    <   num                */
-        /*     table          /    -   <=   var   (    )    $  */
+        /*                    *    +    <   num                */
+        /*                    /    -   <=   var   (    )    $  */
         /*                   ...  ...  ...                     */
         /* *, / ...     */  [">", ">", ">", "<", "<", ">", ">"],
         /* +, -         */  ["<", ">", ">", "<", "<", ">", ">"],
@@ -245,7 +245,7 @@ class math{
 
         /**
          * Tells the index in the table by token.
-         * @param {token} token is the token we wnat to know the index to the PSA table of.
+         * @param {token} token is the token we want to know the index to the PSA table of.
          * @returns index to the PSA table for the token.
          */
         function getTableIndexByToken(token){
@@ -274,7 +274,7 @@ class math{
                 case "$":
                     return 6;
                 default:
-                    karelConsoleLog("internaError");
+                    karelConsoleLog("internalError");
                     console.log(token)
                     throw "Unknown expression token";
             }
@@ -300,21 +300,21 @@ class math{
          */
         function getStackRuleClosure(stack){
             var stackRule = [];
-            var popedTokens = [];
+            var poppedTokens = [];
             var rule = "";
             while(!(stack[stack.length - 1].psaMeaning == "<" && !stack[stack.length - 1].psaTerminal) && stack[stack.length - 1].psaMeaning != "$"){
                 stackRule.push(stack[stack.length - 1].psaMeaning);
-                popedTokens.push(stack.pop());
+                poppedTokens.push(stack.pop());
             }
             if(stack[stack.length - 1].psaMeaning == "<" && !stack[stack.length - 1].psaTerminal){
                 stack.pop();
             }
             stackRule = stackRule.reverse();
-            popedTokens = popedTokens.reverse();
+            poppedTokens = poppedTokens.reverse();
             for(var i = 0; i < stackRule.length; i++){
                 rule += stackRule[i];
             }
-            return {rule: rule, tokens: popedTokens};
+            return {rule: rule, tokens: poppedTokens};
         }
 
         /**
@@ -396,8 +396,8 @@ class math{
     }
 
     /**
-     * Computes givet token expression folder. It uses recursion processing of the 
-     * expression tree described in the `computeToken` function to evaluate the espression.
+     * Computes given token expression folder. It uses recursion processing of the 
+     * expression tree described in the `computeToken` function to evaluate the expression.
      * @param {token} expressionToken is the token expression folder.
      * @param {string} scopeSave in case of saving variable value, it uses this scope.
      * @param {string} scopeLoad in case of loading a variable, it uses firstly this scope, then global.
@@ -424,7 +424,7 @@ class math{
                 case "variable":
                     return this.getVariable(expressionTree.value, scope);
                 default:
-                    karelConsoleLog("internaError");
+                    karelConsoleLog("internalError");
                     console.log(expressionTree, expressionTree.psaMeaning);
                     throw "Unknown psaMeaning";
             }
@@ -484,7 +484,7 @@ class math{
                         }
                         return 0;
                     default:
-                        karelConsoleLog("internaError");
+                        karelConsoleLog("internalError");
                         console.log(expressionTree);
                         throw "Unknown middle token";
                 }
@@ -493,8 +493,8 @@ class math{
     }
 
     /**
-     * Creates error token for represenation in the ACE gutter for expression and the errors
-     * is pushed among other errors to be dealed with later.
+     * Creates error token for representation in the ACE gutter for expression and the errors
+     * is pushed among other errors to be deal with later.
      * @param {token} expressionToken is the bad expression token folder.
      * @param {string} errorString is the text of the error.
      * @param {array} errors is the errors array.

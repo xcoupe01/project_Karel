@@ -46,7 +46,7 @@ Microbe::set(
                 tg('a', 'href="#introduction"', 'Úvod').
                 tg('a', 'href="#aboutKarel"', 'O&nbsp;Karlovi').
                 tg('a', 'href="#karelControls"', 'Ovládání').
-                tg('a', 'href="#karelExercices"', 'Příklady').
+                tg('a', 'href="#karelExercises"', 'Příklady').
                 tg('a', 'href="#karelAboutApp"', 'O&nbsp;aplikaci').
                 tg('a', 'href="#blog"', 'Blog')
             ).

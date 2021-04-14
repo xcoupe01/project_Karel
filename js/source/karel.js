@@ -13,7 +13,7 @@ class karel{
      * Connects the object of the robot to the given scene where it should be drawn and the controls of the scene
      * The code will create room to be shown in the scene
      * @param {scene} scene is the scene to be draw to
-     * @param {contols} controls are the controls of the camera of the scene
+     * @param {controls} controls are the controls of the camera of the scene
      */
     constructor(scene, controls){
         this.scene = scene;                         // scene handle
@@ -89,7 +89,7 @@ class karel{
      * Tells the Y axis value of position in front of the robot
      * @returns the Y axis value of position in front of the robot
      */
-    tellPosotionInFrontY(){
+    tellPositionInFrontY(){
         switch(this.orientation){
             case 0:
                 return this.positionY - 1;
@@ -154,13 +154,13 @@ class karel{
      */
     placeBrick(){
         if(!this.isWall()){
-            if(this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks -
+            if(this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPositionInFrontY()].bricks -
                 this.room.roomDataArray[this.positionX][this.positionY].bricks < -1 ||
-                this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks -
+                this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPositionInFrontY()].bricks -
                 this.room.roomDataArray[this.positionX][this.positionY].bricks > 9){
                 karelConsoleLog("cantReachError");
             } else {
-                this.room.addBrickToPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+                this.room.addBrickToPos(this.tellPositionInFrontX(), this.tellPositionInFrontY());
             }    
         } else {
             karelConsoleLog("outOfRoomError");
@@ -174,13 +174,13 @@ class karel{
      */
     pickUpBrick(){
         if(!this.isWall()){
-            if(this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks -
+            if(this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPositionInFrontY()].bricks -
                 this.room.roomDataArray[this.positionX][this.positionY].bricks < 0 ||
-                this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks -
+                this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPositionInFrontY()].bricks -
                 this.room.roomDataArray[this.positionX][this.positionY].bricks > 10){
                 karelConsoleLog("cantReachError");
             } else {
-                this.room.removeBrickFromPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+                this.room.removeBrickFromPos(this.tellPositionInFrontX(), this.tellPositionInFrontY());
             } 
         } else {
             karelConsoleLog("outOfRoomError");
@@ -188,14 +188,14 @@ class karel{
     }
 
     /**
-     * Marks current roboths location
+     * Marks current robot's location
      * Used in code
      */
     markOn(){
         this.room.markPosition(this.positionX, this.positionY);
     }
     /**
-     * Unmarks current robot location
+     * Unmark current robot location
      * Used in code
      */
     markOff(){
@@ -259,13 +259,13 @@ class karel{
 
     /**
      * Tells if there is at least one brick in front of robot
-     * @returns true if there is at least one brick in fron of Karel
+     * @returns true if there is at least one brick in from of Karel
      */
     isBrick(){
         if(this.isWall()){
             return false;
         }
-        return this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks > 0;
+        return this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPositionInFrontY()].bricks > 0;
     }
 
     /**
@@ -283,7 +283,7 @@ class karel{
     isVacant(){
         if(!this.isWall()){
             if(this.room.roomDataArray[this.positionX][this.positionY].bricks + this.maxStepUp >= 
-                this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPosotionInFrontY()].bricks){
+                this.room.roomDataArray[this.tellPositionInFrontX()][this.tellPositionInFrontY()].bricks){
                return true;
             }
         }
@@ -295,16 +295,16 @@ class karel{
      */
     toggleRoomBlock(){
         if(!this.isWall()){
-            this.room.toggleRoomBlockPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+            this.room.toggleRoomBlockPos(this.tellPositionInFrontX(), this.tellPositionInFrontY());
         } else {
             if(this.tellPositionInFrontX() < 0 | 
-                this.tellPosotionInFrontY() < 0 | 
+                this.tellPositionInFrontY() < 0 | 
                 this.tellPositionInFrontX >= this.room.roomDataArray.length | 
-                this.tellPosotionInFrontY >= this.room.roomDataArray[this.positionX].length){
+                this.tellPositionInFrontY >= this.room.roomDataArray[this.positionX].length){
                 karelConsoleLog("outOfRoomError");
-                console.log("TRB error - cannot toggle block outside of the room at [" + this.tellPositionInFrontX() + "," + this.tellPosotionInFrontY() + "]");
+                console.log("TRB error - cannot toggle block outside of the room at [" + this.tellPositionInFrontX() + "," + this.tellPositionInFrontY() + "]");
             } else {
-                this.room.toggleRoomBlockPos(this.tellPositionInFrontX(), this.tellPosotionInFrontY());
+                this.room.toggleRoomBlockPos(this.tellPositionInFrontX(), this.tellPositionInFrontY());
             } 
         }
     }
@@ -358,7 +358,7 @@ class karel{
 
     /**
      * Creates save dictionary (JSON) by actual room state with Karel's position
-     * @returns the save dicitionary (JSON)
+     * @returns the save dictionary (JSON)
      */
     saveRoomWithKarel(){
         var saveJson = {};

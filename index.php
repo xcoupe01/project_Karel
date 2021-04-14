@@ -29,16 +29,16 @@ class Blog {
     static $conn = DB_NAPOJENI;
     static $introductionFolder = "is/introductionTexts/";
     static $blogFolder = "is/blog/";
-    static $introductionFiles = [
-        "CS" => [
+    static $introductionFiles = array(
+        "CS" => array(
             "aboutKarel" => "aboutKarelCS.md",
             "karelControls" => "karelControlsCS.md",
             "karelAboutApp" => "karelAboutAppCS.md"
-        ],
-        "EN" => [
+        ),
+        "EN" => array(
 
-        ]
-    ];
+        )
+    );
 
     static function kostra(){
         Microbe::set('header', 'Karel 3D');
@@ -179,15 +179,15 @@ class Blog {
         );
     }
 
-    static function karelExercices(){
+    static function karelExercises(){
         $afile='aliases.txt';
-        htpr('<div id="karelExercices" class="padded">');
+        htpr('<div id="karelExercises" class="padded">');
         htpr(ta('h2', 'Příklady'));
         htpr('<section class="container">');
-        $exerciceMainDirName = "is/examples";
-        $exerciceMainDir = array_diff(scandir($exerciceMainDirName), ['..', '.',$afile]);
-        if (is_file($exerciceMainDirName.'/'.$afile)){
-          $aliases=file($exerciceMainDirName.'/'.$afile);
+        $exerciseMainDirName = "is/examples";
+        $exerciseMainDir = array_diff(scandir($exerciseMainDirName), array('..', '.',$afile));
+        if (is_file($exerciseMainDirName.'/'.$afile)){
+          $aliases=file($exerciseMainDirName.'/'.$afile);
           $al=array();
           for($i=0;$i<count($aliases);$i++){
             $aliases[$i]=rtrim($aliases[$i]);            
@@ -196,34 +196,34 @@ class Blog {
             }
           }
         }  
-        sort($exerciceMainDir);
-        foreach($exerciceMainDir as $exercicesDir){
+        sort($exerciseMainDir);
+        foreach($exerciseMainDir as $exercisesDir){
             htpr('<div class="ac">');
             
             htpr(
-                tg('input', 'class="ac-input" id="ac-'.$exercicesDir.'" name="ac-'.$exercicesDir.'" type="checkbox"', ''). 
-                tg('label', 'class="ac-label" for="ac-'.$exercicesDir.'"', isset($al[$exercicesDir])?$al[$exercicesDir]:$exercicesDir)
+                tg('input', 'class="ac-input" id="ac-'.$exercisesDir.'" name="ac-'.$exercisesDir.'" type="checkbox"', ''). 
+                tg('label', 'class="ac-label" for="ac-'.$exercisesDir.'"', isset($al[$exercisesDir])?$al[$exercisesDir]:$exercisesDir)
             );
             htpr('<article class="ac-text">');
             
-            $currentExerciceDir = array_diff(scandir($exerciceMainDirName.'/'.$exercicesDir), ['..', '.', 'intro.md']);
-            sort($currentExerciceDir);
-            if (is_file($fintro=$exerciceMainDirName.'/'.$exercicesDir.'/intro.md')){
+            $currentExerciseDir = array_diff(scandir($exerciseMainDirName.'/'.$exercisesDir), array('..', '.', 'intro.md'));
+            sort($currentExerciseDir);
+            if (is_file($fintro=$exerciseMainDirName.'/'.$exercisesDir.'/intro.md')){
               htpr(ta('p',Parsedown::instance()->text(file_get_contents($fintro))));
             }  
-            foreach($currentExerciceDir as $exercice){
+            foreach($currentExerciseDir as $exercise){
             
-                if (!preg_match("/.+\.md/",$exercice)) continue;
-                $exerciceName = substr($exercice, 0, strlen($exercice) - 3);
-                $exerciceFile=file($exerciceMainDirName.'/'.$exercicesDir.'/'.$exercice);
-                $header=$exerciceFile[0];
-                unset($exerciceFile[0]);
+                if (!preg_match("/.+\.md/",$exercise)) continue;
+                $exerciseName = substr($exercise, 0, strlen($exercise) - 3);
+                $exerciseFile=file($exerciseMainDirName.'/'.$exercisesDir.'/'.$exercise);
+                $header=$exerciseFile[0];
+                unset($exerciseFile[0]);
                 htpr(
                     tg('div', 'class="ac-sub"',
-                        tg('input', 'class="ac-input" id="ac-'.$exerciceName.'" name="ac-'.$exerciceName.'" type="checkbox"', '').
-                        tg('label', 'class="ac-label" for="ac-'.$exerciceName.'"', str_replace('#','',$header)).
+                        tg('input', 'class="ac-input" id="ac-'.$exerciseName.'" name="ac-'.$exerciseName.'" type="checkbox"', '').
+                        tg('label', 'class="ac-label" for="ac-'.$exerciseName.'"', str_replace('#','',$header)).
                         tg('article', 'class="ac-sub-text"',
-                            Parsedown::instance()->text(implode($exerciceFile))
+                            Parsedown::instance()->text(implode($exerciseFile))
                         )
                     )
                 );
@@ -247,7 +247,7 @@ class Blog {
         self::mainPageIntroduction();
         self::karelIntroduction();
         self::karelControls();
-        self::karelExercices();
+        self::karelExercises();
         self::karelAboutApp();
         self::createBlog();
     }

@@ -168,7 +168,7 @@ function createBasicToolboxByLang(Interpret){
 /**
  * Changes language of the application by given language file
  * @param {string} langFile is the server path to language file (for example js/source/languages/en.js)
- * @param firstRun true if we dont want to do translation of code, false otherwise
+ * @param firstRun true if we don't want to do translation of code, false otherwise
  */
 function changeLanguage(langFile, firstRun){
     window.localStorage.setItem('language', langFile);
@@ -208,8 +208,8 @@ function changeLanguage(langFile, firstRun){
         document.querySelector('#stop').title = mainInterpret.dictionary["UI"]["stop"];
         document.querySelector('#openChangeRoomDialog').text = mainInterpret.dictionary["UI"]["changeRoom"];
         document.querySelector('#homeCameraButton').textContent = mainInterpret.dictionary["UI"]["homeCameraButton"];
-        document.querySelector('#controlIndikator').textContent = mainInterpret.dictionary["UI"]["roomFocusIndicator"];
-        document.querySelector('#runIndikator').textContent = mainInterpret.dictionary["UI"]["runningIndicator"];  
+        document.querySelector('#controlIndicator').textContent = mainInterpret.dictionary["UI"]["roomFocusIndicator"];
+        document.querySelector('#runIndicator').textContent = mainInterpret.dictionary["UI"]["runningIndicator"];  
         document.querySelector('#makeBlocks').text = mainInterpret.dictionary["UI"]["makeBlocks"];
         document.querySelector('#openSaveDialog').text = mainInterpret.dictionary["UI"]["saveToPC"];
         document.querySelector('#openLoadDialog').text = mainInterpret.dictionary["UI"]["loadFromPC"];
@@ -236,8 +236,8 @@ function changeLanguage(langFile, firstRun){
         document.querySelector('#setWindows').textContent = mainInterpret.dictionary["UI"]["setWindows"];
         document.querySelector('#speedSetterWrapper').title = mainInterpret.dictionary["UI"]["speed"];
         document.querySelector('#deleteAllBreakpoints').text = mainInterpret.dictionary["UI"]["removeBreakpoints"];
-        document.querySelector('#autocompleteLable').textContent = mainInterpret.dictionary["UI"]["autocompleteToggle"];
-        document.querySelector('#autoindentLable').textContent = mainInterpret.dictionary["UI"]["autoindentToggle"];
+        document.querySelector('#autocompleteLabel').textContent = mainInterpret.dictionary["UI"]["autocompleteToggle"];
+        document.querySelector('#autoindentLabel').textContent = mainInterpret.dictionary["UI"]["autoindentToggle"];
         document.querySelector('#interpretMovesCursorLabel').textContent = mainInterpret.dictionary["UI"]["moveCursor"];
         document.querySelector('#loadFromCloud').text = mainInterpret.dictionary["UI"]["loadFromCloud"];
         document.querySelector('#saveToCloud').text = mainInterpret.dictionary["UI"]["saveToCloud"];
@@ -247,7 +247,7 @@ function changeLanguage(langFile, firstRun){
         document.querySelector('#saveCloudText').textContent = mainInterpret.dictionary["UI"]["SaveToCloudDialog"]["dialogText"];
         document.querySelector('#saveCloudButton').value = mainInterpret.dictionary["UI"]["SaveToCloudDialog"]["saveButton"];
 
-        mainInterpret.updateVariabeOverview();
+        mainInterpret.updateVariableOverview();
         blocklyUpdateFunction();
         mainInterpret.lockBlocklyTextEditor = true;
         workspace.clear();
@@ -266,7 +266,7 @@ function changeSyntaxCloser(closer){
 }
 
 /**
- * manages breakpoint adition and deletion update
+ * manages breakpoint addition and deletion update
  * @param {event} e 
  */
 function manageBreakpoint(e) {
@@ -294,10 +294,10 @@ function manageBreakpoint(e) {
  */ 
 function tryLoad() {
     if (window.location.href.indexOf("?")>0){
-        var priklad=window.location.href.substring(window.location.href.indexOf("?")+1);
+        var exercise=window.location.href.substring(window.location.href.indexOf("?")+1);
         $.ajax({
             type: 'GET',
-            url: 'index.php?f=json&prid='+priklad,
+            url: 'index.php?f=json&prid='+exercise,
             timeout: 2000,
             success: function(data) {
                 /* data is a json message */
@@ -350,10 +350,10 @@ editor.setOptions({
     scrollPastEnd: 0.5,
     fixedWidthGutter: true,
 });
-var autocompleteEnabeled = true;
+var autocompleteEnabled = true;
 editor.setTheme('ace/theme/chrome');
 editor.commands.on("afterExec", function (event) {
-    if (event.command.name == "insertstring" && /^[\w.]$/.test(event.args) && autocompleteEnabeled) {
+    if (event.command.name == "insertstring" && /^[\w.]$/.test(event.args) && autocompleteEnabled) {
             editor.execCommand("startAutocomplete");
     }
 });
@@ -428,8 +428,8 @@ if(window.localStorage.getItem('language') != undefined){
 }
 
 // setting the blockly image listeners for play
-var runMeFunc = function (eventpat){
-    mainInterpret.blocklyEditorInterpret(eventpat.sourceBlock_.inputList[0].fieldRow[2].value_);
+var runMeFunc = function (eventpath){
+    mainInterpret.blocklyEditorInterpret(eventpath.sourceBlock_.inputList[0].fieldRow[2].value_);
   return 0;
 };
 blocklySetRunMe(runMeFunc);
@@ -691,9 +691,9 @@ document.querySelector('#deleteAllBreakpoints').onclick = function() {
 };
 document.querySelector('#autocompleteCheckbox').addEventListener('change', function (event){
     if(event.currentTarget.checked){
-        autocompleteEnabeled = true;
+        autocompleteEnabled = true;
     } else {
-        autocompleteEnabeled = false;
+        autocompleteEnabled = false;
     }
 });
 document.querySelector('#autoindentCheckbox').addEventListener('change', function (event){
@@ -713,7 +713,7 @@ document.querySelector('#interpretMoveCursorCheckbox').addEventListener('change'
 
 // room overlay
 document.querySelector('#counterDisplay').onclick = function() {mainInterpret.resetCounter()};
-document.querySelector('#runIndikator').onclick = function() {mainInterpret.turnOffInterpret()};
+document.querySelector('#runIndicator').onclick = function() {mainInterpret.turnOffInterpret()};
 
 document.querySelector('#resetConsole').onclick = function() {document.querySelector('#console').innerHTML = ""};
 

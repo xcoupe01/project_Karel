@@ -84,7 +84,7 @@ class room{
 
     /**
      * Erases every object of the room (all blocks, bricks marks ect.)
-     * Room does not inluce Karel in this case (Karel wont be erased)
+     * Room does not include Karel in this case (Karel wont be erased)
      */
     erase(){
         for(var currX = 0; currX < this.roomDataArray.length; currX++){
@@ -225,12 +225,12 @@ class room{
         }
         if(this.roomDataArray[posX][posY].bricks > 0){
             karelConsoleLog("cannotRemoveBricksError");
-            console.log("RBFRP error - cannot remove becase of bricks at [" + posX + "," + posY + "]");
+            console.log("RBFRP error - cannot remove because of bricks at [" + posX + "," + posY + "]");
             return;
         }
         if(this.roomDataArray[posX][posY].mark){
             karelConsoleLog("cannotRemoveMarkError");
-            console.log("RBFRP error - cannot remove becase of mark at [" + posX + "," + posY + "]");
+            console.log("RBFRP error - cannot remove because of mark at [" + posX + "," + posY + "]");
             return;
         }
         this.scene.remove(this.roomDataArray[posX][posY].blockObject.cube);

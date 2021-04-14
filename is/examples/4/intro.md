@@ -1,4 +1,3 @@
-
 Pokud jste dokončili předchozí kapitolu a nařídili Karlovi zbourat zeď,
 jistě Vás při tom napadlo, že to funguje jen pokud známe přesně jak je zeď dlouhá 
 a jak je vysoká. Co když to ale nebudeme dopředu vědět? 

@@ -106,8 +106,8 @@
                     <div class="content">
                         <div class="overlay">
                             <div id='counterDisplay'></div>
-                            <div id='runIndikator' style="background-color: var(--bg-red);"></div>
-                            <div id='controlIndikator' style="background-color: var(--bg-red);"></div>
+                            <div id='runIndicator' style="background-color: var(--bg-red);"></div>
+                            <div id='controlIndicator' style="background-color: var(--bg-red);"></div>
                         </div>
                         <canvas id="roomCanvas" style="height:100%; width:100%; outline: 0; outline-color: transparent; box-shadow: none;" onfocus="roomFocus()" onblur="roomUnfocus()"></canvas>
                     </div>
@@ -202,7 +202,7 @@
                                 </div>
                             </div>
                             <div class="dashboard-buttons">
-                                <div class="dashboard-textbox-console" style="width: 100%; height: 8rem; display: none" id="exerciceText"></div>
+                                <div class="dashboard-textbox-console" style="width: 100%; height: 8rem; display: none" id="exerciseText"></div>
                                 <div id='homeCameraButton' style='cursor:pointer;'></div>
                                 <div style='cursor:pointer;' onclick="resetView();" id="resetView"></div>
                                 <div id='resetConsole' style='cursor:pointer;'></div>
@@ -277,11 +277,11 @@
                                 <a href="javascript:void(0)" id="deleteAllBreakpoints"></a>
                                 <a href="javascript:toggleCheckBox('#autocompleteCheckbox')">
                                     <input type="checkbox" id="autocompleteCheckbox" checked="true">
-                                    <label id="autocompleteLable"></lable>
+                                    <label id="autocompleteLabel"></label>
                                 </a>
                                 <a href="javascript:toggleCheckBox('#autoindentCheckbox')">
                                     <input type="checkbox" id="autoindentCheckbox" checked="true">
-                                    <label id="autoindentLable"></lable>
+                                    <label id="autoindentLabel"></label>
                                 </a>
                                 <a href="javascript:toggleCheckBox('#interpretMoveCursorCheckbox')">
                                     <input type="checkbox" id="interpretMoveCursorCheckbox" checked="true">
@@ -362,14 +362,14 @@
             }
 
             function roomFocus(){
-                if(document.querySelector('#runIndikator').style.display != "block"){
-                    document.querySelector('#controlIndikator').style.display = 'block';
+                if(document.querySelector('#runIndicator').style.display != "block"){
+                    document.querySelector('#controlIndicator').style.display = 'block';
                     document.querySelector('#roomCanvas').focus();
                 }
             }
 
             function roomUnfocus(){
-                document.querySelector('#controlIndikator').style.display = 'none';
+                document.querySelector('#controlIndicator').style.display = 'none';
             }
 
             window.dictionary;
@@ -401,8 +401,8 @@
                 document.querySelector(id).dispatchEvent(new Event('change'));
             }
 
-            function closeExerciceWindow(){
-                document.querySelector('#exerciceText').style.display = "none";
+            function closeExerciseWindow(){
+                document.querySelector('#exerciseText').style.display = "none";
             }
         </script>
 

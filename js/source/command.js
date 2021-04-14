@@ -10,8 +10,8 @@ class command{
         this.karel = karel;                     // given robot karel to operate with
         this.commandList = {};                  // user defined commands list dictionary
         this.conditionList = {};                // user defined condition list dictionary
-        this.speed = 120;                       // tells the time for interpet step (from 20 to 520)
-        this.speedStep = 10;                    // is the speed incremet step
+        this.speed = 120;                       // tells the time for interpret step (from 20 to 520)
+        this.speedStep = 10;                    // is the speed increment step
         this.lastConditionResult = "undef";     // used for user defined condition evaluation
         this.math = math;
         this.math.assignCommand(this);
@@ -53,7 +53,7 @@ class command{
     /**
      * Tells the function name by the given token or codePointer.
      * If the position of this token or code pointer are in some function, its name will be returned.
-     * @param {token structure or codePointer strzcture} token is the token or code pointer to search for.
+     * @param {token structure or codePointer structure} token is the token or code pointer to search for.
      * @returns name of function which the token or codePointer is in.
      */
     getFunctionByToken(token){
@@ -79,8 +79,8 @@ class command{
     }
 
     /**
-     * Tells funtions definig token (its first identifier) by given function name.
-     * @param {string} functionName is the name of the function we want the defininf token of.
+     * Tells functions defining token (its first identifier) by given function name.
+     * @param {string} functionName is the name of the function we want the defining token of.
      * @returns the defining toke of specified function.
      */
     getDefiningToken(functionName){
@@ -103,18 +103,18 @@ class command{
         } else if (Object.keys(this.conditionList).includes(codePointer.functionName)){
             return this.conditionList[codePointer.functionName].code[codePointer.tokenPointer];
         } else {
-            karelConsoleLog("internaError");
+            karelConsoleLog("internalError");
             console.log("codePointer: ", codePointer);
             throw "Unreachable token by codePointer";
         }
     }
 
     /**
-     * Evaluates condition at given code pointer. If it is not a basic condition, it will move the code pointer to the userdefined
+     * Evaluates condition at given code pointer. If it is not a basic condition, it will move the code pointer to the user defined
      * condition and takes care of its evaluation. It also counts with its prefix.
      * @param {codePointer structure} codePointer is the current code pointer.
-     * @param {array} programQueue is the program queue to wich this function might add record. 
-     * @returns true or false based on the condition, undefined if userdefined evaluation is needed.
+     * @param {array} programQueue is the program queue to which this function might add record. 
+     * @returns true or false based on the condition, undefined if user defined evaluation is needed.
      */
     evalCondition(codePointer, programQueue){
         let conditionPrefix = this.getToken({functionName: codePointer.functionName, tokenPointer: codePointer.tokenPointer});
@@ -135,7 +135,7 @@ class command{
                     result = this.karel.isVacant();
                     break;
                 default:
-                    karelConsoleLog("internaError");
+                    karelConsoleLog("internalError");
                     console.log(conditionCore);
                     throw "Bad condition for evaluation";
             }
@@ -147,7 +147,7 @@ class command{
             }
         } else {
             if(this.conditionList[conditionCore.value].result == "undef"){
-                codePointer.tokenPointer -= 2; // setting code pointer to the begining of the structire (if-start, while-start)
+                codePointer.tokenPointer -= 2; // setting code pointer to the beginning of the structure (if-start, while-start)
                 programQueue.push(Object.assign({}, codePointer));
                 codePointer.functionName = conditionCore.value;
                 codePointer.tokenPointer = -1;
@@ -161,7 +161,7 @@ class command{
                         result = false;
                         break;
                     default:
-                        karelConsoleLog("internaError");
+                        karelConsoleLog("internalError");
                         console.log(this.conditionList[conditionCore.value]);
                         throw "Undefined condition result";
                 }
@@ -217,7 +217,7 @@ class command{
                 this.karel.beep();
                 break;
             default:
-                karelConsoleLog("internaError");
+                karelConsoleLog("internalError");
                 console.log(dictKey);
                 throw "Unexpected dictKey";
         }
@@ -244,7 +244,7 @@ class command{
     }
 
     /**
-     * Slows down the robo by speed step in the speed limit.
+     * Slows down the robot by speed step in the speed limit.
      * Also sets the iu directly - `speedNumber` and `speedSlider` elements needed.
      */
     slowDownKarel(){

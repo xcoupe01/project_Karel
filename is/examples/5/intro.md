@@ -1,4 +1,3 @@
-
 V kapitole o rekurzi jsme zápasili s tím, že naše programy, které jsme vytvořili,
 běžely "věčně". Robota jsme tak museli zastavit sami, dřív, než se mu vybijí baterie.
 

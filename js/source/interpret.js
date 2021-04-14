@@ -11,10 +11,10 @@ class interpret{
 
     constructor(textEditor, blocklyTextRep, karel){
         this.dictionary = {};                               // current language dictionary
-        this.math = new math()                              // math handlerer module
-        this.command = new command(karel, this.math)        // comand handlerer module
+        this.math = new math()                              // math handle module
+        this.command = new command(karel, this.math)        // command handle module
         this.textEditor = textEditor;                       // given text editor to interpret
-        this.blocklyTextRepresentation = blocklyTextRep;    // read only blockly text representaton editor
+        this.blocklyTextRepresentation = blocklyTextRep;    // read only blockly text representation editor
         this.running = false;                               // tells if Karel is executing code
         this.activeCounters = [];                           // used for DO loops
         this.programQueue = [];                             // used to jump to other programs and return back (saves position from which was jumped)
@@ -49,21 +49,21 @@ class interpret{
     }
 
     /**
-     * Sets interpret to running state and swithces the indicator in the UI.
-     * Needs div in the html vith `runIndikator` id !!!
+     * Sets interpret to running state and switches the indicator in the UI.
+     * Needs div in the html with `runIndicator` id !!!
      */
     setRunningTrue(){
         this.running = true;
-        document.querySelector('#runIndikator').style.display = "block";
+        document.querySelector('#runIndicator').style.display = "block";
     }
 
     /**
-     * Sets interpret to not running state and swithces off the indicator in the UI.
-     * Needs div in the html vith `runIndikator` id !!! 
+     * Sets interpret to not running state and switches off the indicator in the UI.
+     * Needs div in the html with `runIndicator` id !!! 
      */
     setRunningFalse(){
         this.running = false;
-        document.querySelector('#runIndikator').style.display = "none";
+        document.querySelector('#runIndicator').style.display = "none";
         if(document.querySelector('#roomCanvas') == document.activeElement){
             document.querySelector('#roomCanvas').blur();
             document.querySelector('#roomCanvas').focus();
@@ -83,7 +83,7 @@ class interpret{
     }
 
     /**
-     * Makes the interpret stop and unsets the given editor read only mode.
+     * Makes the interpret stop and unset the given editor read only mode.
      * If the editor is the blockly representation editor, it wont switch the read only mode.
      * @param editor is the editor to be set to read only mode 
      */
@@ -96,7 +96,7 @@ class interpret{
     }
 
     /**
-     * Inccrements the step counter and updates its display.
+     * Increments the step counter and updates its display.
      * Needs div in the html with `counterDisplay` id !!!
      */
     updateCounter(){
@@ -106,7 +106,7 @@ class interpret{
     }
 
     /**
-     * Sets the step counter to zero adn updtaes its display.
+     * Sets the step counter to zero adn updates its display.
      * Needs div in the html with `counterDisplay` id !!!
      */
     resetCounter(){
@@ -118,21 +118,21 @@ class interpret{
      * Updates variable overview in the user interface
      * Needs div in the html with `variableOverview` id !!!
      */
-    updateVariabeOverview(){
+    updateVariableOverview(){
         document.getElementById('variableOverview').innerHTML = this.math.createVariableOverview(this.dictionary);
     }
 
     /**
-     * Tokenizes input from given ACE editor. Uses TokenIterator avalible from ACE library.
+     * Tokenizes input from given ACE editor. Uses TokenIterator available from ACE library.
      * Designed to process Karel's native programming language, does not matter on world language if the current dictionary is set correctly.
      * Goes through the code and parses it to tokens which are returned in a javascript dictionary.
-     * The code is separated in the dictionary like the folowing example:
+     * The code is separated in the dictionary like the following example:
      * {"function name" : [tokens of that function]} 
      * There are all tokens that corresponds to this function (even name and defining words).
      * Token consist of these values:
      *  - value: is the actual word that was read from the editor
      *  - meaning: is the syntactical meaning of the word (terminal)
-     *  - dictKey: is the key to the dictionary for this word (if the key is avalible)
+     *  - dictKey: is the key to the dictionary for this word (if the key is available)
      *  - row: is the row where the token was found
      *  - column: is the column where the token was found
      * There are these possible meaning (terminals):
@@ -142,7 +142,7 @@ class interpret{
      * ACE creates are repaired.
      * @param {ACE editor} editor is the editor we want to be tokenized from.
      * @param forInterpretation if true, the global variable definitions are pushed to the top and commentaries are skipped,
-     * if false, the code is tokenized as it it present in the editor and passed with comentaries and global definitions in their
+     * if false, the code is tokenized as it it present in the editor and passed with commentaries and global definitions in their
      * given place which is useful for translation.
      * @returns dictionary of functions that contains its tokens.  
      */
@@ -317,7 +317,7 @@ class interpret{
      * @param {array} errors is the array errors will be passed to.
      */
     preCheckTokenRepair(codeArray, errors){
-        // scanning userdefined commands and conditions
+        // scanning user defined commands and conditions
         var names = {commands: [], conditions: []};
         for(var i = 0; i < codeArray.length; i++){
             switch(codeArray[i][0].meaning){
@@ -330,7 +330,7 @@ class interpret{
                         }
                     } else {
                         if(codeArray[i][1] === undefined){
-                            errors.push({error: this.dictionary["checkerErrorMessages"]["uncompleteDefinition"], token: codeArray[i][0]});
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["uncompletedDefinition"], token: codeArray[i][0]});
                         } else {
                             errors.push({error: this.dictionary["checkerErrorMessages"]["commandNameError"], token: codeArray[i][1]});
                         }
@@ -345,7 +345,7 @@ class interpret{
                         }
                     } else {
                         if(codeArray[i][1] === undefined){
-                            errors.push({error: this.dictionary["checkerErrorMessages"]["uncompleteDefinition"], token: codeArray[i][0]});
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["uncompletedDefinition"], token: codeArray[i][0]});
                         } else {
                             errors.push({error: this.dictionary["checkerErrorMessages"]["variableNameError"], token: codeArray[i][1]});
                         }
@@ -389,7 +389,7 @@ class interpret{
                             }
                         } else {
                             if(codeArray[i][j] === undefined){
-                                errors.push({error: this.dictionary["checkerErrorMessages"]["uncompleteDefinition"], token: codeArray[i][j - 1]});
+                                errors.push({error: this.dictionary["checkerErrorMessages"]["uncompletedDefinition"], token: codeArray[i][j - 1]});
                             } else {
                                 errors.push({error: this.dictionary["checkerErrorMessages"]["variableNameError"], token: codeArray[i][j]});
                             }
@@ -404,7 +404,7 @@ class interpret{
                             codeArray[i].splice(j, 1);
                         }
                         if(codeArray[i][j] === undefined){
-                            errors.push({error: this.dictionary["checkerErrorMessages"]["uncompleteDefinition"], token: codeArray[i][j - 1]});
+                            errors.push({error: this.dictionary["checkerErrorMessages"]["uncompletedDefinition"], token: codeArray[i][j - 1]});
                         } else if(codeArray[i][j].meaning != "identifier"){
                             errors.push({error: this.dictionary["checkerErrorMessages"]["variableNameError"], token: codeArray[i][j]});
                         } else if(globalVars.includes(codeArray[i][j].value || names.commands.concat(names.conditions).includes(codeArray[i][j].value))){
@@ -433,17 +433,17 @@ class interpret{
     }
 
     /**
-     * Provides sytax checking based on LL1 table. The table is defined on the begining of the functinon.
-     * For more informations about the table and the rules visit folowing URL:
+     * Provides syntax checking based on LL1 table. The table is defined on the beginning of the function.
+     * For more information about the table and the rules visit following URL:
      * https://docs.google.com/spreadsheets/d/1ZHOjsJgSekrjLMMdATj4ccAKeb4HEqrpOBlI2Gh33ko/edit?usp=sharing
-     * For more infotmations about the LL1 grammar checking visit folowing URL:
+     * For more information about the LL1 grammar checking visit following URL:
      * https://en.wikipedia.org/wiki/LL_parser
-     * Apart from checking the syntax, the function prepares the code to be interpreted. For this purpouse,
+     * Apart from checking the syntax, the function prepares the code to be interpreted. For this purpose,
      * it creates list of user defined commands and conditions in the command object in a similar fashion,
      * as the nativeCodeTokenizer created its output. The tokens are stored there in arrays and you can get to them
      * by the function name (for example this.command.commandList["test"].code tells you the array of tokens for command "test").
-     * The userdefined commands are avalible in commandList property and the userdefined conditions are stored in conditionList.
-     * In the records of commands and condtions there are properties:
+     * The user defined commands are available in commandList property and the user defined conditions are stored in conditionList.
+     * In the records of commands and conditions there are properties:
      *  - code: the array of all tokens that belongs to specific function
      *  - definingToken: is the token that gave the specific function a name
      *  - result: only for condition! array of results which is used when called.
@@ -543,7 +543,7 @@ class interpret{
         let xAxisTable = ["function-def", "condition-def", "end", "user-command", "user-condition", "command", "condition", 
             "do-start", "times", "do-end", "while-start", "while-end", "if-start", "then", "else", "if-end", "condition-prefix", 
             "expression", "output", "global", "local"]; // all terminals
-        let yAxisTable = ["<start>", "<command-block>", "<end-if>", "<condition-core>"]; // all neterminals
+        let yAxisTable = ["<start>", "<command-block>", "<end-if>", "<condition-core>"]; // all non terminals
         let table = [
                         //    0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21
                         //   fud cod end ucm ucn com con dos tim doe whs whe ifs the els ife cop exp out glo loc [n] 
@@ -624,7 +624,7 @@ class interpret{
                                 }
                                 break;
                             default:
-                                karelConsoleLog("internaError");
+                                karelConsoleLog("internalError");
                                 console.log(stack[0].checks[j], stack[0]);
                                 throw "Undefined check";
                         }
@@ -654,7 +654,7 @@ class interpret{
                 let searchY = yAxisTable.indexOf(stack[0].item);
                     
                 if(searchX == -1 || searchY == -1){
-                    karelConsoleLog("internaError");
+                    karelConsoleLog("internalError");
                     console.log("X: ",searchX, " Y: ",searchY);
                     console.log("stack: ",stack);
                     console.log("testedCommand: ",codeArray[i]);
@@ -721,11 +721,11 @@ class interpret{
     }
 
     /**
-     * Processes error aray whitch is generated by syntaxCheck functon.
+     * Processes error array which is generated by syntaxCheck function.
      * Sets markers with descriptions at the editor gutter and underlines the words,
      * which caused these errors.
      * @param {array} errors is the array of errors which creates syntaxCheck function.
-     * @param {ACE edtor} editor is the editor where the errors will be visualized.
+     * @param {ACE editor} editor is the editor where the errors will be visualized.
      */
     processErrors(errors, editor){
         editor.getSession().clearAnnotations();
@@ -792,7 +792,7 @@ class interpret{
         let rule = jumpRules[this.command.getToken(codePointer).meaning];
         if(rule === undefined){
             console.log(this.command.getToken(codePointer));
-            karelConsoleLog("internaError");
+            karelConsoleLog("internalError");
             throw "No jump rule for this token!";
         }
         while(true){
@@ -825,11 +825,11 @@ class interpret{
     }
 
     /**
-     * Iterprets one token of code by given code pointer, the code pointer is incremeted at the end,
-     * or setted as needed. This function requires to run properly, that the code is checked and prosessed by 
+     * Interprets one token of code by given code pointer, the code pointer is incremented at the end,
+     * or set as needed. This function requires to run properly, that the code is checked and processed by 
      * the syntaxCheck function.
      * @param {codePointer structure} codePointer is the code pointer to the token we want to be executed.
-     * @returns true if interpetation should end, false otherwise.
+     * @returns true if interpretation should end, false otherwise.
      */
     interpretToken(codePointer){
         switch(this.command.getToken(codePointer).meaning){
@@ -899,7 +899,7 @@ class interpret{
                 this.activeCounters[this.activeCounters.length - 1] --;
                 if(this.activeCounters[this.activeCounters.length - 1] > 0){
                     this.tokenJumper(codePointer);
-                    codePointer.tokenPointer += 2; // skiping number and keyword times
+                    codePointer.tokenPointer += 2; // skipping number and keyword times
                 } else {
                     this.activeCounters.pop();
                 }
@@ -923,7 +923,7 @@ class interpret{
                     }
                 }   
                 if(result !== undefined){
-                    codePointer.tokenPointer ++ ; // skiping to condition core
+                    codePointer.tokenPointer ++ ; // skipping to condition core
                     if(this.command.getToken(codePointer).meaning == "user-condition"){
                         this.command.conditionList[this.command.getToken(codePointer).value].result = "undef";
                     }
@@ -956,7 +956,7 @@ class interpret{
                     }
                 }  
                 if(result !== undefined){
-                    codePointer.tokenPointer ++ ; // skiping to condition core
+                    codePointer.tokenPointer ++ ; // skipping to condition core
                     if(this.command.getToken(codePointer).meaning == "user-condition"){
                         this.command.conditionList[this.command.getToken(codePointer).value].result = "undef";
                     }
@@ -1016,7 +1016,7 @@ class interpret{
             case "condition-prefix":
             default:
                 // cannot happen
-                karelConsoleLog("internaError");
+                karelConsoleLog("internalError");
                 console.log(this.command.getToken(codePointer));
                 throw "Unexpected token";
         }
@@ -1036,7 +1036,7 @@ class interpret{
                 this.turnOffInterpret();
             } else {
                 this.updateCounter();
-                this.updateVariabeOverview();
+                this.updateVariableOverview();
             }
             if(this.moveCursor){
                 editor.gotoLine(this.command.getToken(codePointer).row + 1);
@@ -1050,7 +1050,7 @@ class interpret{
     }
 
     /**
-     * Checks and inteprets code from ACE text editor.
+     * Checks and interprets code from ACE text editor.
      * @param editor is the editor we want to take the code from.
      */
     textEditorInterpret(editor){
@@ -1075,7 +1075,7 @@ class interpret{
     }
 
     /**
-     * Checks and interprets code from Blockly edotor (with help of ACE representation editor in read only mode).
+     * Checks and interprets code from Blockly editor (with help of ACE representation editor in read only mode).
      * @param {string} toRun is the name of the function we want to run.
      */
     blocklyEditorInterpret(toRun){
@@ -1099,7 +1099,7 @@ class interpret{
     }
 
     /**
-     * Checks and inteprets code from ACE text editor in debug mode.
+     * Checks and interprets code from ACE text editor in debug mode.
      */
     debugTextEditorInterpret(editor){
         if(this.running && !this.debug.active){
@@ -1154,9 +1154,9 @@ class interpret{
     /**
      * TODO - remake
      * Translates text code to blockly blocks. It generates those blocks by tokens
-     * that are expexted to be passed. The function tryes to save as many commentaries as possible,
-     * but some are deleted, especiali in math expressions.
-     * @param {blockly worspace} workspace is the workspace where the blocks will be created
+     * that are expected to be passed. The function tries to save as many commentaries as possible,
+     * but some are deleted, especially in math expressions.
+     * @param {blockly workspace} workspace is the workspace where the blocks will be created
      * @param {array of tokens} codeArray is array of tokens to be converted
      */
     makeBlocksFromNativeCode(workspace, codeArray){
@@ -1289,7 +1289,7 @@ class interpret{
                         }
                         if(codeArray[0] === undefined || codeArray[0].meaning != "condition-prefix"){
                             karelConsoleLog("blockConversionError");
-                            console.log("error - condtion prefix expected");
+                            console.log("error - condition prefix expected");
                             return;
                         }
                         if(codeArray[0].dictKey == "isNot"){
@@ -1303,7 +1303,7 @@ class interpret{
                         var conditionBlock;
                         if(codeArray[0] === undefined){
                             karelConsoleLog("blockConversionError");
-                            console.log("error - condtion expected");
+                            console.log("error - condition expected");
                             return;
                         }
                         if((codeArray[0] !== undefined && variables.includes(codeArray[0].value)) || 
@@ -1377,7 +1377,7 @@ class interpret{
                         newBlock.getField('FC_NAME').setValue(codeArray[0].value);
                         break;
                     default:
-                        karelConsoleLog("internaError");
+                        karelConsoleLog("internalError");
                         console.log(currentRule.action[i]);
                         throw "Unknown action";
                 }
@@ -1444,7 +1444,7 @@ class interpret{
      * Format of this structure is:
      *  "karelAndRoom": contains data about room and Karel's position inside
      *  "blockly": contains data about blockly workspace
-     *  "code": contains data abot code editor
+     *  "code": contains data about code editor
      * @param {string} mode is the mode the function will execute
      * @param {workspace} workspace is the blockly workspace
      */
@@ -1477,9 +1477,9 @@ class interpret{
                 }
                 break;
             default:
-                karelConsoleLog("internaError");
-                console.log("saveFile - unsuported mode [" + mode + "]");
-                throw "unsuported save mode"; 
+                karelConsoleLog("internalError");
+                console.log("saveFile - unsupported mode [" + mode + "]");
+                throw "unsupported save mode"; 
         }
         return saveJson;
     }
@@ -1529,7 +1529,7 @@ class interpret{
                     this.lockBlocklyTextEditor = false;
                     */
                     break;
-                case "exercice":
+                case "exercise":
                     if(typeof dataJson[item] != "string"){
                         return item;
                     }
@@ -1551,13 +1551,13 @@ class interpret{
     /**
      * Load data from file and sets the app by them
      * This function can run in a different modes:
-     *  `room`: loads and applyes only data that specifies the room and karel's position in it
-     *  `blockly`: loads and applyes only data that specifies blockly workspace
-     *  `code`: loads and applyes only data that specifies code editor
-     *  `all`: loads and applyes all informations (all above, no contorl) 
-     *  `byFile`: loads and applyes only mentioned data (some of above)
-     * Use check loader fucntion before loading file to prevent bugs.
-     * The save format is expected the save as desribed in `saveFile` function
+     *  `room`: loads and applies only data that specifies the room and karel's position in it
+     *  `blockly`: loads and applies only data that specifies blockly workspace
+     *  `code`: loads and applies only data that specifies code editor
+     *  `all`: loads and applies all information (all above, no control) 
+     *  `byFile`: loads and applies only mentioned data (some of above)
+     * Use check loader function before loading file to prevent bugs.
+     * The save format is expected the save as described in `saveFile` function
      * @param {string} mode is the mode which the function will run 
      * @param {workspace} workspace is the blockly workspace
      * @param {elementID} dataJson is the JSON load structure
@@ -1603,7 +1603,7 @@ class interpret{
                 }
                 catch(err){
                     karelConsoleLog("corruptedSaveFile");
-                    console.log("loadFromFile error - Corupted save file")
+                    console.log("loadFromFile error - Corrupted save file")
                     return;
                 }
                 for(var key in dataJson){
@@ -1625,13 +1625,13 @@ class interpret{
                             this.textEditor.setValue(dataJson["code"]);
                             this.textEditor.clearSelection();
                             break;
-                        case "exercice":
-                            document.getElementById('exerciceText').innerHTML = 
-                                dataJson["exercice"] +
-                                '<br><br><a href="javascript:closeExerciceWindow()" style="float: left; color: lime" id="closeExercice">' + 
+                        case "exercise":
+                            document.getElementById('exerciseText').innerHTML = 
+                                dataJson["exercise"] +
+                                '<br><br><a href="javascript:closeExerciseWindow()" style="float: left; color: lime" id="closeExercise">' + 
                                 this.dictionary['UI']['close'] + 
                                 '</a>';
-                            document.getElementById('exerciceText').style.display = "block";
+                            document.getElementById('exerciseText').style.display = "block";
                             break;
                         case "lang":
                             break;
@@ -1643,18 +1643,18 @@ class interpret{
                 }
                 break;
             default:
-                karelConsoleLog("internaError");
-                console.log("LoadFromFile error - unsuported mode [" + mode + "]");
+                karelConsoleLog("internalError");
+                console.log("LoadFromFile error - unsupported mode [" + mode + "]");
                 return;
         }
     }
 
     /**
-     * Triggers the load sequens which checks the current language
-     * to the save language and it tryes to load and translate the loadfile
+     * Triggers the load sequence which checks the current language
+     * to the save language and it tries to load and translate the load file
      * to the correct currently used language.
      * @param {JSON} dataJson is the data to be loaded in a JSON format.
-     * @param {string} mode is the loader mode - descibed in `performLoad` function.
+     * @param {string} mode is the loader mode - described in `performLoad` function.
      * @param {workspace} workspace is the blockly workspace
      */
     loadSequence(dataJson, mode, workspace){
@@ -1682,13 +1682,13 @@ class interpret{
     /**
      * Load data from file and sets the app by them
      * This function can run in a different modes:
-     *  `room`: loads and applyes only data that specifies the room and karel's position in it
-     *  `blockly`: loads and applyes only data that specifies blockly workspace
-     *  `code`: loads and applyes only data that specifies code editor
-     *  `all`: loads and applyes all informations (all above, no contorl) 
-     *  `byFile`: loads and applyes only mentioned data (some of above)
-     * Use check loader fucntion before loading file to prevent bugs.
-     * The save format is expected the save as desribed in `saveFile` function
+     *  `room`: loads and applies only data that specifies the room and karel's position in it
+     *  `blockly`: loads and applies only data that specifies blockly workspace
+     *  `code`: loads and applies only data that specifies code editor
+     *  `all`: loads and applies all information's (all above, no control) 
+     *  `byFile`: loads and applies only mentioned data (some of above)
+     * Use check loader function before loading file to prevent bugs.
+     * The save format is expected the save as described in `saveFile` function
      * @param {string} mode is the mode which the function will run 
      * @param {workspace} workspace is the blockly workspace
      * @param {elementID} fileToLoadID is the ID of HTML element where is the file
@@ -1697,7 +1697,7 @@ class interpret{
         var fileToLoad = document.getElementById(fileToLoadID).files[0];
         var fileReader = new FileReader();
         var interpret = this;
-        document.getElementById('exerciceText').style.display = "none";
+        document.getElementById('exerciseText').style.display = "none";
         fileReader.onload = function(fileLoadedEvent) 
         {   
             var dataJson = JSON.parse(fileLoadedEvent.target.result);
@@ -1760,7 +1760,7 @@ class interpret{
      * Translates given code array token values into current interpret dictionary.
      * To use tokenize the code before language change, change the language and pass
      * the previously tokenized code to this function. The output is code array with
-     * translated token values. It can generate warning if keyword colision is detected.
+     * translated token values. It can generate warning if keyword collision is detected.
      * @param {codeArray} codeArray is the code array we want to translate.
      * @returns translated code array.
      */
@@ -1788,8 +1788,8 @@ class interpret{
 }
 
 /**
- * Makes the code wait for given amount of miliseconds
- * @param {number} ms is the amount of miliseconds to wait for
+ * Makes the code wait for given amount of milliseconds
+ * @param {number} ms is the amount of milliseconds to wait for
  * @returns javascript promise to wait for
  */
 function sleep(ms) {
@@ -1799,7 +1799,7 @@ function sleep(ms) {
 /**
  * Saves a string to a .txt file
  * @param {string} textToWrite is the string to be saved
- * @param {string} fileNameToSaveAs is the name of the file that will be downalded
+ * @param {string} fileNameToSaveAs is the name of the file that will be downloaded
  */
 function saveTextAsFile(textToWrite, fileNameToSaveAs){
 
