@@ -802,3 +802,24 @@ h2, #blog > .forceH2 {
     text-decoration: none;
     cursor: pointer;
 }
+
+.table {
+    border-collapse: collapse;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.table tr{
+    border-bottom: 1pt solid black;
+    line-height: 3rem;
+}
+
+.table svg {
+    width: 1.5rem;
+    min-width: 1.5rem;
+    margin: 0 1.5rem;
+    color: black;
+    vertical-align: middle;
+}

@@ -1,15 +1,14 @@
 <?php
-/* Minimalisticky blog - varianta Karel
- * Petr Coupek 
- * 20.02.2021
- * 11.03.2020 
+/** Aktivni stranka pro projekt Karel -minimalisticky blog a nacitani prikladu
+ * @author P. Coupek, V. Coupek 
+ * 20.02.2021, 11.03.2020, 22.04.2021  
  */ 
  
 session_start(); 
 
 ini_set('default_charset','utf-8');
 include_once 'is/lib/lib.php';
-include_once 'is/lib/lib_bt.php';
+#include_once 'is/lib/lib_bt.php';
 include_once "is/lib/std_ini.php";
 include_once "is/vendor/Parsedown.php";
 /* database wrapper */
@@ -18,9 +17,9 @@ include_once "is/ini.php";
 /** 
  * Konstanty spolecne pro oba moduly
  */ 
-define("TAB_USER",'karel_uziv');
-define("TAB_STAVY",'karel_stavy');
-define("TAB_PRIKLADY",'karel_priklady');
+define("TAB_USER",'KAREL_UZIV');
+define("TAB_STAVY",'KAREL_STAVY');
+define("TAB_PRIKLADY",'KAREL_PRIKLADY');
 
 /** Trida/modul realizujici blog vcetne logovani 
  */
@@ -90,11 +89,18 @@ class Blog {
             self::form_create_user();   
         } elseif(getpar('__CUS') != ''){
             self::create_user();
-        } elseif(getpar('__KAR') == '1'){
+        } elseif(getpar('__KAR') == '1' ){
             /* predavani parametru slabel pak signalizuje praci se zaznamy stavu */
             self::$db = new OpenDB(self::$conn);
             Zdroje::kostra();
             self::$db->Close();
+        } elseif (getpar('__DEL') != ''){
+            self::$db = new OpenDB(self::$conn);
+            Zdroje::kostra();
+            self::$db->Close();
+            setpar('__DEL','');
+            setpar('slabel','');
+            self::create_user_dashboard();
         } elseif(isset($_SESSION['uzivatel']) && $_SESSION['uzivatel'] != '' && getpar('__USD') != ''){
             self::create_user_dashboard();
         } else {    
@@ -331,7 +337,7 @@ class Blog {
             self::$db = new OpenDB(self::$conn);
             /* try local database - sha1 imprints */
             self::$db->Sql(
-            "select lpass, jmeno, prijmeni, aktivni from ".TAB_USER." "."where luser='$u'");
+            "select LPASS, JMENO, PRIJMENI, AKTIVNI from ".TAB_USER." "."where luser='$u'");
             if(self::$db->FetchRow()){   
                 $DB=self::$db->DataHash();        
                 self::$db->Close();
@@ -549,12 +555,19 @@ class Zdroje{
      * zobrazi seznam ulozenych stavu
      */
     static function list_saves($format = ''){
-        $stavy = self::$db->SqlFetchArray(
+        if (self::$db->typedb=='MySQL'){
+         $stavy = self::$db->SqlFetchArray(
+            "select SLABEL,stime as TEXTTIME ".
+            "from ".TAB_STAVY." ".
+            "where luser='".$_SESSION['uzivatel']."' ".
+            "order by stime desc");
+        }else{
+          $stavy = self::$db->SqlFetchArray(
             "select slabel,strftime('%d.%m.%Y %H:%M',stime,'unixepoch') as TEXTTIME ".
             "from ".TAB_STAVY." ".
             "where luser='".$_SESSION['uzivatel']."' ".
             "order by stime desc");
-        //htpr(ht_table('Uložené stavy',array('SLABEL'=>'Jméno','STIME'=>'Datum'),$stavy));
+        }    
         if($format == 'json'){
             if (PHP_MAJOR_VERSION > 5){
                 return json_encode($stavy, JSON_PRETTY_PRINT);
@@ -563,9 +576,20 @@ class Zdroje{
             }       
         } else {
             if(count($stavy) > 0){
+                $s='';
                 for($i = 0; $i < count($stavy); $i++){
-                    htpr($stavy[$i]['TEXTTIME'],nbsp(2),ahref('?__KAR=1&amp;slabel='.$stavy[$i]['SLABEL'], $stavy[$i]['SLABEL']), br());   
+                    $s.=gl(ta('tr',
+                          ta('td', $stavy[$i]['TEXTTIME']).
+                          ta('td', ahref('javascript:runKarel(\''.$stavy[$i]['SLABEL'].'\');',$stavy[$i]['SLABEL'])).
+                          ta('td' , ahref('?__KAR=1&amp;slabel='.$stavy[$i]['SLABEL'],'
+                          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="edit" class="svg-inline--fa fa-edit fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M402.6 83.2l90.2 90.2c3.8 3.8 3.8 10 0 13.8L274.4 405.6l-92.8 10.3c-12.4 1.4-22.9-9.1-21.5-21.5l10.3-92.8L388.8 83.2c3.8-3.8 10-3.8 13.8 0zm162-22.9l-48.8-48.8c-15.2-15.2-39.9-15.2-55.2 0l-35.4 35.4c-3.8 3.8-3.8 10 0 13.8l90.2 90.2c3.8 3.8 10 3.8 13.8 0l35.4-35.4c15.2-15.3 15.2-40 0-55.2zM384 346.2V448H64V128h229.8c3.2 0 6.2-1.3 8.5-3.5l40-40c7.6-7.6 2.2-20.5-8.5-20.5H48C21.5 64 0 85.5 0 112v352c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V306.2c0-10.7-12.9-16-20.5-8.5l-40 40c-2.2 2.3-3.5 5.3-3.5 8.5z"></path></svg>
+                          ')).
+                          ta('td', ahref('?__DEL=1&amp;slabel='.$stavy[$i]['SLABEL'],'
+                          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="trash" class="svg-inline--fa fa-trash fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16zM53.2 467a48 48 0 0 0 47.9 45h245.8a48 48 0 0 0 47.9-45L416 128H32z"></path></svg>
+                          '))
+                          ));   
                 }
+                htpr(tg('table','class="table"',$s));
             } else {
                 htpr("Žádné pozice nebyly nalezeny.");
             }
@@ -587,17 +611,40 @@ class Zdroje{
         setpar('SSOURCE',file_get_contents('php://input'));
         /* viz https://stackoverflow.com/questions/18866571/receive-json-post-with-php */
         }
+        
+        $ssource=getpar('SSOURCE');
         if($action == 'u'){
-            $prik = "update ".TAB_STAVY." ".
-                "set ssource='".getpar('SSOURCE')."', stime=strftime('%s', 'now') ".
+          if (self::$db->typedb=='MySQL'){
+           
+           $ssource=str_replace('\\n','\\\\n',$ssource);
+           
+           $prik = "update ".TAB_STAVY." ".
+                "set ssource='".$ssource."' ".
                 "where slabel='".getpar('slabel')."' and luser='".$_SESSION['uzivatel']."'"; 
+          }else{
+            $prik = "update ".TAB_STAVY." ".
+                "set ssource='".$ssource."', stime=strftime('%s', 'now') ".
+                "where slabel='".getpar('slabel')."' and luser='".$_SESSION['uzivatel']."'"; 
+          }      
         } else {
+          if (self::$db->typedb=='MySQL'){
+            //$ssource=str_replace("\n",'\\n',$ssource);
+            $ssource=str_replace('\\n','\\\\n',$ssource);
+            //$ssource=str_replace("\n",'\\\\n',$ssource);
+            $prik = "insert into ".TAB_STAVY." ".
+                "(luser, slabel, ssource ) ".
+                "values ('".$_SESSION['uzivatel']."','".getpar('slabel')."',".
+                "'".$ssource."')";
+            //$prik=str_replace("\n",'\\\\n',$prik);    
+          }else{
             $prik = "insert into ".TAB_STAVY." ".
                 "(luser, slabel, stime, ssource ) ".
                 "values ('".$_SESSION['uzivatel']."','".getpar('slabel')."',".
-                "strftime('%s', 'now'),'".getpar('SSOURCE')."')";
+                "strftime('%s', 'now'),'".$ssource."')";
+          }      
         }
         $res = self::$db->Sql($prik);
+        //deb($prik);
         if($res){
             //deb($prik);
             if($json){
@@ -623,7 +670,7 @@ class Zdroje{
      * smaze stav pod nazvem
      */
     static function delete_item($item_label){
-        // TODO ??
+        self::$db->Sql("delete from ".TAB_STAVY." where slabel='$item_label'");        
     }
  
     /** 
@@ -632,7 +679,7 @@ class Zdroje{
     static function get_item($item_label,$new=false,$json=false){
         if(!$new){
             $DB = self::$db->SqlFetchArray(
-                "select stime,ssource,slabel ".
+                "select STIME,SSOURCE,SLABEL ".
                 "from ".TAB_STAVY." ".
                 "where slabel='$item_label' ".
                 "and luser='".$_SESSION['uzivatel']."'");
@@ -649,49 +696,51 @@ class Zdroje{
         }
     
         /* zobrazeni formulare */
+        
+        htpr(tg('script','src="js/ace/ace.js" charset="utf-8"',' '));
         htpr('<div class="padded">');
         htpr(ta('h3', $jsoudata?$DB[0]['SLABEL'] : 'Nový stav'.' '),
-            tg('form', 'method="post" action="?"',
-                tg('div', 'class="container"',
+            tg('form', 'method="post" action="?" onsubmit="uloz();"',
+                tg('div', ' ',
                     ($new ?
-                        tg('div', 'class="row"',
-                            tg('div', 'class="col-6 text-left" ', 'Označení ').
-                            tg('div', 'class="col-6 text-left" ',
-                                textfield('', 'slabel', 20, 50, getpar('slabel')
-                            )
-                        )
+                        (
+                            tg('div', 'style="width:100%" ', 'Označení ').
+                            tg('div', 'style="width:100%" ',
+                                textfield('', 'slabel', 20, 50, getpar('slabel')))
                     ) 
                     : 
                     '').
-                    tg('div', 'class="row"',
-                        tg('div', 'class="col-12 text-left" ', 'Zdrojový kód ')
-                    ).
-                    tg('div', 'class="row"',    
-                        tg('div', 'class="col-12"',   
-                            textarea('', 'SSOURCE', 20, 40, $jsoudata?$DB[0]['SSOURCE']:getpar('SSOURCE'),'class="form-control"')
-                        )
-                    ).
+                    tg('div', ' style="width:100%; height:500px; display:inline-block; position:relative; " ',                      
+                        tg('div', 'id="ssrc" style="position:absolute; top:0; right:0; bottom:0; left:0;"',   
+                            //textarea('', 'SSOURCE', 20, 100, $jsoudata?$DB[0]['SSOURCE']:getpar('SSOURCE'),'class="form-control"')
+                            (PHP_MAJOR_VERSION > 5)?(json_encode(json_decode($jsoudata?$DB[0]['SSOURCE']:getpar('SSOURCE')),JSON_PRETTY_PRINT)):
+                            
+                            $jsoudata?prettyPrint($DB[0]['SSOURCE']):getpar('SSOURCE')
+                        ).
+                        textarea('','SSOURCE',20,100,'','style="display:none;" id=\'SSOURCE\'' )
+                    )      
+                    .
                     tg('div', 'class="row"',     
-                        tg('div', 'class="col-10 text-right"',
-                            ($jsoudata ? submit('__STO','Uložit','btn btn-primary') : submit('__INS', 'Vložit', 'btn btn-primary')).
-                            ($jsoudata ? para('slabel',getpar('slabel')) : '').
-                            para('__KAR', '1')          
-                        )
+                        ($jsoudata ? submit('__STO','Uložit','button') : submit('__INS', 'Vložit', 'button')).
+                        ($jsoudata ? para('slabel',getpar('slabel')) : '').
+                        para('__KAR', '1')          
                     )
                 )
             )
         );     
-        htpr('</div>');           
+        htpr('</div>');
+        htpr(ta('script','function uloz(){  '.
+         'document.getElementById("SSOURCE").value=window.editor.getValue(); }'));           
     }
   
     /** 
      * vrati json prikladu pro nacteni do stranky Karla 
      */  
     static function get_example($prid){
-        $DB = self::$db->SqlFetch(
-            "select ssource ".
+        $pr = "select SSOURCE ".
             "from ".TAB_PRIKLADY." ".
-            "where ".(is_numeric($prid) ? "id=$prid " : "slabel='$prid'"));
+            "where ".(is_numeric($prid) ? "id=$prid " : "slabel='$prid'");    
+        $DB = self::$db->SqlFetch($pr);
         if($DB != ''){
             return $DB;
         }else{
@@ -700,7 +749,66 @@ class Zdroje{
     } 
 } 
 
-
 Blog::kostra();
+
+/** Thanks to Kettman Ramany
+ */ 
+
+function prettyPrint( $json )
+{
+    $result = '';
+    $level = 0;
+    $in_quotes = false;
+    $in_escape = false;
+    $ends_line_level = NULL;
+    $json_length = strlen( $json );
+
+    for( $i = 0; $i < $json_length; $i++ ) {
+        $char = $json[$i];
+        $new_line_level = NULL;
+        $post = "";
+        if( $ends_line_level !== NULL ) {
+            $new_line_level = $ends_line_level;
+            $ends_line_level = NULL;
+        }
+        if ( $in_escape ) {
+            $in_escape = false;
+        } else if( $char === '"' ) {
+            $in_quotes = !$in_quotes;
+        } else if( ! $in_quotes ) {
+            switch( $char ) {
+                case '}': case ']':
+                    $level--;
+                    $ends_line_level = NULL;
+                    $new_line_level = $level;
+                    break;
+
+                case '{': case '[':
+                    $level++;
+                case ',':
+                    $ends_line_level = $level;
+                    break;
+
+                case ':':
+                    $post = " ";
+                    break;
+
+                case " ": case "\t": case "\n": case "\r":
+                    $char = "";
+                    $ends_line_level = $new_line_level;
+                    $new_line_level = NULL;
+                    break;
+            }
+        } else if ( $char === '\\' ) {
+            $in_escape = true;
+        }
+        if( $new_line_level !== NULL ) {
+            $result .= "\n".str_repeat( "\t", $new_line_level );
+        }
+        $result .= $char.$post;
+    }
+
+    return $result;
+}
   
 ?>

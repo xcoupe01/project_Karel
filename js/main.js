@@ -293,6 +293,10 @@ function manageBreakpoint(e) {
  * example if it is in URL otherwise it does nothing
  */ 
 function tryLoad() {
+    if(mainInterpret.dictionary.keywords === undefined){
+    	setTimeout(tryLoad, 500);
+        return;
+    }
     if (window.location.href.indexOf("?")>0){
         var exercise=window.location.href.substring(window.location.href.indexOf("?")+1);
         $.ajax({

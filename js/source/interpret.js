@@ -878,11 +878,9 @@ class interpret{
                         case "zeroDivision":
                             karelConsoleLog("zeroDivisionError");
                             return true;
-                            break;
                         case "undefVarRead":
                             karelConsoleLog("undefinedVariableRead");
                             return true;
-                            break;
                         default:
                             throw err;
                     }

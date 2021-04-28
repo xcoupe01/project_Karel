@@ -29,7 +29,7 @@ function toggleNav(){
 
 function moveSlideshow(){
     var i = 0;
-    const numOfSlides = 3;
+    const numOfSlides = 4;
     const bgImageStringStart = "url('./is/img/introduction";
     const bgImageStringEnd = ".png')"
 
@@ -40,6 +40,25 @@ function moveSlideshow(){
             i = 0;
         }
     }, 3000);
+}
+
+function runKarel(slabel){
+    $.ajax({
+        type: 'GET',
+        url: 'index.php?f=json&slabel='+slabel,
+        timeout: 2000,
+        success: function(data) {
+            if (typeof data['Err'] !== typeof undefined){
+                alert(data['Err']);
+            } else {
+                localStorage.setItem("onUnload", JSON.stringify(data));
+                window.location.href = "karel.html";
+            }  
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            alert('Timeout contacting server..');
+        }
+    });
 }
 
 if(document.getElementById('introduction') != null){
@@ -69,3 +88,11 @@ if(document.getElementById("dialogClose") != null){
     }
 }
 
+if(document.getElementById("ssrc") != null){
+    window.editor=ace.edit("ssrc");
+    window.editor.setTheme('ace/theme/chrome');
+    window.editor.setOptions({
+        mode: 'ace/mode/json',
+        fixedWidthGutter: true,
+    }); 
+}

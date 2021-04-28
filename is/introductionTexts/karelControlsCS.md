@@ -1,7 +1,12 @@
 ## Ovládání
-Na stránce s aplikací [Karla](karel.html) se nachází několik oblastí. 
 
-Horní panel tvoří tmavá lišta stejně jako na této stránce. Vlevo obsahuje **Menu** , přepínač volby jazyka, uprostřed je orámované K a nápis Karel, který odkazuje zpět na tuto dokumentaci. Vlevo je pak nástroj pro s trojicí ovládacích prvků pro běh programu. Krajní prvky provádí spuštění a zastavování běhu Karla, symbol brouka uprostřed slouží pro krokování programu.
+<img src="is/img/karel-thinking.png" alt="drawing" height="200" align="right"/>
+
+Jistě ti se ti teď honí hlavou: "Jak mám ale Karla ovládat, jak ho mám učit, co mám vůbec dělat". Ty i Karel jste z toho asi trochu zmatení a proto je tu připravená přehled ovládání. Pokud si něčím nebudeš jistý ohledně ovládání, jistě nalezneš odpovědi na své otázky zde.
+
+Na stránce s aplikací [Karla](karel.html) se nachází několik oblastí.
+
+Horní panel tvoří tmavá lišta stejně jako na této stránce. Z leva obsahuje **Menu** , přepínač volby jazyka, uprostřed je ikona aplikace a nápis Karel, který odkazuje zpět na tuto stránku. Vlevo je pak nástroj pro s trojicí ovládacích prvků pro běh programu. Krajní prvky provádí spuštění a zastavování běhu Karla, symbol brouka uprostřed slouží pro krokování programu.
 
 Hlavní část je rozdělena do tří oddílů:
 
@@ -36,8 +41,8 @@ V levém horním rohu místnosti se mohou objevovat kontextové bubliny upozorň
 Pod scénou s robotem je sada ovládacích prvků **Rychlý přístup**. Jedná se o jednoduchou sadu nástrojů, které usnadňují práci s aplikací a dávají najevo aktuální stav aplikace. Mezi prvky patří:
 - `Reset kamery` - Vrátí kameru místnosti na základní pozici.
 - `Reset oken` - Vrátí velikosti oken aplikace do výchozího nastavení. 
+- `Smaž konzolu` - Vymaže obsah konzole.
 - `Ovládání` - Zobrazí tlačítka pro přímé ovládání robota.
-- `Test` - Interní testovací tlačítko.
 - `Posuvník rychlosti` - Nastavuje rychlost interpretu jazyka, na pravé straně lze nastavit i přímo číselně. Číslo reprezentuje procento maximální rychlosti robota. Lze nastavit i v programu pomocí příkazů `rychle` a `pomalu`.
 - `Konzole` - Zde robot vypisuje hlášení o svém aktuálním stavu, nejčastěji chybová hlášení.
 - `Proměnné` - Zde robot vypisuje všechny definované proměnné a jejich hodnoty.
@@ -74,3 +79,96 @@ Textový editor má na své horní hraně dvě záložky:
         - `Napovídání slov` - Lze vypnout nebo zapnout živé napovídání slov.
         - `Automatické odsazování` - Lze vypnout nebo zapnout automatické odsazování kódu.
         - `Ukazuj pozici` - Lze vypnout nebo zapnout pohyb kurzoru při interpretaci.
+
+### Popis textového programování
+Kód pište do nejpravějšího ze tří zobrazených oken - `Editor kódu`. Dostupné kódové programování obsahuje všechny originální příkazy z aplikace `Robot Karel 3D`, jmenovitě to jsou příkazy:
+- `krok` - robot udělá krok vpřed
+- `vpravo` - robot se otočí doprava
+- `vlevo` - robot se otočí doleva
+- `poloz` - robot položí cihlu
+- `zvedni` - robot zvedne cihlu
+- `oznac` - robot označí pole
+- `odznac` - robot odznačí pole
+- `rychle` - Zvýší rychlost robota o 10 ms - posune s posuvníkem rychlosti
+- `pomalu` - Sníží rychlost robota o 10 ms - posune s posuvníkem rychlosti
+- `pip` - robot přehraje upozornění
+
+Karel může vylézt pouze na políčko s maximálním převýšením jedné cihly.Tyto příkazy lze různě podle potřeby skládat za sebe jako v každém jiném programovacím jazyku, je ale potřeba, **aby na každém řádku byl pouze jeden příkaz**. Příkazy lze vkládat i do struktur jako jsou:
+- `udelej` - struktura, která vykoná daný kód N krát. 
+    ```
+    udelej [N] krat
+        [prikazy]
+    *udelej
+    ```
+- `dokud` - struktura, která vykonává kód dokud platí podmínka.
+    ```
+    dokud [je/neni] [podminka]
+        [prikazy]
+    *dokud
+    ```
+- `kdyz` - struktura, která vykoná část kódu pokud podmínka platí, případně jinou část pokud neplatí. Část jinak je nepovinná.
+    ```
+    kdyz [je/neni] [podminka]
+    tak
+        [prikazy]
+    jinak
+        [prikazy]
+    *kdyz
+    ```
+Dále je zapotřebí tvořit vlastní bolky kódu ohraničené těmito způsoby:
+- vytvoření příkazu - je možno vytvořit vlastní příkaz, kterému je nutno přidělit vlastní název nekolidující s jinými příkazy (jak vestavěnými tak uživatelsky vytvořenými). Příkaz je pak možné volat v dalších příkazech. 
+    ```
+    prikaz [nazev]
+        [prikazy]
+    konec  
+    ```
+- vytvoření podmínky - je možnost vytvořit vlastní podmínku. Je opět nutno přidělit vlastní název, aby byla později volatelná. Očekává se, že bude obsahovat příkazy `pravda` nebo `nepravda` ve svém kódu.
+    ```
+    podminka [nazev]
+        [prikazy]
+        kdyz [je/neni] [podminka]
+        tak
+            pravda
+        jinak
+            nepravda
+        *kdyz
+    konec
+    ```
+Pokud je při interpretaci jazyka nalezen nějaký problém, aplikace o tom informuje do konzole prohlížeče.
+
+### Popis blokového programování
+Blokové programování je syntakticky velmi podobné (ne-li stejné) jako textové programování. Bloky jsou schovány pod svými kategoriemi a funkčností přímo korespondují na textovou reprezentaci. Pro spuštění bloku klikněte na tlačítko, u bloku uvozující příkaz (tlačítko run). Pokud by bylo zapotřebí spouštět blok v nějakém dalším bloku, využijte blok z nabídky `Funkce`, tedy ze zelené sekce, s popiskem `Funkce` a do textového pole vložte název požadovaného bloku. Tím se ze jmenovaného bloku stane podprogram aktuálního bloku. Podobně funguje i volání uživatelských podmínek, ovšem vyberte podobný blok ze sekce `Podmínky`.
+
+### Proměnné
+Tento projekt si dává za cíl originální jazyk rozšířit. Tohoto cíle je dosaženo pomocí obohacení jazyka o proměnné.
+Do proměnných lze ukládat celočíselné kladné i záporné hodnoty definované matematickými výrazy s použitím celočíselných kladných hodnot a hodnot z proměnných. V rovnicích lze využívat tyto operátory:
+
+- `+` - sčítání
+- `-` - odečítání
+- `*` - násobení 
+- `/` - celočíselné dělení
+- `%` - zbytek po dělení
+- `>` - větší než
+- `>=` - větší nebo rovno něž
+- `<` - menší než
+- `<=` - menší nebo rovno než
+- `==` - rovno
+- `!=` - není rovno
+
+Karel rozumí i uzávorkování výrazů pomocí jednoduchých závorek `(` a `)`.
+- příklad validní konstrukce : `8 * (4 - promenna2)`
+
+Hodnoty těchto výrazů lze poté ukládat do definovaných proměnných. Karel nabízí proměnné dvojího typu - globální a lokální. Globální proměnné je třeba poprvé definovat na úrovni definice příkazů a podmínek následujícím syntaxí:
+
+```
+globalni promenna mojePromenna = 2
+```
+
+Následně je možné do ní jakkolv stejným syntaxem zapisovat. Druhé klíčové slovo `promenna` je zde nepovinné, avšak díky němu je zakázáno definovat proměnné s tímto názvem (názvy se nesmí shodovat s klíčovými slovy jazyka, ani s názvem jakéhokoliv příkazu, či podmínky). Dále lze podobně v příkazech či podmínkách definovat lokální proměnná:
+
+```
+lokalni promena mojeLokProm = 4
+```
+
+Opět je klíčové slovo `promenna` nepovinné a název proměnné se nesmí shodovat s žádným názvem příkazu, podmínky nebo nyní i globální proměnné. Proměnné lze použít například při hledání středu místnosti následujícím způsobem:
+
