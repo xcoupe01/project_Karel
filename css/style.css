@@ -1,3 +1,9 @@
+/*
+ * Main CSS style sheet of the application
+ * Author: Vojtěch Čoupek
+ */
+
+
 :root {
     font-size: 16px;
     font-family: 'Courier New', monospace;
@@ -598,6 +604,7 @@ split-hidden {
     color: var(--text-primary);
 }
   
+/* ------- IS ------------- */
 #main {
     transition: margin-left .5s;
     padding: 0rem;
@@ -803,6 +810,7 @@ h2, #blog > .forceH2 {
     cursor: pointer;
 }
 
+/* ------- saves table ------------- */
 .table {
     border-collapse: collapse;
     width: 80%;

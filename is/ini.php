@@ -1,6 +1,7 @@
 <?php
-  /** Database setting file
-   *  
+  /** 
+   * Database setting file
+   * Author: Vojtěch Čoupek 
    */ 
 
 /* napojeni na testovacim reseni */

@@ -1,3 +1,8 @@
+/**
+ * Command class for Karel 3D app
+ * Author: Vojtěch Čoupek
+ */
+
 export{command};
 
 /**

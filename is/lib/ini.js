@@ -1,3 +1,8 @@
+/**
+ * Scripts contreolling the main page of the IS
+ * Author: Vojtěch Čoupek
+ */
+
 
 function openNav() {
     document.getElementById("sideNav").style.width = "200px";

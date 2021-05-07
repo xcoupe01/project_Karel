@@ -1,8 +1,7 @@
 <?php
-/* SQL workbench
- * Petr Coupek 
- * 20.02.2021
- *  
+/* 
+ * SQL workbench
+ * Petr Coupek
  */ 
  
 include_once "lib/lib.php"; /* nove aplikacni mikrojadro */

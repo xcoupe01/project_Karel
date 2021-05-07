@@ -3,6 +3,11 @@ import {command} from './command.js';
 export {interpret};
 
 /**
+ * Interpret class for Karel 3D app
+ * Author: Vojtěch Čoupek
+ */
+
+/**
  * This class is used to represent interpret in the structure.
  * Its main job is manipulate with the users code (like save it, load it, interpret if from many sources ect.)
  * It does not handle Karel, this is done through command object

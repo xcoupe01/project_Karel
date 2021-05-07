@@ -1,3 +1,4 @@
+// threejs.org/license
 import {
 	AnimationClip,
 	Bone,

@@ -1,3 +1,9 @@
+/**
+ * Mode for Karel language to make ACE support it
+ * Inspiration taken form LUA-mode for ACE
+ * Author: Vojtěch Čoupek
+ */
+
 define("ace/mode/karel_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
 "use strict";
 

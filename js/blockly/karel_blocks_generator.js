@@ -1,3 +1,7 @@
+/**
+ * Block to text generator created by Vojtěch Čoupek
+ */
+
 Blockly.Karel = new Blockly.Generator('Karel');
 Blockly.Karel.INDENT = "    ";
 

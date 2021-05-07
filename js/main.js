@@ -4,8 +4,14 @@ import {OrbitControls} from './three/OrbitControls.js';
 import {interpret} from './source/interpret.js';
 
 /**
+ * Main starting script of the Karel 3D app
+ * Author: Vojtěch Čoupek
+ */
+
+/**
  * Starting function, that creates the main structures and generate the main objects of the app
  * sets camera scene ect
+ * @returns interpret object
  */
 function start() {
     const canvas = document.querySelector('#roomCanvas');
@@ -320,6 +326,10 @@ function tryLoad() {
     }
 };
 
+/**
+ * Processes load of save with given label
+ * @param {string} slabel is the label of the save
+ */
 function processLoad(slabel){
     $.ajax({
         type: 'GET',

@@ -1,4 +1,10 @@
 import * as THREE from '../three/three.module.js';
+
+/**
+ * room class for Karel 3D app
+ * Author: Vojtěch Čoupek
+ */
+
 /**
   * Class of room
   * - graphical and logical representation of room

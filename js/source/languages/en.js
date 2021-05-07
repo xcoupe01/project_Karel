@@ -1,3 +1,12 @@
+/**
+ * English language for the Karel 3D application
+ * Author: Vojtěch Čoupek
+ */
+
+/**
+ * gives the app dictionary
+ * @returns JSON format of app dictionary
+ */
 export function setLang(){
     return {
         "keywords" : {

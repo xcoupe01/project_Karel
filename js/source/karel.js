@@ -3,6 +3,11 @@ import {GLTFLoader} from '../three/GLTFLoader.js';
 import {room} from './room.js';
 
 /**
+ * karel class for Karel 3D app
+ * Author: Vojtěch Čoupek
+ */
+
+/**
  * Class of Karel
  * - graphical and logical representation of robot Karel.
  */

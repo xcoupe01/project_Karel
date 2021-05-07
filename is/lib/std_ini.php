@@ -1,3 +1,8 @@
+/**
+ * Main page template for the IS pages
+ * Author: Vojtěch Čoupek
+ */
+
 <?php
 $verze='20.02.2021';
 Microbe::set(

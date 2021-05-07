@@ -1,12 +1,31 @@
+/**
+ * Definition of blocks for Karel language
+ * Author: Vojtěch Čoupek
+ */
+
+
+/**
+ * Sets language for blocks
+ * @param {JSON} dictionary aplication dictionary in JSON format
+ */
 function blocklySetBlockLang(dictionary){
   Blockly.langDictionary = dictionary;
 }
 
+/**
+ * Sets the closer for the blocks
+ * @param {char} closer the closing character of Karel language
+ */
 function blocklySetCloser(closer){
   Blockly.closer = closer;
 }
 
 var runMe;
+
+/**
+ * Sets the running function to specified name
+ * @param {string} setToFunc is the name of the function
+ */
 function blocklySetRunMe(setToFunc){
   runMe = setToFunc;
 };

@@ -3,7 +3,7 @@
 <img src="is/img/karel-old-transparent.png" alt="drawing" height="200" align="right"/>
 
 ### Téma projektu
-Cílem projektu je implementovat pedagogický nástroj, které by hravým způsobem seznámil žáky druhých stupňů a nižších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána [této adrese](http://karel.webz.cz/uvodni-strana), kde je i originální verze dostupná a například pomocí emulátoru `DOSBox` spustitelná. Zkráceně aplikace `Robot Karel 3D` umožňuje převzetí kontroly nad robotem v místnosti, a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na přetvoření originálu do moderního prostředí a zapojit moderní prvky, které jsou dnes již běžnou součástí při vyučování.
+Cílem projektu je implementovat pedagogický nástroj, který by hravým způsobem seznámil žáky druhých stupňů základních škol a nižších gymnázií s problematikou programování. Jako předloha je vybrán program `Robot Karel 3D` na systém `DOS`. Původní verze je velice pěkně popsána na [této adrese](http://karel.webz.cz/uvodni-strana), kde je dostupná i originální verze, spustitelná například pomocí emulátoru `DOSBox`. Aplikace `Robot Karel 3D` umožňuje převzít kontrolu nad robotem v místnosti a pomocí programů místnost měnit. Tento projekt se tedy soustřeďuje na přetvoření originálu do moderního prostředí a zapojení prvků, které jsou dnes již běžnou součástí při vyučování.
 
 ### Použité zdroje:
 
@@ -17,7 +17,7 @@ Cílem projektu je implementovat pedagogický nástroj, které by hravým způso
 | [<img src="is/img/split.png" height="50"/>](https://split.js.org/) | [<img src="is/img/jquery.png" height="50"/>](https://jquery.com/) | [<img src="is/img/jqueryui.png" height="50"/>](https://jqueryui.com/) |
 |<img width=150/>|<img width=150/>|<img width=150/>|
 
-Projekt vznikl jako bakalářská práce za podpory Vysokého učení technického v Brně Fakulty informačních technologií a Gymnázia Šlapanice. Odkaz na text bakalářské práce bude doplněn po zveřejnění. 
+Projekt vznikl jako bakalářská práce za podpory Vysokého učení technického v Brně, Fakulty informačních technologií, a Gymnázia Šlapanice. Odkaz na text bakalářské práce bude doplněn po zveřejnění. 
 
 <img src="is/img/DSC_0464.jpg" height="200" style="border-radius: 25px" align="right"/> 
 
